@@ -18,15 +18,15 @@ class NeuralNetwork:
         self.layers: int = len(self.dimensions)
 
         # list of all the weight matrices for the neural net
-        # entry at i is w^{i + 1}
+        # entry at l is w^{l}
         self.weights = weights
 
         # list of all the bias vectors for the neural net
-        # entry at i is b^{i + 1}
+        # entry at l is b^{l}
         self.biases = biases
 
         # list containing all the activation functions for each layer
-        # entry at i is \sigma^{i + 1}
+        # entry at l is \sigma^{l}
         self.activation_functions = activation_functions
 
 
@@ -35,21 +35,28 @@ class NeuralNetwork:
         This method randomly initializes the weights and the biases.
         '''
 
+        # add empty array to self.weights so that the index corresponds to the layer
+        self.weights = [np.array([])]
+
         # initialize the weights matrices w^{l} with dimensions dim(l) x dim(l - 1)
         for l, dim in enumerate(self.dimensions[1:], 1):
             self.weights.append(np.random.rand(dim, self.dimensions[l - 1]))
 
+        # add empty array to self.weights so that the index corresponds to the layer
+        self.biases = [np.array([])]
+
         # initialite the bias vectors b^{l} with dimensions dim(l)
-        for l in self.dimensions[1:]:
-            self.biases.append(np.random.rand(l))
+        for dim_l in self.dimensions[1:]:
+            self.biases.append(np.random.rand(dim_l))
 
 
     def feed_forward(self, input_vector: 'numpy_array') -> 'numpy_array':
         '''
         This method feeds the input_vector through the network.
         '''
-   
-        pass
+
+        for l in range(self.layers - 1):
+            z_l = np.dot(self.weights[l], activation) + self.biases[l]
 
 
     def backpropagation(self, cost: float) -> None:
