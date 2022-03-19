@@ -15,7 +15,7 @@ SLEEP_TIME = 0.1    # Time to wait after each tick (in seconds). Adjust to chang
 
 class Paddle:
     def __init__(self, side):
-        self.side = side if side in ["left", "right"] else "left"    # left = left paddle, right = right paddle
+        self.side = side if side in ['left', 'right'] else 'left'    # left = left paddle, right = right paddle
         self.position_y = 0
         self.velocity = 0
 
@@ -27,13 +27,13 @@ class Ball:
     def __init__(self):
         # Movement Attributes as 2D-Vectors
         self.position = np.array([0, 0])
-        self.random_y_velocity = random.uniform(-0.9, 0.9)    # Ball should start at a random angle
-        self.velocity = np.array([math.sqrt(1 - self.random_y_velocity ** 2), self.random_y_velocity])    # norm of velocity must = 1
+        random_y_velocity = random.uniform(-0.9, 0.9)    # Ball should start at a random angle
+        self.velocity = np.array([math.sqrt(1 - self.random_y_velocity ** 2), random_y_velocity])    # norm of velocity must = 1
 
     def wall_collision(self):
         # Check for wall collision and in case of one update velocity
         if True:
-            # Add checks for collision
+            # TODO: Add checks for collision
             self.velocity.dot(np.array)
 
     def paddle_collision(self):
@@ -62,19 +62,23 @@ def tick(left_paddle, right_paddle, ball):
     player_right_movement = 0
          
     
-    left_paddle.move(player_left_movement)
-    right_paddle.move(player_right_movement)
+    print(left_paddle.move(player_left_movement))
+    print(right_paddle.move(player_right_movement))
     print(ball.update())
     return True
 
 
-if __name__ == "__main__":
+<<<<<<< Updated upstream
+if __name__ == '__main__':
+=======
+def main():
+>>>>>>> Stashed changes
     pygame.init()
     screen = pygame.display.set_mode(WINDOW_SIZE)
-    pygame.display.set_caption("Pong")
+    pygame.display.set_caption('Pong')
     
-    left_paddle = Paddle("left")
-    right_paddle = Paddle("right")
+    left_paddle = Paddle('left')
+    right_paddle = Paddle('right')
     ball = Ball()
 
     # Game loop 
@@ -82,4 +86,6 @@ if __name__ == "__main__":
         time.sleep(SLEEP_TIME)
         continue
 
+if __name__ == "__main__":
+    
         
