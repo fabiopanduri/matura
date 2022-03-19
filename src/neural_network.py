@@ -55,8 +55,14 @@ class NeuralNetwork:
         This method feeds the input_vector through the network.
         '''
 
-        for l in range(self.layers - 1):
+        activation = input_vector
+        # for each layer compute the activation
+        for l in range(1, self.layers):
             z_l = np.dot(self.weights[l], activation) + self.biases[l]
+            activation = self.activation_functions[l](z_l)
+
+        # return the activation for the output layer
+        return activation
 
 
     def backpropagation(self, cost: float) -> None:
