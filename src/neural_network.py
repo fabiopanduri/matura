@@ -3,23 +3,33 @@ import numpy as np
 from typing import List
 
 
+
 class NeuralNetwork:
-    def __init__(self, dimensions: List[int], weights: 'numpy_array', bias: 'numpy_array') -> None:
+    def __init__(self, dimensions: List[int], weights: List['numpy_array'] = [], biases: List['numpy_array'] = []) -> None:
         self.dimensions = dimensions
         self.weights = weights
-        self.bias = bias
+        self.biases = biases
 
     def initialize_network(self) -> None:
         '''
         This method randomly initializes the weights and the biases.
         '''
-         
-        pass
+
+        # initialize the weights matrices w^{l} with dimensions dim(l) x dim(l - 1)
+        for i, dim in enumerate(self.dimensions[1:], 1):
+            self.weights.append(np.random.rand(dim, self.dimensions[i - 1]))
+
+        # initialite the bias vectors b^{l} with dimensions dim(l)
+        for i in self.dimensions[1:]:
+            self.biases.append(np.random.rand(i))
+
 
     def feed_forward(self, input_vector: 'numpy_array') -> 'numpy_array':
         '''
         This method feeds the input_vector through the network.
         '''
+
+
 
         pass
 
@@ -34,6 +44,7 @@ class NeuralNetwork:
 
 
 def main():
-    pass
+    NN = NeuralNetwork([3, 5, 2])
+    print(NN.initialize_network())
 
 if __name__ == '__main__': main()
