@@ -1,5 +1,7 @@
 # pong game to be played by ML algorithms
 #
+
+import numpy as np
 import random
 import math
 import time
@@ -24,30 +26,29 @@ class Paddle:
 class Ball:
     def __init__(self):
         # Movement Attributes as 2D-Vectors
-        self.position = [0, 0]
+        self.position = np.array([0, 0])
         self.random_y_velocity = random.uniform(-0.9, 0.9)    # Ball should start at a random angle
-        self.velocity = [math.sqrt(1 - self.random_y_velocity ** 2), self.random_y_velocity]    # norm of velocity must = 1
+        self.velocity = np.array([math.sqrt(1 - self.random_y_velocity ** 2), self.random_y_velocity])    # norm of velocity must = 1
 
     def wall_collision(self):
         # Check for wall collision and in case of one update velocity
         if True:
             # Add checks for collision
-            self.velocity[0] *= -1
+            self.velocity.dot(np.array)
 
     def paddle_collision(self):
         # Check for paddle collision and in case of one update velocity
         if True:
-            # Add checks for collision
-            self.velocity[0] *= -1
+            # TODO: Add checks for collision
+            
+            np.multiply(self.velocity[0], np.array([-1, 1])
 
     def update(self):
         self.wall_collision()
         self.paddle_collision()
 
-        # TODO: figure out beautiful vector addition
-        self.position[0] += self.velocity[0]
-        self.position[1] += self.velocity[1]
-        
+        self.position += self.velocity
+
         return self.position, self.velocity
 
     
