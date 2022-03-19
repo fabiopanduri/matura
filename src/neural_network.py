@@ -17,6 +17,7 @@ def ReLU(x):
 
     return max(0, x)
 
+
 class NeuralNetwork:
     '''
     This class includes all functionalities for a neural network.
@@ -53,14 +54,14 @@ class NeuralNetwork:
 
         # initialize the weights matrices w^{l} with dimensions dim(l) x dim(l - 1)
         for l, dim in enumerate(self.dimensions[1:], 1):
-            self.weights.append(np.random.rand(dim, self.dimensions[l - 1]))
+            self.weights.append(np.random.uniform(-1, 1, (dim, self.dimensions[l - 1])))
 
         # add empty array to self.weights so that the index corresponds to the layer
         self.biases = [np.array([])]
 
         # initialite the bias vectors b^{l} with dimensions dim(l)
         for dim_l in self.dimensions[1:]:
-            self.biases.append(np.random.rand(dim_l))
+            self.biases.append(np.random.uniform(-1, 1, dim_l))
 
 
     def feed_forward(self, input_vector: 'numpy_array') -> 'numpy_array':
@@ -73,6 +74,7 @@ class NeuralNetwork:
         for l in range(1, self.layers):
             z_l = np.dot(self.weights[l], activation) + self.biases[l]
             activation = self.activation_functions[l](z_l)
+            print(l, z_l, activation)
 
         # return the activation for the output layer
         return activation
@@ -89,7 +91,10 @@ class NeuralNetwork:
 
 
 def main():
-    NN = NeuralNetwork([3, 5, 2])
-    print(NN.initialize_network())
+    NN = NeuralNetwork([2, 2, 1], weights = [np.array([]), np.array([[0, 1], [1, 0]]), np.array([2, 3])],
+        biases = [np.array([]), np.array([0]), np.array([0])],
+        activation_functions = [0, np.vectorize(lambda x: x), np.vectorize(lambda x: x)])
+    #NN.initialize_network()
+    print(NN.feed_forward(np.array([2, 1])))
 
 if __name__ == '__main__': main()
