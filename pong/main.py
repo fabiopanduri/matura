@@ -67,12 +67,8 @@ def tick(left_paddle, right_paddle, ball):
     print(ball.update())
     return True
 
-
-<<<<<<< Updated upstream
-if __name__ == '__main__':
-=======
+                        
 def main():
->>>>>>> Stashed changes
     pygame.init()
     screen = pygame.display.set_mode(WINDOW_SIZE)
     pygame.display.set_caption('Pong')
@@ -86,6 +82,7 @@ def main():
         time.sleep(SLEEP_TIME)
         continue
 
-if __name__ == "__main__":
-    
+                        
+if __name__ == '__main__':
+    main()
         
