@@ -5,17 +5,31 @@ from typing import List, Callable
 
 def sigmoid(x):
     '''
-    sigmoid activation function 
+    Sigmoid activation function.
     '''
 
     return 1 / (1 + np.exp(-x))
 
+def sigmoid_derivative(x)
+    '''
+    Derivative of the sigmoid activation function.  
+    '''
+
+    return sigmoid(x) * (1 - sigmoid(x))
+
 def ReLU(x):
     '''
-    ReLU activation function
+    ReLU activation function.
     '''
 
     return max(0, x)
+
+def ReLU_derivative(x):
+    '''
+    Derivative of the ReLU activation function.
+    '''
+
+    return 1 if x > 0 else 0
 
 
 class NeuralNetwork:
