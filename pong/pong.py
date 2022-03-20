@@ -10,8 +10,8 @@ from typing import List, Tuple
 
 WINDOW_SIZE = (800, 500) # (0|0) is on the top left. 
 BALL_RADIUS = 12
-BALL_SPEED = 1
-PADDLE_SPEED = 1
+BALL_SPEED = 10
+PADDLE_SPEED = 10
 PADDLE_WIDTH = 20
 PADDLE_HEIGHT = 100
 COLOR_BACKGROUND = (0, 0, 0)
@@ -24,7 +24,7 @@ GRAPHICAL_MODE = True
 class Paddle:
     def __init__(self, side):
         self.side = side if side in ['left', 'right'] else 'left'    # left = left paddle, right = right paddle
-        self.position = [WINDOW_SIZE[1] / 2, -1]    # Start paddle in the middle of according side
+        self.position = [0, (WINDOW_SIZE[1] - PADDLE_HEIGHT) / 2]    # Start paddle in the middle of according side
         if self.side == 'left':
             self.position[0] = 0
         elif self.side == 'right':
@@ -51,7 +51,7 @@ class Ball:
         random_y_velocity = random.uniform(-0.9 * BALL_SPEED, 0.9 * BALL_SPEED)
 
         # norm of velocity must = BALL_SPEED
-        self.velocity = np.array([math.sqrt(BALL_SPEED - random_y_velocity ** 2), random_y_velocity])
+        self.velocity = np.array([math.sqrt(BALL_SPEED ** 2- random_y_velocity ** 2), random_y_velocity])
 
     def wall_collision(self) -> None:
         if True:
@@ -69,10 +69,8 @@ class Ball:
         self.paddle_collision()
 
         self.position += self.velocity
+
         
-        return self.position, self.velocity
-
-
 class PaddleSprite(pygame.sprite.Sprite):
     ''' 
     Display paddles as pygame sprites
@@ -116,7 +114,17 @@ class BallSprite(pygame.sprite.Sprite):
         self.rect.x = ball_position[0]
         self.rect.y = ball_position[1]
         
-        
+
+def pixel_to_relative(coordinates: Tuple[float, float]):
+    '''
+    Function takes in 2D Vector for Position or Velocity and returns same Vector but adjusted 
+    so its components are numbers from 0 to 1
+    '''
+
+    # TODO: ACCOMODATE FOR SPRITE SIZE
+    return (coordinates[0] / WINDOW_SIZE[0], coordinates[1] / WINDOW_SIZE[1])
+
+
 def tick(left_paddle, right_paddle, ball, screen, sprites, sprite_group,
          left_movement='', right_movement='') -> Tuple:
     '''
@@ -164,7 +172,7 @@ def tick(left_paddle, right_paddle, ball, screen, sprites, sprite_group,
         sprite_group.draw(screen)
         pygame.display.flip()
 
-    return left_paddle.position, right_paddle.position, ball.position, ball.velocity
+    return tuple(map(lambda x: pixel_to_relative(x), (left_paddle.position, right_paddle.position, ball.position, ball.velocity))) 
 
                         
 def main():
@@ -188,7 +196,8 @@ def main():
         
     # Game loop
     clock = pygame.time.Clock()
-    while tick(left_paddle, right_paddle, ball, screen, sprites, sprite_group):
+    while True:
+        print(tick(left_paddle, right_paddle, ball, screen, sprites, sprite_group))
         clock.tick(FPS_LIMIT)
         continue
 
