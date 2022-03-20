@@ -31,13 +31,21 @@ def ReLU_derivative(x):
 
     return 1 if x > 0 else 0
 
+def cost_function_derivative(activation, y):
+    '''
+    Derivative of the cost function with respecto to the activation.
+    Here derivative of Mean squared error.
+    '''
+
+    return activation - y
+
 
 class NeuralNetwork:
     '''
     This class includes all functionalities for a neural network.
     '''
 
-    def __init__(self, dimensions: List[int], weights: List['numpy_array'] = [], biases: List['numpy_array'] = [], activation_functions: List[Callable] = []) -> None:
+    def __init__(self, dimensions: List[int], weights: List['numpy_array'] = [], biases: List['numpy_array'] = [], activation_functions: List[Callable] = [], eta: float) -> None:
 
         # list of dimensions of the neural network
         self.dimensions = dimensions
@@ -56,6 +64,9 @@ class NeuralNetwork:
         # list containing all the activation functions for each layer
         # entry at l is \sigma^{l}
         self.activation_functions = activation_functions
+        
+        # learning rate eta for gradient descent
+        self.eta = eta
 
 
     def initialize_network(self) -> None:
@@ -88,20 +99,63 @@ class NeuralNetwork:
         for l in range(1, self.layers):
             z_l = np.dot(self.weights[l], activation) + self.biases[l]
             activation = self.activation_functions[l](z_l)
-            print(l, z_l, activation)
 
         # return the activation for the output layer
         return activation
 
 
-    def backpropagation(self, cost: float) -> None:
+    def stochastic_gradient_descent(self, training_set) -> None:
         '''
-        This method is used to update the weights and bias of the neral network.
+        This method implements the stochastic gradient descent algorithm.
         '''
 
-        pass
+        # initialize lists to store the sum of errors for each weight and bias
+        weight_delta_sum = [np.zeros(self.dimensions[l]) for l in range(self.layers)]
+        bias_delta_sum = [np.zeros(self.dimensions[l]) for l in range(self.layers)]
 
-    
+        # iterate over all training examples
+        for training_example in training_set:
+            activation = training_example[0]
+
+            # set up list to store all the z vectors for later use
+            # initialized with z vector at 0 = 0 for indexing purposes
+            z_list = [0]
+
+            # set up a list to store all the activation vectors for each later
+            activation_list = []
+            activation_list.append(activation)
+
+            # calculate the activation and z vector for all the layers
+            for l in range(1, self.layers):
+                # compute the z vector and store it in the z_list 
+                z = np.dot(self.weights[l], activation) + self.biases[l]
+                z_list.append(z)
+
+                # compute the activation of the l-th layer and add it to the activation list
+                activation = self.activation_functions[l](activation)
+                activation_list.append(activation)
+
+            # calculate the error of the last layer
+            delat_L = cost_function_derivative(activation, training_example[1]) * sigmoid_derivative(z)
+
+            # calculate the error of each other layer
+            delta = [np.zeros(self.dimensions[l]) for l in range(self.layers)]
+            delta[-1] = delta_L
+            for l in range(self.layers - 1, 0, -1):
+                delta[l] = np.dot(self.weights[l + 1].T, delta[l + 1]) * sigmoid_derivative(z[l])
+
+                # update the sum of errors for weights and biases for each layer
+                weight_delta_sum[l] += np.dot(activation_list[l - 1].T, delta[l])
+                bias_delta_sum[l] += delta[l]
+
+
+        # update the weights and biases according to the calculated errors
+        for l in range(1, self.layers):
+            self.weights[l] -= weight_delta_sum[l] * self.eta / len(training_set)
+            self.biases[l] -= biases_delta_sum[l] * self.eta / len(training_set)
+
+
+
 
 
 def main():
