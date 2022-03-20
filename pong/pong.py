@@ -36,10 +36,10 @@ class Paddle:
             pass
 
         elif direction == 'up':
-            self.position[1] = min(self.position[1] + PADDLE_SPEED, WINDOW_SIZE[1] - PADDLE_HEIGHT)
+            self.position[1] = max(self.position[1] - PADDLE_SPEED, 0)
 
         elif direction == 'down':
-            self.position[1] = max(self.position[1] - PADDLE_SPEED, 0)
+            self.position[1] = min(self.position[1] + PADDLE_SPEED, WINDOW_SIZE[1] - PADDLE_HEIGHT)
 
             
 class Ball:
@@ -109,7 +109,7 @@ class BallSprite(pygame.sprite.Sprite):
         self.image.fill(COLOR_BACKGROUND)
         self.image.set_colorkey(COLOR_BACKGROUND)
 
-        pygame.draw.circle(self.image, COLOR_SPRITE, (0, 0), BALL_RADIUS) 
+        pygame.draw.circle(self.image, COLOR_SPRITE, (BALL_RADIUS, BALL_RADIUS), BALL_RADIUS) # TODO: If bugs appear, make sure to set the correct ball center
         self.rect = self.image.get_rect()
         
     def update(self, ball_position):
@@ -117,7 +117,7 @@ class BallSprite(pygame.sprite.Sprite):
         self.rect.y = ball_position[1]
         
         
-def tick(left_paddle, right_paddle, ball, screen, all_sprites,
+def tick(left_paddle, right_paddle, ball, screen, sprites, sprite_group,
          left_movement='', right_movement='') -> Tuple:
     '''
     Handle one game Tick. Uses parsed arguments for movement if given, else pygame keyboard input. 
@@ -153,16 +153,17 @@ def tick(left_paddle, right_paddle, ball, screen, all_sprites,
     # If graphical mode enabled, perform graphics operations
     if GRAPHICAL_MODE:
         # TODO: fix sprite updating not working because sprites parsed wrongly at the moment
-        all_sprites[0].update(left_paddle.position)
-        all_sprites[1].update(right_paddle.position)
-        all_sprites[2].update(ball.position)
+        sprites[0].update(left_paddle.position)
+        sprites[1].update(right_paddle.position)
+        sprites[2].update(ball.position)
 
         # Draw Sprites
         screen.fill(COLOR_BACKGROUND)
         pygame.draw.line(screen, COLOR_FOREGROUND, [0, 0], [0, 0], 5)
 
-        all_sprites.draw(screen)
-        
+        sprite_group.draw(screen)
+        pygame.display.flip()
+
     return left_paddle.position, right_paddle.position, ball.position, ball.velocity
 
                         
@@ -177,26 +178,17 @@ def main():
 
     # Only define and update sprites if graphical mode is enabled. Sprites do no math and have no mechanics
     # other than displaying the Ball and Paddles
-    left_paddle_sprite = False
-    right_paddle_sprite = False
-    ball_sprite = False
-    screen = False
-
     if GRAPHICAL_MODE:
-        left_paddle_sprite = PaddleSprite()
-        right_paddle_sprite = PaddleSprite()
-        ball_sprite = BallSprite()
-
-        all_sprites = pygame.sprite.Group()
-        all_sprites.add(left_paddle_sprite)
-        all_sprites.add(right_paddle_sprite)
-        all_sprites.add(ball_sprite)
-
+        sprite_group = pygame.sprite.Group()
+        sprites = [PaddleSprite(), PaddleSprite(), BallSprite()]
+        for sprite in sprites:
+            sprite_group.add(sprite)
+        
         screen = pygame.display.set_mode(WINDOW_SIZE)
         
     # Game loop
     clock = pygame.time.Clock()
-    while tick(left_paddle, right_paddle, ball, screen, all_sprites):
+    while tick(left_paddle, right_paddle, ball, screen, sprites, sprite_group):
         clock.tick(FPS_LIMIT)
         continue
 
