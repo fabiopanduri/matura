@@ -10,7 +10,7 @@ def sigmoid(x):
 
     return 1 / (1 + np.exp(-x))
 
-def sigmoid_derivative(x)
+def sigmoid_derivative(x):
     '''
     Derivative of the sigmoid activation function.  
     '''
@@ -45,7 +45,7 @@ class NeuralNetwork:
     This class includes all functionalities for a neural network.
     '''
 
-    def __init__(self, dimensions: List[int], weights: List['numpy_array'] = [], biases: List['numpy_array'] = [], activation_functions: List[Callable] = [], eta: float) -> None:
+    def __init__(self, dimensions: List[int], eta: float, weights: List['numpy_array'] = [], biases: List['numpy_array'] = [], activation_functions: List[Callable] = []) -> None:
 
         # list of dimensions of the neural network
         self.dimensions = dimensions
@@ -95,10 +95,15 @@ class NeuralNetwork:
         '''
 
         activation = input_vector
+        print(f'{activation=}')
         # for each layer compute the activation
         for l in range(1, self.layers):
-            z_l = np.dot(self.weights[l], activation) + self.biases[l]
+            z_l = np.matmul(self.weights[l], activation) + self.biases[l]
             activation = self.activation_functions[l](z_l)
+            print(f'{l=}')
+            print(f'{activation=}')
+            print(f'{self.weights=}')
+            print('')
 
         # return the activation for the output layer
         return activation
@@ -136,30 +141,33 @@ class NeuralNetwork:
                 activation_list.append(activation)
 
             # calculate the error of the last layer
-            delat_L = cost_function_derivative(activation, training_example[1]) * sigmoid_derivative(z)
+            delta_L = cost_function_derivative(activation, training_example[1]) * sigmoid_derivative(z)
 
             # calculate the error of each other layer
             delta = [np.zeros(self.dimensions[l]) for l in range(self.layers)]
-            delta[-1] = delta_L
-            for l in range(self.layers - 1, 0, -1):
-                delta[l] = np.dot(self.weights[l + 1].T, delta[l + 1]) * sigmoid_derivative(z[l])
+            delta[-1] = delta_L.reshape(1, 4)
+            for l in range(self.layers - 2, 0, -1):
+                #print(delta[-1])
+                #print(z[l]
+                #print(l, np.matmul(self.weights[l + 1].T, delta[l + 1]), self.weights[l + 1].T, delta[l + 1])
+                delta[l] = np.dot(self.weights[l + 1].T, delta[l + 1]) * sigmoid_derivative(z_list[l])
 
                 # update the sum of errors for weights and biases for each layer
-                weight_delta_sum[l] += np.dot(activation_list[l - 1].T, delta[l])
-                bias_delta_sum[l] += delta[l]
+                weight_delta_sum[l] = weight_delta_sum[l] + np.dot(activation_list[l - 1].T, delta[l])
+                bias_delta_sum[l]  = bias_delta_sum[l] + delta[l]
 
 
         # update the weights and biases according to the calculated errors
         for l in range(1, self.layers):
-            self.weights[l] -= weight_delta_sum[l] * self.eta / len(training_set)
-            self.biases[l] -= biases_delta_sum[l] * self.eta / len(training_set)
+            self.weights[l] = self.weights[l] - weight_delta_sum[l] * self.eta / len(training_set)
+            self.biases[l] = self.biases[l] - bias_delta_sum[l] * self.eta / len(training_set)
 
 
 
 
 
 def main():
-    NN = NeuralNetwork([2, 2, 1], weights = [np.array([]), np.array([[0, 1], [1, 0]]), np.array([2, 3])],
+    NN = NeuralNetwork([2, 2, 1], 0.9, weights = [np.array([]), np.array([[0, 1], [1, 0]]), np.array([2, 3])],
         biases = [np.array([]), np.array([0]), np.array([0])],
         activation_functions = [0, np.vectorize(lambda x: x), np.vectorize(lambda x: x)])
     #NN.initialize_network()
