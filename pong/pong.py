@@ -8,7 +8,7 @@ import time
 import pygame
 from typing import List, Tuple
 
-WINDOW_SIZE = (800, 500) # (0|0) is on the top left. 
+WINDOW_SIZE = (800, 500) # (0|0) is on the top left. x-Axis is right, y-Axis down
 BALL_RADIUS = 12
 BALL_SPEED = 10
 PADDLE_SPEED = 10
@@ -24,7 +24,7 @@ GRAPHICAL_MODE = True
 class Paddle:
     def __init__(self, side):
         self.side = side if side in ['left', 'right'] else 'left'    # left = left paddle, right = right paddle
-        self.position = [0, (WINDOW_SIZE[1] - PADDLE_HEIGHT) / 2]    # Start paddle in the middle of according side
+        self.position = [0, (WINDOW_SIZE[1] - PADDLE_HEIGHT) / 2]    # Start paddle in the middle (vertically) of according side
         if self.side == 'left':
             self.position[0] = 0
         elif self.side == 'right':
@@ -41,11 +41,22 @@ class Paddle:
         elif direction == 'down':
             self.position[1] = min(self.position[1] + PADDLE_SPEED, WINDOW_SIZE[1] - PADDLE_HEIGHT)
 
+    def relative_y_position(self) -> float:
+        ''' 
+        Returns a value from 0 to 1 indicating how far the paddle has travelled
+        '''
+
+        # Divide the absolute y-position by the window height - paddle height.
+        # Because the paddle can only move as far down as it's height allows
+        # The subraction is that resizing the paddle doesn't change the values
+        return self.position[1] / (WINDOW_SIZE[1] - PADDLE_HEIGHT)
+
             
 class Ball:
     def __init__(self):
-        self.position = np.array([WINDOW_SIZE[0] / 2, WINDOW_SIZE[1] / 2])
-        
+        # self.position = np.array([WINDOW_SIZE[0] / 2, WINDOW_SIZE[1] / 2])
+
+        self.position = np.array([0, 0])
         # Ball should start at a random angle. Achieved by setting random starting y-Velocity
         # Multiply by 0.9 that ball doesn't start with only vertical movement
         random_y_velocity = random.uniform(-0.9 * BALL_SPEED, 0.9 * BALL_SPEED)
@@ -70,6 +81,18 @@ class Ball:
 
         self.position += self.velocity
 
+    def relative_position(self) -> Tuple[float, float]:
+        '''
+        Return the balls position in the playing field as two floats from 0 to 1 
+        (relative horizontal and vertical position)
+        '''
+
+        # Divide balls absolute x- and y-position by the window size.
+        # As the ball can only go as close to each side as his radius allows,
+        # subtract this radius from the window size twice (once per side)
+        # The subraction is that resizing the ball doesn't change the values
+        return self.position[0] / (WINDOW_SIZE[0]), self.position[1] / (WINDOW_SIZE[1])
+
         
 class PaddleSprite(pygame.sprite.Sprite):
     ''' 
@@ -87,7 +110,6 @@ class PaddleSprite(pygame.sprite.Sprite):
 
 
         self.rect = self.image.get_rect()
-        print(self.rect)
         
     def update(self, paddle_position):
         self.rect.x = paddle_position[0]
@@ -103,27 +125,17 @@ class BallSprite(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
 
-        self.image = pygame.Surface([2 * BALL_RADIUS, 2 * BALL_RADIUS])
+        self.image = pygame.Surface([BALL_RADIUS * 2, BALL_RADIUS * 2])
         self.image.fill(COLOR_BACKGROUND)
         self.image.set_colorkey(COLOR_BACKGROUND)
 
-        pygame.draw.circle(self.image, COLOR_SPRITE, (BALL_RADIUS, BALL_RADIUS), BALL_RADIUS) # TODO: If bugs appear, make sure to set the correct ball center
-        self.rect = self.image.get_rect()
+        pygame.draw.circle(self.image, COLOR_SPRITE, (BALL_RADIUS, BALL_RADIUS), BALL_RADIUS)
+        self.rect = self.image.get_rect(center=(BALL_RADIUS, BALL_RADIUS))
         
     def update(self, ball_position):
         self.rect.x = ball_position[0]
         self.rect.y = ball_position[1]
         
-
-def pixel_to_relative(coordinates: Tuple[float, float]):
-    '''
-    Function takes in 2D Vector for Position or Velocity and returns same Vector but adjusted 
-    so its components are numbers from 0 to 1
-    '''
-
-    # TODO: ACCOMODATE FOR SPRITE SIZE
-    return (coordinates[0] / WINDOW_SIZE[0], coordinates[1] / WINDOW_SIZE[1])
-
 
 def tick(left_paddle, right_paddle, ball, screen, sprites, sprite_group,
          left_movement='', right_movement='') -> Tuple:
@@ -156,7 +168,7 @@ def tick(left_paddle, right_paddle, ball, screen, sprites, sprite_group,
         right_paddle.move(right_movement)
 
     # print(left_paddle.position, right_paddle.position)
-    ball.update()
+    # ball.update()
 
     # If graphical mode enabled, perform graphics operations
     if GRAPHICAL_MODE:
@@ -172,7 +184,7 @@ def tick(left_paddle, right_paddle, ball, screen, sprites, sprite_group,
         sprite_group.draw(screen)
         pygame.display.flip()
 
-    return tuple(map(lambda x: pixel_to_relative(x), (left_paddle.position, right_paddle.position, ball.position, ball.velocity))) 
+    return left_paddle.relative_y_position(), right_paddle.relative_y_position(), ball.relative_position()
 
                         
 def main():
@@ -205,3 +217,4 @@ def main():
 if __name__ == '__main__':
     main()
         
+ 
