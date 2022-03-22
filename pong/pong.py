@@ -10,8 +10,8 @@ from typing import List, Tuple
 
 WINDOW_SIZE = (800, 500) # (0|0) is on the top left. x-Axis is right, y-Axis down
 BALL_RADIUS = 12
-BALL_SPEED = 1
-PADDLE_SPEED = 1
+BALL_SPEED = 2
+PADDLE_SPEED = 2
 PADDLE_WIDTH = 20
 PADDLE_HEIGHT = 100
 COLOR_BACKGROUND = (0, 0, 0)
@@ -21,6 +21,11 @@ FPS_LIMIT = 60
 GRAPHICAL_MODE = True
 
 
+class Scoreboard:
+    def __init(self):
+        self.score = [0, 0]
+
+        
 class Paddle:
     def __init__(self, side):
         self.side = side if side in ['left', 'right'] else 'left'    # left = left paddle, right = right paddle
@@ -64,20 +69,37 @@ class Ball:
         # norm of velocity must = BALL_SPEED
         self.velocity = np.array([math.sqrt(BALL_SPEED ** 2- random_y_velocity ** 2), random_y_velocity])
 
+    def reset(self):
+        self.__init__()
+        
     def wall_collision(self) -> None:
-        if True:
-            # TODO: Add checks for collision
+        # TODO: Implement scoring and reset function
+        if (self.position[0] - BALL_RADIUS) <= 0:
+            # Collision with left wall
+            # self.velocity = np.multiply(self.velocity, np.array([-1, 1]))
+            pass
+        
+        if (self.position[0] + BALL_RADIUS) >= WINDOW_SIZE[0]:
+            # Collision with right wall
+            # self.velocity = np.multiply(self.velocity, np.array([-1, 1]))
             pass
 
-    def paddle_collision(self) -> None:
-        if True:
-            # TODO: Add checks for collision
-            pass
-            np.multiply(self.velocity[0], np.array([-1, 1]))
+        if (self.position[1] - BALL_RADIUS) <= 0 or (self.position[1] + BALL_RADIUS) >= WINDOW_SIZE[1]:
+            # Collision with top or bottom wall
+            print("collision")
+            self.velocity = np.multiply(self.velocity, np.array([1, -1]))
+            
 
-    def update(self) -> None:
+    def paddle_collision(self, left_paddle, right_paddle) -> None:
+        left_paddle_collision = (left_paddle.position[1] <= self.position[1] <= left_paddle.position[1] + PADDLE_HEIGHT) and (self.position[0] - BALL_RADIUS <= PADDLE_WIDTH)
+        right_paddle_collision =  (right_paddle.position[1] <= self.position[1] <= left_paddle.position[1] + PADDLE_HEIGHT) and (self.position[0] + BALL_RADIUS + PADDLE_WIDTH >= WINDOW_SIZE[0])
+        if left_paddle_collision or right_paddle_collision:
+            self.velocity = np.multiply(self.velocity, np.array([-1, 1]))
+            
+
+    def update(self, left_paddle, right_paddle) -> None:
         self.wall_collision()
-        self.paddle_collision()
+        self.paddle_collision(left_paddle, right_paddle)
 
         self.position += self.velocity
 
@@ -169,7 +191,7 @@ def tick(left_paddle, right_paddle, ball, screen, sprites, sprite_group,
         right_paddle.move(right_movement)
 
     # print(left_paddle.position, right_paddle.position)
-    ball.update()
+    ball.update(left_paddle, right_paddle)
 
     # If graphical mode enabled, perform graphics operations
     if GRAPHICAL_MODE:
@@ -184,7 +206,7 @@ def tick(left_paddle, right_paddle, ball, screen, sprites, sprite_group,
         sprite_group.draw(screen)
         pygame.display.flip()
 
-    return left_paddle.relative_y_position(), right_paddle.relative_y_position(), ball.relative_position()
+    return left_paddle.relative_y_position(), right_paddle.relative_y_position(), ball.relative_position(), ball.velocity
 
                         
 def main():
@@ -209,7 +231,7 @@ def main():
     # Game loop
     clock = pygame.time.Clock()
     while True:
-        print(tick(left_paddle, right_paddle, ball, screen, sprites, sprite_group))
+        tick(left_paddle, right_paddle, ball, screen, sprites, sprite_group)
         clock.tick(FPS_LIMIT)
         continue
 
