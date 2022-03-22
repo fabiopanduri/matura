@@ -10,8 +10,8 @@ from typing import List, Tuple
 
 WINDOW_SIZE = (800, 500) # (0|0) is on the top left. x-Axis is right, y-Axis down
 BALL_RADIUS = 12
-BALL_SPEED = 10
-PADDLE_SPEED = 10
+BALL_SPEED = 1
+PADDLE_SPEED = 1
 PADDLE_WIDTH = 20
 PADDLE_HEIGHT = 100
 COLOR_BACKGROUND = (0, 0, 0)
@@ -54,9 +54,9 @@ class Paddle:
             
 class Ball:
     def __init__(self):
-        # self.position = np.array([WINDOW_SIZE[0] / 2, WINDOW_SIZE[1] / 2])
+        self.position = np.array([WINDOW_SIZE[0] / 2, WINDOW_SIZE[1] / 2])
 
-        self.position = np.array([0, 0])
+        # self.position = np.array([WINDOW_SIZE[0] - BALL_RADIUS, WINDOW_SIZE[1] - BALL_RADIUS]) # For debugging
         # Ball should start at a random angle. Achieved by setting random starting y-Velocity
         # Multiply by 0.9 that ball doesn't start with only vertical movement
         random_y_velocity = random.uniform(-0.9 * BALL_SPEED, 0.9 * BALL_SPEED)
@@ -87,11 +87,11 @@ class Ball:
         (relative horizontal and vertical position)
         '''
 
-        # Divide balls absolute x- and y-position by the window size.
-        # As the ball can only go as close to each side as his radius allows,
-        # subtract this radius from the window size twice (once per side)
-        # The subraction is that resizing the ball doesn't change the values
-        return self.position[0] / (WINDOW_SIZE[0]), self.position[1] / (WINDOW_SIZE[1])
+        # Window acessible to ball = window size - 2 * ball radius,
+        # as on each side the radius limits how close ball can approach side, so divide by window size - 2 * radius
+        #
+        # And ball has travelled 0 % when it is "ball radius" away from border, so subtract this from ball position
+        return (self.position[0] - BALL_RADIUS) / (WINDOW_SIZE[0] - 2 * BALL_RADIUS), (self.position[1] - BALL_RADIUS) / (WINDOW_SIZE[1] - 2 * BALL_RADIUS)
 
         
 class PaddleSprite(pygame.sprite.Sprite):
@@ -130,11 +130,12 @@ class BallSprite(pygame.sprite.Sprite):
         self.image.set_colorkey(COLOR_BACKGROUND)
 
         pygame.draw.circle(self.image, COLOR_SPRITE, (BALL_RADIUS, BALL_RADIUS), BALL_RADIUS)
-        self.rect = self.image.get_rect(center=(BALL_RADIUS, BALL_RADIUS))
-        
+        self.rect = self.image.get_rect()
+
     def update(self, ball_position):
-        self.rect.x = ball_position[0]
-        self.rect.y = ball_position[1]
+        # Because Sprites center is on top left, adjust sprite position with - BALL_RADIUS
+        self.rect.x = ball_position[0] - BALL_RADIUS
+        self.rect.y = ball_position[1] - BALL_RADIUS
         
 
 def tick(left_paddle, right_paddle, ball, screen, sprites, sprite_group,
@@ -168,11 +169,10 @@ def tick(left_paddle, right_paddle, ball, screen, sprites, sprite_group,
         right_paddle.move(right_movement)
 
     # print(left_paddle.position, right_paddle.position)
-    # ball.update()
+    ball.update()
 
     # If graphical mode enabled, perform graphics operations
     if GRAPHICAL_MODE:
-        # TODO: fix sprite updating not working because sprites parsed wrongly at the moment
         sprites[0].update(left_paddle.position)
         sprites[1].update(right_paddle.position)
         sprites[2].update(ball.position)
@@ -196,8 +196,8 @@ def main():
     right_paddle = Paddle('right')
     ball = Ball()
 
-    # Only define and update sprites if graphical mode is enabled. Sprites do no math and have no mechanics
-    # other than displaying the Ball and Paddles
+    # Only define and update sprites if graphical mode is enabled.
+    # Sprites do no math and have no mechanics other than displaying the Ball and Paddles
     if GRAPHICAL_MODE:
         sprite_group = pygame.sprite.Group()
         sprites = [PaddleSprite(), PaddleSprite(), BallSprite()]
