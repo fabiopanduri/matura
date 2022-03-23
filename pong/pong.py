@@ -22,9 +22,13 @@ GRAPHICAL_MODE = True
 
 
 class Scoreboard:
-    def __init(self):
-        self.score = [0, 0]
-
+    def __init__(self):
+        self.font = pygame.font.SysFont('FreeMono.ttf', 48) # Initialize Font. Takes a few seconds
+        
+    def render_score(self, screen, score):
+        self.text = self.font.render(f'{score[0]} : {score[1]}', True, COLOR_FOREGROUND)
+        screen.blit(self.text, (0, 0))
+        
         
 class Paddle:
     def __init__(self, side):
@@ -72,21 +76,20 @@ class Ball:
     def reset(self):
         self.__init__()
         
-    def wall_collision(self) -> None:
+    def wall_collision(self, score) -> None:
         # TODO: Implement scoring and reset function
         if (self.position[0] - BALL_RADIUS) <= 0:
             # Collision with left wall
-            # self.velocity = np.multiply(self.velocity, np.array([-1, 1]))
-            pass
+            score[1] += 1
+            self.reset()
         
         if (self.position[0] + BALL_RADIUS) >= WINDOW_SIZE[0]:
             # Collision with right wall
-            # self.velocity = np.multiply(self.velocity, np.array([-1, 1]))
-            pass
+            score[0] += 1
+            self.reset()
 
         if (self.position[1] - BALL_RADIUS) <= 0 or (self.position[1] + BALL_RADIUS) >= WINDOW_SIZE[1]:
             # Collision with top or bottom wall
-            print("collision")
             self.velocity = np.multiply(self.velocity, np.array([1, -1]))
             
 
@@ -95,10 +98,9 @@ class Ball:
         right_paddle_collision =  (right_paddle.position[1] <= self.position[1] <= left_paddle.position[1] + PADDLE_HEIGHT) and (self.position[0] + BALL_RADIUS + PADDLE_WIDTH >= WINDOW_SIZE[0])
         if left_paddle_collision or right_paddle_collision:
             self.velocity = np.multiply(self.velocity, np.array([-1, 1]))
-            
 
-    def update(self, left_paddle, right_paddle) -> None:
-        self.wall_collision()
+    def update(self, left_paddle, right_paddle, score) -> None:
+        self.wall_collision(score)
         self.paddle_collision(left_paddle, right_paddle)
 
         self.position += self.velocity
@@ -160,7 +162,7 @@ class BallSprite(pygame.sprite.Sprite):
         self.rect.y = ball_position[1] - BALL_RADIUS
         
 
-def tick(left_paddle, right_paddle, ball, screen, sprites, sprite_group,
+def tick(left_paddle, right_paddle, ball, screen, sprites, sprite_group, score, scoreboard, 
          left_movement='', right_movement='') -> Tuple:
     '''
     Handle one game Tick. Uses parsed arguments for movement if given, else pygame keyboard input. 
@@ -191,7 +193,7 @@ def tick(left_paddle, right_paddle, ball, screen, sprites, sprite_group,
         right_paddle.move(right_movement)
 
     # print(left_paddle.position, right_paddle.position)
-    ball.update(left_paddle, right_paddle)
+    ball.update(left_paddle, right_paddle, score)
 
     # If graphical mode enabled, perform graphics operations
     if GRAPHICAL_MODE:
@@ -201,9 +203,12 @@ def tick(left_paddle, right_paddle, ball, screen, sprites, sprite_group,
 
         # Draw Sprites
         screen.fill(COLOR_BACKGROUND)
-        pygame.draw.line(screen, COLOR_FOREGROUND, [0, 0], [0, 0], 5)
-
+        pygame.draw.line(screen, COLOR_FOREGROUND, [WINDOW_SIZE[0] // 2, 0], [WINDOW_SIZE[0] // 2, WINDOW_SIZE[1]], 5)
+                         
         sprite_group.draw(screen)
+                         
+        # Update Scoreboard
+        scoreboard.render_score(screen, score)
         pygame.display.flip()
 
     return left_paddle.relative_y_position(), right_paddle.relative_y_position(), ball.relative_position(), ball.velocity
@@ -217,7 +222,8 @@ def main():
     left_paddle = Paddle('left')
     right_paddle = Paddle('right')
     ball = Ball()
-
+    score = [0, 0]
+    
     # Only define and update sprites if graphical mode is enabled.
     # Sprites do no math and have no mechanics other than displaying the Ball and Paddles
     if GRAPHICAL_MODE:
@@ -227,11 +233,13 @@ def main():
             sprite_group.add(sprite)
         
         screen = pygame.display.set_mode(WINDOW_SIZE)
+        scoreboard = Scoreboard()
         
     # Game loop
     clock = pygame.time.Clock()
     while True:
-        tick(left_paddle, right_paddle, ball, screen, sprites, sprite_group)
+        tick(left_paddle, right_paddle, ball, screen, sprites, sprite_group, score, scoreboard)
+        print(score)
         clock.tick(FPS_LIMIT)
         continue
 
