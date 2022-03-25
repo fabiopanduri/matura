@@ -82,7 +82,7 @@ class Ball:
             # Collision with left wall
             score[1] += 1
             self.reset()
-        
+            
         if (self.position[0] + BALL_RADIUS) >= WINDOW_SIZE[0]:
             # Collision with right wall
             score[0] += 1
@@ -183,7 +183,7 @@ def tick(left_paddle, right_paddle, ball, screen, sprites, sprite_group, score, 
             left_paddle.move('up')
     else:
         left_paddle.move(left_movement)
-                
+        
     if right_movement == '':
         if keys[pygame.K_k]:
             right_paddle.move('down')
@@ -204,16 +204,76 @@ def tick(left_paddle, right_paddle, ball, screen, sprites, sprite_group, score, 
         # Draw Sprites
         screen.fill(COLOR_BACKGROUND)
         pygame.draw.line(screen, COLOR_FOREGROUND, [WINDOW_SIZE[0] // 2, 0], [WINDOW_SIZE[0] // 2, WINDOW_SIZE[1]], 5)
-                         
+        
         sprite_group.draw(screen)
-                         
+        
         # Update Scoreboard
         scoreboard.render_score(screen, score)
         pygame.display.flip()
 
     return left_paddle.relative_y_position(), right_paddle.relative_y_position(), ball.relative_position(), ball.velocity
 
-                        
+
+def circle_corner_bounce(corner: Tuple[int, int], circle: Tuple[int, int, int], circle_velocity):
+    '''
+    Handle collision of a circle with a single point
+    '''
+
+    #
+    return
+
+
+def rect_circle_collision(rectangle: Tuple[int, int, int, int], circle: Tuple[int, int, int], circle_velocity):
+    '''
+    Collide a moving circle with a rectangle. Parse rectangle as top left and bottom right point, circle as centre and radius.
+    '''
+
+    # There are 8 possibilites where the ball can be relative to the rectangle.
+    # Four are facing each side of the rectangle
+    # Four are closest to each corner
+
+    # Left side
+    if circle[0] < rectangle[0] and rectangle[1] < circle[1] < rectangle[3]:
+        # Collision?
+        if circle[0] + circle[2] >= rectangle[0]:
+            return np.multiply(circle_velocity, np.array([-1, 1]))
+
+    # Bottom side
+    elif circle[1] > rectangle[1] and rectangle[0] < circle[0] < rectangle[2]:
+        # Collision?
+        if circle[1] - circle[2] <= rectangle[1]:
+            return np.multiply(circle_velocity, np.array([1, -1]))
+
+    # Right side
+    elif circle[0] > rectangle[2] and rectangle[1] < circle[1] < rectangle[3]:
+        # Collision?
+        if circle[0] - circle[2] <= rectangle[2]:
+            return np.multiply(circle_velocity, np.array([-1, 1]))
+
+    # Top side
+    elif circle[1] < rectangle[1] and rectangle[0] < circle[1] < rectangle[2]:
+        # Collision?
+        if circle[1] + circle[2] >= rectangle[1]:
+            return np.multiply(circle_velocity, np.array([1, -1]))
+
+    else:
+        # If the ball is not facing any sides, check if it makes contact with any corner
+        # Top left corner
+        if (rectangle[0] - ball[0]) ** 2 + (rectangle[1] - ball[1]) ** 2 <= circle[2] ** 2:
+            pass
+
+        # Bottom left corner
+        if (rectangle[0] - ball[0]) ** 2 + (rectangle[3] - ball[1]) ** 2 <= circle[2] ** 2:
+            pass
+
+        # Bottom right corner
+        if (rectangle[2] - ball[0]) ** 2 + (rectangle[2] - ball[1]) ** 2 <= circle[2] ** 2:
+            pass
+        
+        # Top right corner
+        if (rectangle[2] - ball[0]) ** 2 + (rectangle[1] - ball[1]) ** 2 <= circle[2] ** 2:
+            pass
+
 def main():
     pygame.init()
     screen = pygame.display.set_mode(WINDOW_SIZE)
@@ -231,7 +291,7 @@ def main():
         sprites = [PaddleSprite(), PaddleSprite(), BallSprite()]
         for sprite in sprites:
             sprite_group.add(sprite)
-        
+            
         screen = pygame.display.set_mode(WINDOW_SIZE)
         scoreboard = Scoreboard()
         
@@ -246,5 +306,5 @@ def main():
                         
 if __name__ == '__main__':
     main()
-        
+    
  
