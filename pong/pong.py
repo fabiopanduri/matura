@@ -10,8 +10,8 @@ from typing import List, Tuple
 
 WINDOW_SIZE = (800, 500) # (0|0) is on the top left. x-Axis is right, y-Axis down
 BALL_RADIUS = 12
-BALL_SPEED = 2
-PADDLE_SPEED = 2
+BALL_SPEED = 3
+PADDLE_SPEED = 3
 PADDLE_WIDTH = 20
 PADDLE_HEIGHT = 100
 COLOR_BACKGROUND = (0, 0, 0)
@@ -94,15 +94,28 @@ class Ball:
             
 
     def paddle_collision(self, left_paddle, right_paddle) -> None:
-        left_paddle_collision = (left_paddle.position[1] <= self.position[1] <= left_paddle.position[1] + PADDLE_HEIGHT) and (self.position[0] - BALL_RADIUS <= PADDLE_WIDTH)
-        right_paddle_collision =  (right_paddle.position[1] <= self.position[1] <= left_paddle.position[1] + PADDLE_HEIGHT) and (self.position[0] + BALL_RADIUS + PADDLE_WIDTH >= WINDOW_SIZE[0])
-        if left_paddle_collision or right_paddle_collision:
-            self.velocity = np.multiply(self.velocity, np.array([-1, 1]))
+        # left_paddle_collision = (left_paddle.position[1] <= self.position[1] <= left_paddle.position[1] + PADDLE_HEIGHT) and (self.position[0] - BALL_RADIUS <= PADDLE_WIDTH)
+        # right_paddle_collision =  (right_paddle.position[1] <= self.position[1] <= left_paddle.position[1] + PADDLE_HEIGHT) and (self.position[0] + BALL_RADIUS + PADDLE_WIDTH >= WINDOW_SIZE[0])
+        # if left_paddle_collision or right_paddle_collision:
+            # self.velocity = np.multiply(self.velocity, np.array([-1, 1]))
+        print(type(self.velocity))
+        # Apply rectangle-circle collision function to ball with both paddles
+        self.velocity = rect_circle_collision(
+            (left_paddle.position[0], left_paddle.position[1], left_paddle.position[0] + PADDLE_WIDTH, left_paddle.position[1] + PADDLE_HEIGHT),
+            (self.position[0], self.position[1], BALL_RADIUS),
+            self.velocity
+        )
+        self.velocity = rect_circle_collision(
+            (right_paddle.position[0], right_paddle.position[1], right_paddle.position[0] + PADDLE_WIDTH, right_paddle.position[1] + PADDLE_HEIGHT),
+            (self.position[0], self.position[1], BALL_RADIUS),
+            self.velocity
+        )
 
     def update(self, left_paddle, right_paddle, score) -> None:
         self.wall_collision(score)
         self.paddle_collision(left_paddle, right_paddle)
 
+        print(type(self.velocity))
         self.position += self.velocity
 
     def relative_position(self) -> Tuple[float, float]:
@@ -216,11 +229,25 @@ def tick(left_paddle, right_paddle, ball, screen, sprites, sprite_group, score, 
 
 def circle_corner_bounce(corner: Tuple[int, int], circle: Tuple[int, int, int], circle_velocity):
     '''
-    Handle collision of a circle with a single point
+    Handle bounce of a circle with a single point
     '''
 
-    #
-    return
+    # Deconstruct velocity vector into component parallel and component perpendicular to touching radius
+    radius_vector = np.array([corner[0] - circle[0], corner[1] - circle[1]])
+    radius_normal_vector = np.array([-radius_vector[1], radius_vector[0]])
+    
+    # solve equation velocity = u * (radius_vector) + v * (radius_normal_vector) <=> A * scalars = velocity
+    A = np.array([
+        [radius_vector[0], radius_normal_vector[0]],
+        [radius_vector[1], radius_normal_vector[1]]
+    ])
+
+    scalars = np.linalg.solve(A, circle_velocity)
+    parallel_velocity = scalars[0] * radius_vector
+    perpendicular_velocity = scalars[1] * radius_normal_vector
+
+    # When colliding a circle with a point, the resulting velocity = -1 * (velocity_parallel_to_radius) + (velocity_perpendicular_to_radius)
+    return -1 * (parallel_velocity) + (perpendicular_velocity)
 
 
 def rect_circle_collision(rectangle: Tuple[int, int, int, int], circle: Tuple[int, int, int], circle_velocity):
@@ -239,40 +266,45 @@ def rect_circle_collision(rectangle: Tuple[int, int, int, int], circle: Tuple[in
             return np.multiply(circle_velocity, np.array([-1, 1]))
 
     # Bottom side
-    elif circle[1] > rectangle[1] and rectangle[0] < circle[0] < rectangle[2]:
+    if circle[1] > rectangle[1] and rectangle[0] < circle[0] < rectangle[2]:
         # Collision?
         if circle[1] - circle[2] <= rectangle[1]:
             return np.multiply(circle_velocity, np.array([1, -1]))
 
     # Right side
-    elif circle[0] > rectangle[2] and rectangle[1] < circle[1] < rectangle[3]:
+    if circle[0] > rectangle[2] and rectangle[1] < circle[1] < rectangle[3]:
         # Collision?
         if circle[0] - circle[2] <= rectangle[2]:
             return np.multiply(circle_velocity, np.array([-1, 1]))
 
     # Top side
-    elif circle[1] < rectangle[1] and rectangle[0] < circle[1] < rectangle[2]:
+    if circle[1] < rectangle[1] and rectangle[0] < circle[1] < rectangle[2]:
         # Collision?
         if circle[1] + circle[2] >= rectangle[1]:
             return np.multiply(circle_velocity, np.array([1, -1]))
 
-    else:
-        # If the ball is not facing any sides, check if it makes contact with any corner
-        # Top left corner
-        if (rectangle[0] - ball[0]) ** 2 + (rectangle[1] - ball[1]) ** 2 <= circle[2] ** 2:
-            pass
+    
+    # If the ball is not facing any sides, check if it makes contact with any corner
+    # Top left corner
+    if (rectangle[0] - circle[0]) ** 2 + (rectangle[1] - circle[1]) ** 2 <= circle[2] ** 2:
+        return circle_corner_bounce((rectangle[0], rectangle[1]), circle, circle_velocity)
 
-        # Bottom left corner
-        if (rectangle[0] - ball[0]) ** 2 + (rectangle[3] - ball[1]) ** 2 <= circle[2] ** 2:
-            pass
-
-        # Bottom right corner
-        if (rectangle[2] - ball[0]) ** 2 + (rectangle[2] - ball[1]) ** 2 <= circle[2] ** 2:
-            pass
+    # Bottom left corner
+    if (rectangle[0] - circle[0]) ** 2 + (rectangle[3] - circle[1]) ** 2 <= circle[2] ** 2:
+        return circle_corner_bounce((rectangle[0], rectangle[3]), circle, circle_velocity)
+    
+    # Bottom right corner
+    if (rectangle[2] - circle[0]) ** 2 + (rectangle[3] - circle[1]) ** 2 <= circle[2] ** 2:
+        return circle_corner_bounce((rectangle[2], rectangle[3]), circle, circle_velocity)
         
-        # Top right corner
-        if (rectangle[2] - ball[0]) ** 2 + (rectangle[1] - ball[1]) ** 2 <= circle[2] ** 2:
-            pass
+    # Top right corner
+    if (rectangle[2] - circle[0]) ** 2 + (rectangle[1] - circle[1]) ** 2 <= circle[2] ** 2:
+        return circle_corner_bounce((rectangle[2], rectangle[1]), circle, circle_velocity)
+
+    # If none of the above options are applicable, the circle didn't collide, so just return
+    # the input velocity
+    return circle_velocity
+
 
 def main():
     pygame.init()
