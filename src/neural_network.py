@@ -45,7 +45,7 @@ class NeuralNetwork:
     This class includes all functionalities for a neural network.
     '''
 
-    def __init__(self, dimensions: List[int], eta: float, weights: List['numpy_array'] = [], biases: List['numpy_array'] = [], activation_functions: List[Callable] = []) -> None:
+    def __init__(self, dimensions: List[int], eta: float, weights: List['numpy_array'] = [], biases: List['numpy_array'] = [], activation_functions: List[Callable] = [], activation_functions_derivatives: List[Callable] = []) -> None:
 
         # list of dimensions of the neural network
         self.dimensions = dimensions
@@ -64,6 +64,10 @@ class NeuralNetwork:
         # list containing all the activation functions for each layer
         # entry at l is \sigma^{l}
         self.activation_functions = activation_functions
+
+        # list containing all the derivaties of the activation functions for each layer
+        # entry at l is \sigma^{l}\prime
+        self.activation_functions_derivatives = activation_functions_derivatives
         
         # learning rate eta for gradient descent
         self.eta = eta
@@ -95,15 +99,15 @@ class NeuralNetwork:
         '''
 
         activation = input_vector
-        print(f'{activation=}')
+        #print(f'{activation=}')
         # for each layer compute the activation
         for l in range(1, self.layers):
-            z_l = np.matmul(self.weights[l], activation) + self.biases[l]
+            z_l = np.dot(self.weights[l], activation) + self.biases[l]
             activation = self.activation_functions[l](z_l)
-            print(f'{l=}')
-            print(f'{activation=}')
-            print(f'{self.weights=}')
-            print('')
+            #print(f'{l=}')
+            #print(f'{activation=}')
+            #print(f'{self.weights=}')
+            #print('')
 
         # return the activation for the output layer
         return activation
@@ -115,51 +119,70 @@ class NeuralNetwork:
         '''
 
         # initialize lists to store the sum of errors for each weight and bias
-        weight_delta_sum = [np.zeros(self.dimensions[l]) for l in range(self.layers)]
+        # ERROR: weights should be initialized just as in the init function as list of matrices not list of vector
+        #weight_delta_sum = [np.zeros(self.dimensions[l]) for l in range(self.layers)]
         bias_delta_sum = [np.zeros(self.dimensions[l]) for l in range(self.layers)]
+
+        weight_delta_sum = [0] + [np.zeros((self.dimensions[l], self.dimensions[l - 1])) for l in range(1, self.layers)]
 
         # iterate over all training examples
         for training_example in training_set:
+            #print(f'{training_example=}')
             activation = training_example[0]
 
             # set up list to store all the z vectors for later use
             # initialized with z vector at 0 = 0 for indexing purposes
             z_list = [0]
 
-            # set up a list to store all the activation vectors for each later
+            # set up a list to store all the activation vectors for each layer for later
             activation_list = []
             activation_list.append(activation)
 
             # calculate the activation and z vector for all the layers
             for l in range(1, self.layers):
+                #print(f'\n{l=}\n{z_list=}\n{activation_list=}\n')
                 # compute the z vector and store it in the z_list 
                 z = np.dot(self.weights[l], activation) + self.biases[l]
                 z_list.append(z)
 
                 # compute the activation of the l-th layer and add it to the activation list
-                activation = self.activation_functions[l](activation)
+                activation = self.activation_functions[l](z)
                 activation_list.append(activation)
 
             # calculate the error of the last layer
-            delta_L = cost_function_derivative(activation, training_example[1]) * sigmoid_derivative(z)
+            delta_L = cost_function_derivative(activation, training_example[1]) * self.activation_functions_derivatives[-1](z)
 
             # calculate the error of each other layer
             delta = [np.zeros(self.dimensions[l]) for l in range(self.layers)]
-            delta[-1] = delta_L.reshape(1, 4)
-            for l in range(self.layers - 2, 0, -1):
+            for l in range(self.layers - 1, 0, -1):
                 #print(delta[-1])
                 #print(z[l]
                 #print(l, np.matmul(self.weights[l + 1].T, delta[l + 1]), self.weights[l + 1].T, delta[l + 1])
-                delta[l] = np.dot(self.weights[l + 1].T, delta[l + 1]) * sigmoid_derivative(z_list[l])
+                if l == self.layers - 1:
+                    delta[-1] = delta_L
+                else:
+                    delta[l] = np.dot(self.weights[l + 1].T, delta[l + 1]) * self.activation_functions_derivatives[l](z_list[l])
+                #print(delta)
+                #print(np.dot(delta[l][..., None], activation_list[l - 1][..., None].T))
 
                 # update the sum of errors for weights and biases for each layer
-                weight_delta_sum[l] = weight_delta_sum[l] + np.dot(activation_list[l - 1].T, delta[l])
+                #print(f'{activation_list=}\n{delta=}\n{l=}\n{weight_delta_sum=}')
+                # ERROR: multiplication must give a matrix not scalar -> a[..., None] needed for column vectors - row vector
+                #print(np.dot(delta[l][..., None], activation_list[l - 1][..., None].T))
+
+                #print(weight_delta_sum)
+                weight_delta_sum[l] = weight_delta_sum[l] + np.dot(delta[l][..., None], activation_list[l - 1][..., None].T)
+                #print(weight_delta_sum)
+
                 bias_delta_sum[l]  = bias_delta_sum[l] + delta[l]
 
 
+        #print(weight_delta_sum)
         # update the weights and biases according to the calculated errors
         for l in range(1, self.layers):
+            #print(self.weights)
             self.weights[l] = self.weights[l] - weight_delta_sum[l] * self.eta / len(training_set)
+            #print(self.weights)
             self.biases[l] = self.biases[l] - bias_delta_sum[l] * self.eta / len(training_set)
 
 
