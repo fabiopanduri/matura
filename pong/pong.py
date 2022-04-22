@@ -1,5 +1,12 @@
+# Copyright (C) 2022 Luis Hartmann
+
+# This file is part of maturaarbeit_code.
+# maturaarbeit_code is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 3.
+# maturaarbeit_code is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+# You should have received a copy of the GNU General Public License along with maturaarbeit_code. If not, see <https://www.gnu.org/licenses/>.
+
 # Pong game to be played by ML algorithms
-#
+
 
 import numpy as np
 import random
@@ -8,6 +15,7 @@ import time
 import pygame
 from typing import List, Tuple
 
+# Adjust as needed
 WINDOW_SIZE = (800, 500) # (0|0) is on the top left. x-Axis is right, y-Axis down
 BALL_RADIUS = 12
 BALL_SPEED = 3
@@ -18,6 +26,7 @@ COLOR_BACKGROUND = (0, 0, 0)
 COLOR_FOREGROUND = (100, 100, 100)
 COLOR_SPRITE = (255, 255, 255)
 FPS_LIMIT = 60
+# Graphical mode not properly implemented yet
 GRAPHICAL_MODE = True
 
 
@@ -32,7 +41,7 @@ class Scoreboard:
         
 class Paddle:
     def __init__(self, side):
-        self.side = side if side in ['left', 'right'] else 'left'    # left = left paddle, right = right paddle
+        self.side = side if side in ['left', 'right'] else 'left'
         self.position = [0, (WINDOW_SIZE[1] - PADDLE_HEIGHT) / 2]    # Start paddle in the middle (vertically) of according side
         if self.side == 'left':
             self.position[0] = 0
@@ -40,7 +49,9 @@ class Paddle:
             self.position[0] = WINDOW_SIZE[0] - PADDLE_WIDTH
 
     def move(self, direction: str) -> None:
-        # Handle movement and top / bottom Collision
+        '''
+        Handle movement and top / bottom Collision
+        '''
         if direction == 'stay':
             pass
 
@@ -65,7 +76,6 @@ class Ball:
     def __init__(self):
         self.position = np.array([WINDOW_SIZE[0] / 2, WINDOW_SIZE[1] / 2])
 
-        # self.position = np.array([WINDOW_SIZE[0] - BALL_RADIUS, WINDOW_SIZE[1] - BALL_RADIUS]) # For debugging
         # Ball should start at a random angle. Achieved by setting random starting y-Velocity
         # Multiply by 0.9 that ball doesn't start with only vertical movement
         random_y_velocity = random.uniform(-0.9 * BALL_SPEED, 0.9 * BALL_SPEED)
@@ -77,7 +87,6 @@ class Ball:
         self.__init__()
         
     def wall_collision(self, score) -> None:
-        # TODO: Implement scoring and reset function
         if (self.position[0] - BALL_RADIUS) <= 0:
             # Collision with left wall
             score[1] += 1
@@ -94,11 +103,6 @@ class Ball:
             
 
     def paddle_collision(self, left_paddle, right_paddle) -> None:
-        # left_paddle_collision = (left_paddle.position[1] <= self.position[1] <= left_paddle.position[1] + PADDLE_HEIGHT) and (self.position[0] - BALL_RADIUS <= PADDLE_WIDTH)
-        # right_paddle_collision =  (right_paddle.position[1] <= self.position[1] <= left_paddle.position[1] + PADDLE_HEIGHT) and (self.position[0] + BALL_RADIUS + PADDLE_WIDTH >= WINDOW_SIZE[0])
-        # if left_paddle_collision or right_paddle_collision:
-            # self.velocity = np.multiply(self.velocity, np.array([-1, 1]))
-        print(type(self.velocity))
         # Apply rectangle-circle collision function to ball with both paddles
         self.velocity = rect_circle_collision(
             (left_paddle.position[0], left_paddle.position[1], left_paddle.position[0] + PADDLE_WIDTH, left_paddle.position[1] + PADDLE_HEIGHT),
@@ -115,7 +119,6 @@ class Ball:
         self.wall_collision(score)
         self.paddle_collision(left_paddle, right_paddle)
 
-        print(type(self.velocity))
         self.position += self.velocity
 
     def relative_position(self) -> Tuple[float, float]:
@@ -205,7 +208,6 @@ def tick(left_paddle, right_paddle, ball, screen, sprites, sprite_group, score, 
     else:
         right_paddle.move(right_movement)
 
-    # print(left_paddle.position, right_paddle.position)
     ball.update(left_paddle, right_paddle, score)
 
     # If graphical mode enabled, perform graphics operations
