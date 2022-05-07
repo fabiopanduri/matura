@@ -27,7 +27,7 @@ class DeepQLearning:
 
     def act(self, state: 'State') -> 'numpy_array':
         '''
-        This method feeds the current state through the DQN and returns the probabilites of the next actions.
+        This method feeds the current state through the DQL and returns the probabilities of the next actions.
         '''
 
         pass
