@@ -7,8 +7,10 @@
 
 from neural_network import *
 import matplotlib.pyplot as plt
+import datetime
 import time
 import sys
+import os
 
 def f(x) -> float:
 	return (np.cos(x) + 1) / 2
@@ -72,15 +74,17 @@ def main():
 		#print(i)
 		error.append(sum / len(test))
 
-	print(f'{NN.weights=}')
-	print(f'{NN.biases=}')
+	#print(f'{NN.weights=}')
+	#print(f'{NN.biases=}')
 
 	predict = []
 	for x in np.arange(START, STOP, 0.01):
-		print(x, NN.feed_forward(np.array([x])))
+		#print(x, NN.feed_forward(np.array([x])))
 		predict.append(NN.feed_forward(np.array([x])))
 
 	actual = [f(x) for x in np.arange(START, STOP, 0.01)]
+
+	NN.save_network()
 
 	#print(predict)
 

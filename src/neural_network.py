@@ -6,6 +6,8 @@
 # You should have received a copy of the GNU General Public License along with maturaarbeit_code. If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
+import datetime
+import os
 
 from typing import List, Callable
 
@@ -43,6 +45,10 @@ class NeuralNetwork:
 		# entry at l is b^{l}
 		self.biases = biases
 
+		# list to store the name of the activation functions.
+		# it is only useful when saving the state of the neural network
+		self.activation_functions_names = activation_functions
+
 		# list containing all the activation functions for each layer
 		# entry at l is \sigma^{l}
 		self.activation_functions = list(map(np.vectorize, 
@@ -79,7 +85,7 @@ class NeuralNetwork:
 			self.biases.append(np.random.uniform(0, 1, dim_l))
 
 
-	def save_network(self, file_name: str) -> None:
+	def save_network(self, file_name: str = None) -> None:
 		'''
 		This method saves the current network to a file.
 		It will be a .npz file containing all important data, namely:
@@ -89,9 +95,34 @@ class NeuralNetwork:
 		 - activation functions
 		 - learning rate eta
 		'''
-		pass
 
+		# set a default name if no name was given
+		if file_name == None:
+			file_name = f'NN-{datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")}.npz'
+
+		# if the file already exists the user 
+		if os.path.exists(file_name):
+			inp = input(f'[WARNING] The file {file_name} already exists. Do you want to proceed? [y/n]').lower()
+			while True:
+				if inp == 'y':
+					print(f'[INFO] Saving to {file_name}...')
+					break
+				elif inp == 'n':
+					print('[INFO] Saving aborted.')
+					return
+				else:
+					inp = input(f'Invalid answer. Do you want to proceed? [y/n]').lower()
 		
+		# save the data to the file
+		np.savez_compressed(file_name, 
+			dimensions = self.dimensions, 
+			weights = self.weights, 
+			biases = self.biases,
+			activation_functions = self.activation_functions_names,
+			eta = self.eta
+		)
+		
+		print(f'[INFO] Saved data to {file_name}')
 
 
 	def feed_forward(self, input_vector: 'numpy_array') -> 'numpy_array':
