@@ -100,18 +100,18 @@ class NeuralNetwork:
 		if file_name == None:
 			file_name = f'NN-{datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")}.npz'
 
-		# if the file already exists the user 
+		# if the file already exists the user has the chance to abort the function
 		if os.path.exists(file_name):
-			inp = input(f'[WARNING] The file {file_name} already exists. Do you want to proceed? [y/n]').lower()
+			inp = input(f'[WARNING] The file {file_name} already exists. Do you want to proceed? [y/n] ').lower()
 			while True:
 				if inp == 'y':
 					print(f'[INFO] Saving to {file_name}...')
 					break
 				elif inp == 'n':
-					print('[INFO] Saving aborted.')
+					print('[INFO] Saving aborted')
 					return
 				else:
-					inp = input(f'Invalid answer. Do you want to proceed? [y/n]').lower()
+					inp = input(f'Invalid answer. Do you want to proceed? [y/n] ').lower()
 		
 		# save the data to the file
 		np.savez_compressed(file_name, 
@@ -122,7 +122,31 @@ class NeuralNetwork:
 			eta = self.eta
 		)
 		
-		print(f'[INFO] Saved data to {file_name}')
+		print(f'[INFO] Saved data to \'{file_name}\'')
+
+
+	def load_network(self, file_name: str) -> None:
+		'''
+		This method loads the current network from a file.
+		'''
+
+		# if the file does not exists, the function will be aborted 
+		# as it would not be able to read any data 
+		if not os.path.exists(file_name):
+			print('[ERROR] The specified file does not exist')
+		
+		# load the data from the file
+		data = np.load(file_name, allow_pickle=True)
+
+		# re-initialize the neural network with the loaded data
+		self.__init__(list(data['dimensions']),
+			float(data['eta']),
+			weights = data['weights'],
+			biases = data['biases'],
+			activation_functions = list(data['activation_functions']),
+		)
+		
+		print(f'[INFO] loaded Neural Network from \'{file_name}\'')
 
 
 	def feed_forward(self, input_vector: 'numpy_array') -> 'numpy_array':

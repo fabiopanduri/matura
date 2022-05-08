@@ -19,7 +19,7 @@ def main():
 	NN = NeuralNetwork([1, 4, 1], 0.1,
 			activation_functions = ['ReLU', 'ReLU', 'sigmoid'],
 			)
-	NN.initialize_network()
+	NN.load_network('test.npz')
 
 	START = 0
 	STOP = np.pi 
@@ -84,7 +84,7 @@ def main():
 
 	actual = [f(x) for x in np.arange(START, STOP, 0.01)]
 
-	NN.save_network()
+	NN.save_network('test.npz')
 
 	#print(predict)
 
@@ -94,5 +94,7 @@ def main():
 	plt.figure()
 	plt.plot(list(range(0, len(error))), error)
 	plt.show()
+
+	NN.load_network('test.npz')
 
 if __name__ == '__main__': main()
