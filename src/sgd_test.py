@@ -19,7 +19,7 @@ def main():
 	NN = NeuralNetwork([1, 4, 1], 0.1,
 			activation_functions = ['ReLU', 'ReLU', 'sigmoid'],
 			)
-	NN.load_network('test.npz')
+	NN.load_network('sgd_test.npz')
 
 	START = 0
 	STOP = np.pi 
@@ -34,59 +34,47 @@ def main():
 	except IndexError:
 		batch_size = 1000
 
+	print(f'[INFO] Starting SGD training with {epochs} epochs and a batch size of {batch_size}')
 
+	
+	# generate random training batch
 	train = []
 	for _ in range(batch_size):
-		#a, b, c = np.random.uniform(), np.random.rand(), np.random.rand()
 		x = np.random.uniform(START, STOP)
 		train.append((np.array([x]), np.array([f(x)])))
 
-	#plt.figure()
-	#plt.plot([i[0] for i in train], [i[1] for i in train], ',')
-
 	error = []
-	print('')
 	for i in range(epochs):
-		if i % 100 == 0: print(f'{i}/{epochs}', end='\r')
-
+		if i % int(epochs / 10) == 0: print(f'[INFO] Epoch: {i}/{epochs}', end='\r')
+	
+		# perform the gradient descent step
 		NN.stochastic_gradient_descent(train)
-		
-	#print(NN.feed_forward(train[0][0]), train[0])
-
-	#print(NN.weights)
-	#print(NN.weights)
-		#print(NN.weights)
-
+	
+		# test the neural network on some newly generated data
 		test = []
 		for _ in range(10):
 			x = np.random.uniform(START, STOP)
 			test.append((np.array([x]), np.array([f(x)])))
-
+		
 		sum = 0
 		for t in test:
 			prediction = NN.feed_forward(t[0])
-			 #print(prediction)
 			sum += 0.5 * (prediction - t[1])**2
 
-		#print(sum)
-
-		#print(sum / len(test))
-		#print(i)
 		error.append(sum / len(test))
 
-	#print(f'{NN.weights=}')
-	#print(f'{NN.biases=}')
+	print(f'[INFO] Epoch: {epochs}/{epochs}.')
 
+	# save the neural network to 
+	NN.save_network('sgd_test.npz')
+
+	# make a plot depicting the approximations of the neural network 
 	predict = []
 	for x in np.arange(START, STOP, 0.01):
-		#print(x, NN.feed_forward(np.array([x])))
 		predict.append(NN.feed_forward(np.array([x])))
 
+	# get the data of the actual function
 	actual = [f(x) for x in np.arange(START, STOP, 0.01)]
-
-	NN.save_network('test.npz')
-
-	#print(predict)
 
 	plt.figure()
 	plt.plot(np.arange(START, STOP, 0.01), predict)
@@ -94,7 +82,5 @@ def main():
 	plt.figure()
 	plt.plot(list(range(0, len(error))), error)
 	plt.show()
-
-	NN.load_network('test.npz')
 
 if __name__ == '__main__': main()
