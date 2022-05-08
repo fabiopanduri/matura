@@ -9,34 +9,8 @@ import numpy as np
 
 from typing import List, Callable
 
+import activation_functions as af
 
-def sigmoid(x):
-	'''
-	Sigmoid activation function.
-	'''
-
-	return 1 / (1 + np.exp(-x))
-
-def sigmoid_derivative(x):
-	'''
-	Derivative of the sigmoid activation function.  
-	'''
-
-	return sigmoid(x) * (1 - sigmoid(x))
-
-def ReLU(x):
-	'''
-	ReLU activation function.
-	'''
-
-	return max(0, x)
-
-def ReLU_derivative(x):
-	'''
-	Derivative of the ReLU activation function.
-	'''
-
-	return 1 if x > 0 else 0
 
 def mean_squared_error_derivative(activation, y):
 	'''
@@ -52,7 +26,8 @@ class NeuralNetwork:
 	This class includes all functionalities for a neural network.
 	'''
 
-	def __init__(self, dimensions: List[int], eta: float, weights: List['numpy_array'] = [], biases: List['numpy_array'] = [], activation_functions: List[Callable] = [], activation_functions_derivatives: List[Callable] = []) -> None:
+	def __init__(self, dimensions: List[int], eta: float, weights: List['numpy_array'] = [], biases:
+	List['numpy_array'] = [], activation_functions: List[str] = []) -> None:
 
 		# list of dimensions of the neural network
 		self.dimensions = dimensions
@@ -70,11 +45,15 @@ class NeuralNetwork:
 
 		# list containing all the activation functions for each layer
 		# entry at l is \sigma^{l}
-		self.activation_functions = activation_functions
+		self.activation_functions = list(map(np.vectorize, 
+			[af.activation_functions[name] for name in activation_functions]
+		))
 
 		# list containing all the derivaties of the activation functions for each layer
 		# entry at l is \sigma^{l}\prime
-		self.activation_functions_derivatives = activation_functions_derivatives
+		self.activation_functions_derivatives = list(map(np.vectorize,
+			[af.activation_functions_derivatives[name] for name in activation_functions]
+		))
 		
 		# learning rate eta for gradient descent
 		self.eta = eta
@@ -98,6 +77,21 @@ class NeuralNetwork:
 		# initialize the bias vectors b^{l} with dimensions dim(l)
 		for dim_l in self.dimensions[1:]:
 			self.biases.append(np.random.uniform(0, 1, dim_l))
+
+
+	def save_network(self, file_name: str) -> None:
+		'''
+		This method saves the current network to a file.
+		It will be a .npz file containing all important data, namely:
+		 - dimensions
+		 - weights
+		 - biases
+		 - activation functions
+		 - learning rate eta
+		'''
+		pass
+
+		
 
 
 	def feed_forward(self, input_vector: 'numpy_array') -> 'numpy_array':
@@ -187,10 +181,13 @@ class NeuralNetwork:
 
 
 def main():
+	'''
 	NN = NeuralNetwork([2, 2, 1], 0.9, weights = [np.array([]), np.array([[0, 1], [1, 0]]), np.array([2, 3])],
 		biases = [np.array([]), np.array([0]), np.array([0])],
-		activation_functions = [0, np.vectorize(lambda x: x), np.vectorize(lambda x: x)])
+		activation_functions = [0, lambda x: x), np.vectorize(lambda x: x)])
 	#NN.initialize_network()
 	print(NN.feed_forward(np.array([2, 1])))
+	'''
+	pass	
 
 if __name__ == '__main__': main()

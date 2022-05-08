@@ -15,9 +15,7 @@ def f(x) -> float:
 
 def main():
 	NN = NeuralNetwork([1, 4, 1], 0.1,
-			activation_functions = [np.vectorize(ReLU) for _ in range(2)] + [np.vectorize(sigmoid) for _ in range(1)],
-			activation_functions_derivatives = [np.vectorize(ReLU_derivative) for _ in range(2)] +
-			[np.vectorize(sigmoid_derivative) for _ in range(1)]
+			activation_functions = ['ReLU', 'ReLU', 'sigmoid'],
 			)
 	NN.initialize_network()
 
