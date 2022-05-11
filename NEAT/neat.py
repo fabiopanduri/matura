@@ -10,13 +10,11 @@ from typing import List
 
 class NodeGene:
 	def __init__(self, node_id, node_type, activation_function):
-		# id of the node 
 		self.node_id = node_id
 
 		# specifies the type of the function, either 'input', 'hidden' or 'output'
 		self.node_type = node_type
 		
-		# is the nodes activation function
 		self.activation_function = activation_function
 
 
@@ -35,34 +33,29 @@ class ConnectionGene:
 		# specifies the head of the connection arc 
 		self.in_node_id = in_node_id
 
-		# wight attribute used to feed forward an input
 		self.weight = weight
 
-		# innovation number used to counter the competing conventions problem 
 		self.innovation_number = innovation_number
 
-		# specifies if the connection is enabled
 		self.enabled = enabled
 
 
 class Genome:
 	def __init__(self, nodes, connections):
-		# list to store all the node genes in
 		# sorted by id -> input nodes are the first nodes, output the last
 		self.nodes = sorted(nodes, key = lambda x: x.node_id)
 
-		# list to store the connection genes in
 		self.connections = connections
 
 
-	def add_connection(self) -> None:
+	def add_connection(self):
 		'''
 		Mutation method that adds a connections between two nodes that were not connected before
 		'''
 		pass
 
 
-	def add_node(self) -> None:
+	def add_node(self):
 		'''
 		Mutation method that splits a connection between two nodes and inserts a new node in the
 		middle
@@ -72,7 +65,7 @@ class Genome:
 
 	def calculate_node(self, node):
 		'''
-		Function to recursively calculate the 
+		Function to recursively calculate the activation of nodes
 		'''
 	
 		if node.node_id in self.table:
@@ -89,10 +82,10 @@ class Genome:
 						self.nodes[connection.out_node_id]
 					) * connection.weight)
 
-		# store the value in the table to 
 		activation = node.activation_function(sum(inputs))
 		self.table[node.node_id] = activation
 		return activation
+
 
 	def feed_forward(self, input_vector):
 		'''
