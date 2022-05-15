@@ -26,8 +26,6 @@ COLOR_BACKGROUND = (0, 0, 0)
 COLOR_FOREGROUND = (100, 100, 100)
 COLOR_SPRITE = (255, 255, 255)
 FPS_LIMIT = 60
-# Graphical mode not properly implemented yet
-GRAPHICAL_MODE = True
 
 
 class Scoreboard:
@@ -178,11 +176,14 @@ class BallSprite(pygame.sprite.Sprite):
         self.rect.y = ball_position[1] - BALL_RADIUS
         
 
-def tick(left_paddle, right_paddle, ball, screen, sprites, sprite_group, score, scoreboard, 
-         left_movement='', right_movement='') -> Tuple:
+def tick(left_paddle, right_paddle, ball,
+         left_movement, right_movement,
+         graphics_enabled=False, *kwargs):
+         screen, sprites, sprite_group, score, scoreboard:
     '''
-    Handle one game Tick. Uses parsed arguments for movement if given, else pygame keyboard input. 
-    Movement options are 'stay', 'up', 'down'.
+    Handle one game Tick. Movement arguments must be one of '', 'stay', 'up', 'down'. 
+    If '' is parsed, use pygame keyboard input.
+    If graphical mode is enabled, parse graphical pygame objects in *kwargs.
     '''
     # PyGame event handling
     for event in pygame.event.get():
@@ -306,6 +307,49 @@ def rect_circle_collision(rectangle: Tuple[int, int, int, int], circle: Tuple[in
     # If none of the above options are applicable, the circle didn't collide, so just return
     # the input velocity
     return circle_velocity
+
+
+class PongEnv:
+    def __init__(self, graphics_enabled=True):
+        '''
+        Reset the game to initial state and return initial state
+        '''
+        self.left_paddle = Paddle('left')
+        self.right_paddle = Paddle('right')
+        self.ball = Ball()
+        self.score = [0, 0]
+        self.graphics_enabled = graphics_enabled
+
+        if self.graphics_enabled:
+            pygame.init()
+            self.sprite_group = pygame.sprite.Group()
+            self.sprites = [PaddleSprite(), PaddleSprite(), BallSprite()]
+            for sprite in self.sprites:
+                self.sprite_group.add(sprite)
+            
+            self.screen = pygame.display.set_mode(WINDOW_SIZE)
+        
+        return (self.left_paddle.relative_y_position(), self.right_paddle.relative_y_position(), self.ball.relative_position(), self.ball.velocity)
+
+
+    def step(self, action):
+        '''
+        Do one game move with given action and return state and reward
+        '''
+
+        # Get desired paddle movement from first (and only) entry of action tuple
+        right_movement = action[0]
+        # For the time being, make the opponent unmoving
+        left_movement = 'stay'
+        if self.graphics_enabled:
+            new_state = tick(left_paddle, right_paddle, ball, left_movement, right_movement, self.screen, self.sprites, self.sprite_group, self.score, self.scoreboard)
+        else:
+            new_state = tick(left_paddle, right_paddle, ball, left_movement, right_movement)
+        
+        reward = 
+        return new_state, reward
+
+
 
 
 def main():

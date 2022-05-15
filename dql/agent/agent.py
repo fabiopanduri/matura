@@ -42,8 +42,8 @@ class DQLAgent:
         # DQL Params
         self.env = env
         self.memory_size = 10000
-        self.memory = ReplayMemory()
-        self.q_network = NeuralNetwork()
+        self.memory = ReplayMemory(self.memory_size)
+        self.q_network = NeuralNetwork(self.nn_dimensions, self.learning_rate, self.activation_functions)
         self.target_q_network = self.q_network
         self.eps = 0.01
         self.update_frequency = 100
