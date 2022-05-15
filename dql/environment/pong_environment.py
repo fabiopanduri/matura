@@ -5,6 +5,10 @@
 # maturaarbeit_code is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 # You should have received a copy of the GNU General Public License along with maturaarbeit_code. If not, see <https://www.gnu.org/licenses/>.
 
+'''
+This file is currently not used. The Pong environment is directly in pong/pong.py.
+'''
+
 from pong import
 class PongEnv:
     def __init__(self, ball_position, ball_velocity, agent_position):
