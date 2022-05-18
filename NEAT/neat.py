@@ -6,6 +6,10 @@
 # You should have received a copy of the GNU General Public License along with maturaarbeit_code. If not, see <https://www.gnu.org/licenses/>.
 
 import random
+import json
+
+from activation_functions import *
+
 
 class NodeGene:
 	def __init__(self, node_id, node_type, activation_function):
@@ -44,6 +48,22 @@ class Genome:
 		self.nodes = {node.node_id : node for node in nodes}
 
 		self.connections = connections
+
+
+	def save(self, filename = None):
+		'''
+		Method to save a genome to a .npz file
+		'''
+		pass
+
+		data = {
+			'connections': [connection.__dict__ for connection in self.connections], 
+			'nodes': {node_id: node.__dict__ for node_id, node in self.nodes.items()}
+		}
+		
+		json_data = json.dumps(data, indent=4)	
+
+		print(json_data)
 
 
 	def add_connection(self, innovation_number):
@@ -132,11 +152,11 @@ class Genome:
 def main():
 	G = Genome(
 		[
-			NodeGene(0, 'input', lambda x: x), 
-			NodeGene(1, 'hidden', lambda x: x), 
-			NodeGene(2, 'hidden', lambda x: x), 
-			NodeGene(3, 'hidden', lambda x: x),
-			NodeGene(4, 'output', lambda x: x)
+			NodeGene(0, 'input', 'linear'), 
+			NodeGene(1, 'hidden', 'linear'), 
+			NodeGene(2, 'hidden', 'linear'), 
+			NodeGene(3, 'hidden', 'linear'),
+			NodeGene(4, 'output', 'linear')
 		],
 		[
 			ConnectionGene(0, 1, -0.5, 0), 
@@ -157,6 +177,7 @@ def main():
 	G.add_connection(10)
 	for connection in G.connections:
 		print(connection.__dict__)
-	
+
+	G.save()	
 
 if __name__ == '__main__': main()
