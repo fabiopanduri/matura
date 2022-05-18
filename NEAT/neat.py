@@ -9,6 +9,8 @@ import random
 import json
 import datetime
 import os
+import networkx as nx
+import matplotlib.pyplot as plt
 
 from activation_functions import *
 
@@ -190,6 +192,33 @@ class Genome:
 		return self.table
 
 
+	def draw(self, weight = False):
+		Graph = nx.Graph()
+
+		c = (i for i in range(0, len(self.nodes)))
+		for node in self.nodes.values():
+			if node.node_type == 'input':
+				Graph.add_node(node.node_id, pos=(0, len(self.nodes)//2 + node.node_id))
+			elif node.node_type == 'output':
+				Graph.add_node(node.node_id, pos=(10, node.node_id))
+			else:
+				Graph.add_node(node.node_id, pos=(5, next(c)))
+
+		for connection in self.connections:
+			Graph.add_edge(connection.in_node_id, connection.out_node_id,
+			weight=connection.weight)
+
+		pos = nx.get_node_attributes(Graph, 'pos')
+		nx.draw_networkx(Graph, pos=pos, with_labels=True)
+		
+		if weight:
+			labels = nx.get_edge_attributes(Graph, 'weight') 
+		else:
+			labels = {e: '' for e in Graph.edges}
+		nx.draw_networkx_edge_labels(Graph, pos=pos, edge_labels=labels)
+
+		plt.show()
+
 
 
 def main():
@@ -225,5 +254,7 @@ def main():
 
 	for connection in G.connections:
 		print(connection.__dict__)
+
+	G.draw()
 
 if __name__ == '__main__': main()
