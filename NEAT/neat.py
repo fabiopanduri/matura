@@ -52,7 +52,7 @@ class Genome:
 		self.connections = connections
 
 
-	def save(self, file_name = None):
+	def save_network(self, file_name = None):
 		'''
 		Method to save a genome to a .json file
 		'''
@@ -89,7 +89,7 @@ class Genome:
 		print(f'[INFO] Saved data to \'{file_name}\'')
 
 
-	def load_network(self, file_name: str) -> None:
+	def load_network(self, file_name) -> None:
 		'''
 		This method loads the current network from a file.
 		'''
@@ -97,14 +97,14 @@ class Genome:
 		if not os.path.exists(file_name):
 			print('[ERROR] The specified file does not exist')
 
-		data = np.load(file_name, allow_pickle=True)
+		with open(file_name, 'r') as f:
+			data = json.loads(f.read())
 
-		self.__init__(list(data['dimensions']),
-			float(data['eta']),
-			weights = data['weights'],
-			biases = data['biases'],
-			activation_functions = list(data['activation_functions']),
-		)
+		connections = [ConnectionGene(**params) for params in data['connections']]
+
+		nodes = {node_id: NodeGene(**params) for node_id, params in data['nodes'].items()}
+
+		self.__init__(list(nodes.values()), connections)
 
 		print(f'[INFO] loaded Neural Network from \'{file_name}\'')
 
@@ -221,6 +221,9 @@ def main():
 	for connection in G.connections:
 		print(connection.__dict__)
 
-	G.save()	
+	G.load_network('test.json')	
+
+	for connection in G.connections:
+		print(connection.__dict__)
 
 if __name__ == '__main__': main()
