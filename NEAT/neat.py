@@ -17,10 +17,10 @@ from activation_functions import *
 
 class NodeGene:
 	def __init__(self, node_id, node_type, activation_function):
-		self.node_id = node_id
+		self.id = node_id
 
 		# specifies the type of the function, either 'input', 'hidden' or 'output'
-		self.node_type = node_type
+		self.type = node_type
 		
 		self.activation_function = activation_function
 
@@ -49,7 +49,7 @@ class ConnectionGene:
 
 class Genome:
 	def __init__(self, nodes, connections):
-		self.nodes = {node.node_id : node for node in nodes}
+		self.nodes = {node.id : node for node in nodes}
 
 		self.connections = connections
 
@@ -122,30 +122,55 @@ class Genome:
 
 			# the new connection cannot go between input layer node or output layer nodes
 			# in addition, they must not lead to an input or come from an output node
-			if not ((in_node.node_type == 'input' and out_node.node_type == 'input') or 
-				(in_node.node_type == 'output' and out_node.node_type == 'output') or
-				(out_node.node_type == 'output') or (in_node.node_type == 'input')):
+			if not ((in_node.type == 'input' and out_node.type == 'input') or 
+				(in_node.type == 'output' and out_node.type == 'output') or
+				(out_node.type == 'output') or (in_node.type == 'input')):
 				done = True
 
 			# check if connection does not already exist
 			for connection in self.connections:
-				if ((connection.in_node_id == in_node.node_id and 
-					connection.out_node_id == out_node.node_id) or
-					(connection.out_node_id == in_node.node_id and 
-					connection.in_node_id == out_node.node_id)):
+				if ((connection.in_node_id == in_node.id and 
+					connection.out_node_id == out_node.id) or
+					(connection.out_node_id == in_node.id and 
+					connection.in_node_id == out_node.id)):
 					done = False
 
 		self.connections.append(
-			ConnectionGene(out_node.node_id, in_node.node_id, random.random(), innovation_number)
+			ConnectionGene(out_node.id, in_node.id, random.random(), innovation_number)
 		)
 		
 
-	def add_node(self):
+	def add_node(self, node_id, innovation_number, activation_function = 'linear'):
 		'''
 		Mutation method that splits a connection between two nodes and inserts a new node in the
 		middle
 		'''
-		pass
+
+		new_node = NodeGene(node_id, 'hidden', activation_function)
+		self.nodes[node_id] = new_node
+
+		connection = random.choice(self.connections)
+		connection.enabled = False
+
+		out_node_id = connection.out_node_id
+		connection_to_new_node = ConnectionGene(
+			out_node_id, 
+			node_id, 
+			1, 
+			innovation_number
+		)
+		self.connections.append(connection_to_new_node)
+
+		in_node_id = connection.in_node_id
+		connection_from_new_node = ConnectionGene(
+			node_id, 
+			in_node_id, 
+			connection.weight, 
+			innovation_number + 1
+		)
+		self.connections.append(connection_from_new_node)
+		
+		
 
 
 	def calculate_node(self, node_id):
@@ -186,7 +211,7 @@ class Genome:
 	
 		# iterate over all output nodes and calculate their activation recursively
 		for node_id, node in self.nodes.items():
-			if node.node_type == 'output':
+			if node.type == 'output':
 				self.calculate_node(node_id)
 
 		return self.table
@@ -197,19 +222,24 @@ class Genome:
 
 		c = (i for i in range(0, len(self.nodes)))
 		for node in self.nodes.values():
-			if node.node_type == 'input':
-				Graph.add_node(node.node_id, pos=(0, len(self.nodes)//2 + node.node_id))
-			elif node.node_type == 'output':
-				Graph.add_node(node.node_id, pos=(10, node.node_id))
+			if node.type == 'input':
+				Graph.add_node(node.id, pos=(0, len(self.nodes)//2 + node.id))
+			elif node.type == 'output':
+				Graph.add_node(node.id, pos=(10, node.id))
 			else:
-				Graph.add_node(node.node_id, pos=(5, next(c)))
+				Graph.add_node(node.id, pos=(5, next(c)))
 
 		for connection in self.connections:
-			Graph.add_edge(connection.in_node_id, connection.out_node_id,
-			weight=connection.weight)
+			Graph.add_edge(
+				connection.in_node_id, 
+				connection.out_node_id,
+				weight=connection.weight,
+				color='tab:blue' if connection.enabled else 'tab:red'
+			)
 
 		pos = nx.get_node_attributes(Graph, 'pos')
-		nx.draw_networkx(Graph, pos=pos, with_labels=True)
+		edge_color = nx.get_edge_attributes(Graph, 'color').values()
+		nx.draw_networkx(Graph, pos=pos, with_labels=True, edge_color=edge_color)
 		
 		if weight:
 			labels = nx.get_edge_attributes(Graph, 'weight') 
@@ -246,11 +276,15 @@ def main():
 	print(G.feed_forward([1]))
 	'''
 
+	'''
 	G.add_connection(10)
 	for connection in G.connections:
 		print(connection.__dict__)
 
 	G.load_network('test.json')	
+	'''
+
+	G.add_node(10, 20)
 
 	for connection in G.connections:
 		print(connection.__dict__)
