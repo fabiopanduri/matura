@@ -7,6 +7,8 @@
 
 import random
 import json
+import datetime
+import os
 
 from activation_functions import *
 
@@ -50,11 +52,29 @@ class Genome:
 		self.connections = connections
 
 
-	def save(self, filename = None):
+	def save(self, file_name = None):
 		'''
-		Method to save a genome to a .npz file
+		Method to save a genome to a .json file
 		'''
-		pass
+
+		if file_name == None:
+			file_name = f'NEAT-{datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")}.json'
+
+		if file_name.split('.')[-1] != 'json':
+			file_name = f'NEAT-{datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")}.json'
+			print(f'[ERROR] Specified file is not a json file. Saving to \'{file_name}\' instead.')
+
+		if os.path.exists(file_name):
+			inp = input(f'[WARNING] The file {file_name} already exists. Do you want to proceed? [y/n] ').lower()
+			while True:
+				if inp == 'y':
+					print(f'[INFO] Saving to {file_name}...')
+					break
+				elif inp == 'n':
+					print('[INFO] Saving aborted')
+					return
+				else:
+					inp = input(f'Invalid answer. Do you want to proceed? [y/n] ').lower()
 
 		data = {
 			'connections': [connection.__dict__ for connection in self.connections], 
@@ -63,7 +83,30 @@ class Genome:
 		
 		json_data = json.dumps(data, indent=4)	
 
-		print(json_data)
+		with open(file_name, 'w') as f:
+			f.write(json_data)
+
+		print(f'[INFO] Saved data to \'{file_name}\'')
+
+
+	def load_network(self, file_name: str) -> None:
+		'''
+		This method loads the current network from a file.
+		'''
+
+		if not os.path.exists(file_name):
+			print('[ERROR] The specified file does not exist')
+
+		data = np.load(file_name, allow_pickle=True)
+
+		self.__init__(list(data['dimensions']),
+			float(data['eta']),
+			weights = data['weights'],
+			biases = data['biases'],
+			activation_functions = list(data['activation_functions']),
+		)
+
+		print(f'[INFO] loaded Neural Network from \'{file_name}\'')
 
 
 	def add_connection(self, innovation_number):
