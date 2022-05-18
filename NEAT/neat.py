@@ -5,8 +5,7 @@
 # maturaarbeit_code is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 # You should have received a copy of the GNU General Public License along with maturaarbeit_code. If not, see <https://www.gnu.org/licenses/>.
 
-from typing import List
-
+import random
 
 class NodeGene:
 	def __init__(self, node_id, node_type, activation_function):
@@ -47,12 +46,34 @@ class Genome:
 		self.connections = connections
 
 
-	def add_connection(self):
+	def add_connection(self, innovation_number):
 		'''
 		Mutation method that adds a connections between two nodes that were not connected before
 		'''
-		pass
+		
+		done = False
+		while not done:
+			in_node, out_node = random.sample(list(self.nodes.values()), k = 2)
 
+			# the new connection cannot go between input layer node or output layer nodes
+			# in addition, they must not lead to an input or come from an output node
+			if not ((in_node.node_type == 'input' and out_node.node_type == 'input') or 
+				(in_node.node_type == 'output' and out_node.node_type == 'output') or
+				(out_node.node_type == 'output') or (in_node.node_type == 'input')):
+				done = True
+
+			# check if connection does not already exist
+			for connection in self.connections:
+				if ((connection.in_node_id == in_node.node_id and 
+					connection.out_node_id == out_node.node_id) or
+					(connection.out_node_id == in_node.node_id and 
+					connection.in_node_id == out_node.node_id)):
+					done = False
+
+		self.connections.append(
+			ConnectionGene(out_node.node_id, in_node.node_id, random.random(), innovation_number)
+		)
+		
 
 	def add_node(self):
 		'''
@@ -110,16 +131,32 @@ class Genome:
 
 def main():
 	G = Genome(
-		[NodeGene(0, 'input', lambda x: x), NodeGene(1, 'hidden', lambda x: x), NodeGene(2,
-		'hidden', lambda x: x), NodeGene(3, 'output', lambda x: x)],
-		[ConnectionGene(0, 1, -0.5, 0), ConnectionGene(0, 2, 0.5, 0), ConnectionGene(1, 3, 0.5, 1),
-		ConnectionGene(2, 3, 2, 1)]
+		[
+			NodeGene(0, 'input', lambda x: x), 
+			NodeGene(1, 'hidden', lambda x: x), 
+			NodeGene(2, 'hidden', lambda x: x), 
+			NodeGene(3, 'hidden', lambda x: x),
+			NodeGene(4, 'output', lambda x: x)
+		],
+		[
+			ConnectionGene(0, 1, -0.5, 0), 
+			ConnectionGene(0, 2, 0.5, 1), 
+			ConnectionGene(1, 4, 0.5, 2),
+			ConnectionGene(2, 4, 2, 3)
+		]
 	)
 
+
+	'''
 	print([node.__dict__ for node in G.nodes.values()])
 	print([connection.__dict__ for connection in G.connections])
 	
 	print(G.feed_forward([1]))
+	'''
+
+	G.add_connection(10)
+	for connection in G.connections:
+		print(connection.__dict__)
 	
 
 if __name__ == '__main__': main()
