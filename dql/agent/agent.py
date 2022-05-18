@@ -15,7 +15,7 @@ class ReplayMemory:
     
     def store(self, experience_tuple):
         '''
-        Store an experience tuple to memory
+        Store an experience tuple representing a state (image, action, reward) to memory
         '''
         self.memory.append(experience_tuple)
 
@@ -32,9 +32,6 @@ class DQLAgent:
     '''
     Adjust these parameters as you wish
     '''
-        # SGD Params
-        self.minibatch_size = 32
-
         # DQL Params
         self.env = env
         self.possible_actions = env.possible_actions
@@ -43,6 +40,7 @@ class DQLAgent:
         self.eps = 0.01
         self.update_frequency = 100
         self.discount_factor = 0.01
+        self.minibatch_size = 32
 
         # NN Params
         '''
@@ -57,7 +55,7 @@ class DQLAgent:
         self.target_q_network = self.q_network
 
 
-    def get_action(self, observation):
+    def get_action(self, state):
         '''
         Select action based on eps-greedy policy based on Q network
         '''
@@ -82,8 +80,38 @@ class DQLAgent:
     def gd_on_q_network(self):
         pass
 
-    def learn(self):
-        pass
+    def preprocessor(self, state):
+        '''
+        Preprocesses a state s returning a (typically smaller in size) preprocessed state phi.
+        '''
+        # Because for the moment no images are used, phi equals state and no preprocessing needs be done
+        return state
+
+    def learn(self, n_of_episodes, iterations):
+        '''
+        Perform Q Learning as described by Algorithm 1 in Mnih et al. 2015
+        '''
+        for episode in range(n_of_episodes):
+            # Initial state is just the initial image
+            state = self.env.get_image()
+            phi = self.preprocessor(state)
+            for t in range(iterations):
+                # Play one game step and observe new image and reward
+                action = self.get_action(phi)
+                next_image, reward = execute_action(action)
+                next_state = image, action, reward
+                next_phi = self.preprocessor(next_state)
+                # Store transition in replay memory
+                self.memory.store(phi, action, reward, next_phi)
+                # Sample minibatch from replay memory and train Q network on it
+                minibatch = self.memory.sample(self.sample_size)
+                approx_target_value = 69
+
+                # TODO: Implement calculating y and performing gradient descent.
+
+                if t % self.update_frequency == 0:
+                    # TODO: Do this with weight sync because python likes to copy by reference. Also implement storing networks to disk
+                    self.target_q_network = self.q_network
 
     def play(self):
         return
