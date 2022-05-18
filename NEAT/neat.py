@@ -42,8 +42,7 @@ class ConnectionGene:
 
 class Genome:
 	def __init__(self, nodes, connections):
-		# sorted by id -> input nodes are the first nodes, output the last
-		self.nodes = sorted(nodes, key = lambda x: x.node_id)
+		self.nodes = {node.node_id : node for node in nodes}
 
 		self.connections = connections
 
@@ -63,27 +62,27 @@ class Genome:
 		pass
 
 
-	def calculate_node(self, node):
+	def calculate_node(self, node_id):
 		'''
 		Function to recursively calculate the activation of nodes
 		'''
 	
-		if node.node_id in self.table:
-			return self.table[node.node_id]
+		if node_id in self.table:
+			return self.table[node_id]
 
 		inputs = []
 
 		# if the node value has not been calculated yet, calculate it with all the inputs going in
 		# to the node
 		for connection in self.connections:
-			if connection.in_node_id == node.node_id and connection.enabled:
+			if connection.in_node_id == node_id and connection.enabled:
 				inputs.append(
 					self.calculate_node(
-						self.nodes[connection.out_node_id]
+						connection.out_node_id
 					) * connection.weight)
 
-		activation = node.activation_function(sum(inputs))
-		self.table[node.node_id] = activation
+		activation = self.nodes[node_id].activation_function(sum(inputs))
+		self.table[node_id] = activation
 		return activation
 
 
@@ -100,9 +99,9 @@ class Genome:
 			self.table[index] = input_activation
 	
 		# iterate over all output nodes and calculate their activation recursively
-		for node in self.nodes:
+		for node_id, node in self.nodes.items():
 			if node.node_type == 'output':
-				self.calculate_node(node)
+				self.calculate_node(node_id)
 
 		return self.table
 
@@ -117,7 +116,7 @@ def main():
 		ConnectionGene(2, 3, 2, 1)]
 	)
 
-	print([node.__dict__ for node in G.nodes])
+	print([node.__dict__ for node in G.nodes.values()])
 	print([connection.__dict__ for connection in G.connections])
 	
 	print(G.feed_forward([1]))
