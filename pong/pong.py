@@ -343,10 +343,11 @@ class PongEnv:
         self.ball = Ball()
         self.score = [0, 0]
         self.pygame_graphics = PongGraphics()
+        self.possible_actions = ['up', 'down', 'stay']
 
-    def get_state(self):
+    def make_observation(self):
         '''
-        Helper method returning current game state
+        Helper method returning current game's current internal state.
         '''
         return self.left_paddle.relative_y_position(), self.right_paddle.relative_y_position(), self.ball.relative_position, self.ball.velocity
 
