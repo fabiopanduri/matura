@@ -13,16 +13,16 @@ class ReplayMemory:
     def __init__(self, size):
         self.memory = [] 
     
-    def store(self, experience_tuple, time):
+    def store_transition(self, transition):
         '''
-        Store an experience tuple representing a state (image, action, reward) and the corresponding time to memory
+        Store a transition to replay memory (with corresponding time t of transition). Transition format: phi, action, reward, next_phi, terminal
         '''
-        self.memory.append(experience_tuple, time)
+        self.memory.append((time, transition))
 
 
     def sample(self, sample_size):
         '''
-        Sample an amount of random uniform experience tuples from replay memory to train DQN Agent
+        Sample an amount of random uniform entries from replay memory
         '''
         return random.sample(self.memory, k=sample_size)
     
@@ -40,7 +40,7 @@ class DQLAgent:
         self.eps = 0.01
         self.update_frequency = 100
         self.discount_factor = 0.01
-        self.minibatch_size = 32
+        self.minibatch_size = 1
 
         # NN Params
         '''
@@ -55,7 +55,7 @@ class DQLAgent:
         self.target_q_network = self.q_network
 
 
-    def get_action(self, state):
+    def get_action(self, image):
         '''
         Select action based on eps-greedy policy based on Q network
         '''
@@ -65,50 +65,69 @@ class DQLAgent:
 
         # Else select action which leads to max reward estimated by Q. 
         else:
-            q_values = self.q_network.feed_forward(observation)
-            action = np.argmax(q_values)
+            q_values = self.q_network.feed_forward(image)
+            action = self.possible_actions[np.argmax(q_values)]
 
         return action
 
     def execute_action(self, action):
         '''
-        Execute action in emulator and observe reward and new image
+        Execute action in emulator and observe image and reward
         '''
         image, reward = self.env.step(action)
-        return image, reward
+        return image, reward 
 
-    def gd_on_q_network(self):
-        pass
+    def preprocessor(self, sequence):
+        '''
+        Preprocesses a sequence s returning a (typically smaller in size) preprocessed sequence phi.
+        '''
+        # Because for the moment no images are used, phi equals sequence and no preprocessing needs be done
+        return sequence
 
-    def preprocessor(self, state):
+    def gd_on_minibatch(self, minibatch):
         '''
-        Preprocesses a state s returning a (typically smaller in size) preprocessed state phi.
+        Perform stochastic gradient descent step on minibatch of stored transitions
         '''
-        # Because for the moment no images are used, phi equals state and no preprocessing needs be done
-        return state
+
+        training_batch = []
+        for time, transition in minibatch:
+            phi, action, reward, next_phi, terminal = transition
+            if terminal:
+                # If episode terminates at next step, target reward equals current reward
+                target_reward = reward
+            else:
+                # If episode doesn't terminate, target reward equals current reward + expected future reward
+                target_q_values = self.target_q_network.feed_forward(next_phi)
+                target_reward = reward + np.max(target_q_values)
+
+            training_batch.append((phi, target_reward))
+
+        self.gd_on_q_network(training_batch)
+
+
+        approx_target_value = 69
 
     def learn(self, n_of_episodes, iterations):
         '''
         Perform Q Learning as described by Algorithm 1 in Mnih et al. 2015
         '''
         for episode in range(n_of_episodes):
-            # Initial state is just the initial image
-            state = self.env.get_image()
-            phi = self.preprocessor(state)
+            # Initial sequence is just the initial image
+            sequence = (None, None, self.env.get_image())
+            phi = self.preprocessor(sequence)
             for t in range(iterations):
                 # Play one game step and observe new image and reward
                 action = self.get_action(phi)
-                next_image, reward = execute_action(action)
-                next_state = (image, action, reward)
-                next_phi = self.preprocessor(next_state)
+                next_image, reward, terminal = execute_action(action)
+                next_sequence = (sequence, image, action, reward)
+                next_phi = self.preprocessor(next_sequence)
                 # Store transition in replay memory
-                self.memory.store((phi, action, reward, next_phi), t))
+                transition = (phi, action, reward, next_phi, terminal)
+                self.memory.store(t, transition)
 
                 # Sample minibatch from replay memory and train Q network on it
-                minibatch, j = self.memory.sample(self.sample_size)
-                approx_target_value = 69
-
-                # TODO: Implement calculating y and performing gradient descent.
+                minibatch = self.memory.sample(self.minibatch_size)
+                self.experience_replay(minibatch)
 
                 if t % self.update_frequency == 0:
                     # TODO: Do this with weight sync because python likes to copy by reference. Also implement storing networks to disk

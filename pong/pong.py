@@ -358,11 +358,11 @@ class PongEnv:
         '''
         Do one game move with given action and return image, reward and wheter or not the game terminates
         '''
-        # List comprehension because python copies lists by reference...
         prev_score = self.score.copy()
 
         # Get desired paddle movement from first (and only) entry of action tuple
         right_movement = action[0]
+
         # For the time being, make the opponent unmoving
         left_movement = 'stay'
         tick(self.left_paddle,
@@ -374,7 +374,6 @@ class PongEnv:
              self.pygame_graphics
             )
         
-        # print("Prev score:", prev_score, "Current score", self.score)
         if self.score == prev_score:
             # Slight negative reward for each game tick which is not a point
             reward = -0.001 
@@ -385,10 +384,7 @@ class PongEnv:
             # Positive reward if agent gets a point
             reward = 1 
         
-        # Return true if game terminated / reset (ball hit the net)
-        terminates = False if prev_score == self.score else True
-
-        return self.get_image(), reward, terminates
+        return self.get_image(), reward
 
 
 def main():

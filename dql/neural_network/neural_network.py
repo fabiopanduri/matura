@@ -152,6 +152,7 @@ class NeuralNetwork:
 	def stochastic_gradient_descent(self, training_batch) -> None:
 		'''
 		This method implements the stochastic gradient descent algorithm.
+        Input: Training batch of form [(in, target_out), (in, target_out), ...]
 		'''
 
 		bias_delta_sum = [np.zeros(self.dimensions[l]) for l in range(self.layers)]
