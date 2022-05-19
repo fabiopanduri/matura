@@ -13,11 +13,11 @@ class ReplayMemory:
     def __init__(self, size):
         self.memory = [] 
     
-    def store(self, experience_tuple):
+    def store(self, experience_tuple, time):
         '''
-        Store an experience tuple representing a state (image, action, reward) to memory
+        Store an experience tuple representing a state (image, action, reward) and the corresponding time to memory
         '''
-        self.memory.append(experience_tuple)
+        self.memory.append(experience_tuple, time)
 
 
     def sample(self, sample_size):
@@ -25,7 +25,7 @@ class ReplayMemory:
         Sample an amount of random uniform experience tuples from replay memory to train DQN Agent
         '''
         return random.sample(self.memory, k=sample_size)
-
+    
 
 class DQLAgent:
     def __init__(self, env):
@@ -99,12 +99,13 @@ class DQLAgent:
                 # Play one game step and observe new image and reward
                 action = self.get_action(phi)
                 next_image, reward = execute_action(action)
-                next_state = image, action, reward
+                next_state = (image, action, reward)
                 next_phi = self.preprocessor(next_state)
                 # Store transition in replay memory
-                self.memory.store(phi, action, reward, next_phi)
+                self.memory.store((phi, action, reward, next_phi), t))
+
                 # Sample minibatch from replay memory and train Q network on it
-                minibatch = self.memory.sample(self.sample_size)
+                minibatch, j = self.memory.sample(self.sample_size)
                 approx_target_value = 69
 
                 # TODO: Implement calculating y and performing gradient descent.

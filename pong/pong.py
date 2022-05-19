@@ -356,10 +356,10 @@ class PongEnv:
 
     def step(self, action):
         '''
-        Do one game move with given action and return state and reward
+        Do one game move with given action and return image, reward and wheter or not the game terminates
         '''
         # List comprehension because python copies lists by reference...
-        prev_score = [i for i in self.score]
+        prev_score = self.score.copy()
 
         # Get desired paddle movement from first (and only) entry of action tuple
         right_movement = action[0]
@@ -385,7 +385,10 @@ class PongEnv:
             # Positive reward if agent gets a point
             reward = 1 
         
-        return self.get_state(), reward
+        # Return true if game terminated / reset (ball hit the net)
+        terminates = False if prev_score == self.score else True
+
+        return self.get_image(), reward, terminates
 
 
 def main():
