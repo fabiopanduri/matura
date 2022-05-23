@@ -11,6 +11,7 @@ from neural_network import NeuralNetwork
 
 class ReplayMemory:
     def __init__(self, size):
+        self.memory_size = size
         self.memory = [] 
     
     def store_transition(self, transition):
@@ -88,17 +89,16 @@ class DQLAgent:
         '''
         Perform stochastic gradient descent step on minibatch of stored transitions
         '''
-
         training_batch = []
         for time, transition in minibatch:
             phi, action, reward, next_phi, terminal = transition
             if terminal:
                 # If episode terminates at next step, target reward equals current reward
-                target_reward = reward
+                target_rewards = [reward for i in range(len(self.possible_actions))
             else:
                 # If episode doesn't terminate, target reward equals current reward + expected future reward
                 target_q_values = self.target_q_network.feed_forward(next_phi)
-                target_reward = reward + np.max(target_q_values)
+                target_reward = reward + self.discount_factor * np.max(target_q_values)
 
             training_batch.append((phi, target_reward))
 
@@ -107,25 +107,32 @@ class DQLAgent:
 
         approx_target_value = 69
 
-    def learn(self, n_of_episodes, iterations):
+    def learn(self, n_of_episodes):
         '''
         Perform Q Learning as described by Algorithm 1 in Mnih et al. 2015
         '''
         for episode in range(n_of_episodes):
             # Initial sequence is just the initial image
-            sequence = (None, None, self.env.get_image())
+            terminal = False
+            image = self.env.get_image()
+            sequence = (None, None, image)
             phi = self.preprocessor(sequence)
-            for t in range(iterations):
+
+            while !terminal:
                 # Play one game step and observe new image and reward
                 action = self.get_action(phi)
                 next_image, reward, terminal = execute_action(action)
                 next_sequence = (sequence, image, action, reward)
                 next_phi = self.preprocessor(next_sequence)
-                # Store transition in replay memory
-                transition = (phi, action, reward, next_phi, terminal)
-                self.memory.store(t, transition)
 
-                # Sample minibatch from replay memory and train Q network on it
+                # Check if episode terminates, it does when the score updates
+                score = image[-1]
+                next_score = next_image[-1]
+                terminal = True if score != next_score
+
+                transition = (phi, action, reward, next_phi, terminal)
+                self.memory.store(transition)
+
                 minibatch = self.memory.sample(self.minibatch_size)
                 self.experience_replay(minibatch)
 

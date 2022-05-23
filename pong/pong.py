@@ -350,9 +350,8 @@ class PongEnv:
         Helper method returning current game's current internal state.
         Note: The term 'image' is used when speaking about the current position of the game, even though 
         there is no actual image data. 
-        The 'state' is a tuple consiting of 'image', action and reward
         '''
-        return self.left_paddle.relative_y_position(), self.right_paddle.relative_y_position(), self.ball.relative_position, self.ball.velocity
+        return (self.left_paddle.relative_y_position(), self.right_paddle.relative_y_position(), self.ball.relative_position, self.ball.velocity, self.score)
 
     def step(self, action):
         '''
