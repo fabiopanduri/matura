@@ -90,31 +90,33 @@ class DQLAgent:
         Perform stochastic gradient descent step on minibatch of stored transitions
         '''
         training_batch = []
-        for time, transition in minibatch:
+        for transition in minibatch:
             phi, action, reward, next_phi, terminal = transition
-            if terminal:
-                # If episode terminates at next step, target reward equals current reward
-                target_rewards = [reward for i in range(len(self.possible_actions))
-            else:
-                # If episode doesn't terminate, target reward equals current reward + expected future reward
-                target_q_values = self.target_q_network.feed_forward(next_phi)
-                target_reward = reward + self.discount_factor * np.max(target_q_values)
 
-            training_batch.append((phi, target_reward))
+            # If episode terminates at next step, reward = current reward for the taken action. 
+            # TODO: But what should it be for the other actions? Using 0 for the moment.
+            target_rewards = [0 for _ in range(len(self.possible_actions))]
+            taken = self.possible_actions.index(action)
+            target_rewards[taken] = reward
+
+            if !terminal:
+                # If episode doesn't terminate, add the estimated rewards for each future action
+                target_q_value = self.target_q_network.feed_forward(next_phi)
+                for i in range(len(target_rewards)):
+                    target_rewards[i] += target_q_values[i]
+
+            training_batch.append((phi, target_rewards))
 
         self.gd_on_q_network(training_batch)
-
-
-        approx_target_value = 69
 
     def learn(self, n_of_episodes):
         '''
         Perform Q Learning as described by Algorithm 1 in Mnih et al. 2015
         '''
         for episode in range(n_of_episodes):
-            # Initial sequence is just the initial image
             terminal = False
             image = self.env.get_image()
+            # Initial sequence is just the initial image
             sequence = (None, None, image)
             phi = self.preprocessor(sequence)
 
