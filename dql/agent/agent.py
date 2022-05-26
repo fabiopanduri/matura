@@ -5,11 +5,15 @@
 # maturaarbeit_code is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 # You should have received a copy of the GNU General Public License along with maturaarbeit_code. If not, see <https://www.gnu.org/licenses/>.
 
+import sys
+sys.path.insert(0,'/home/lnapkin/Documents/maturaarbeit_code')
 import random
 import numpy as np
-from neural_network import NeuralNetwork
+from dql.neural_network.neural_network import NeuralNetwork
+from pong.pong import PongEnv
 
 class ReplayMemory:
+    # TODO: Implement max size for Replay Memory
     def __init__(self, size):
         self.memory_size = size
         self.memory = [] 
@@ -30,9 +34,9 @@ class ReplayMemory:
 
 class DQLAgent:
     def __init__(self, env):
-    '''
-    Adjust these parameters as you wish
-    '''
+        '''
+        Adjust these parameters as you wish
+        '''
         # DQL Params
         self.env = env
         self.possible_actions = env.possible_actions
@@ -41,22 +45,22 @@ class DQLAgent:
         self.eps = 0.01
         self.update_frequency = 100
         self.discount_factor = 0.01
-        self.minibatch_size = 1
+        self.minibatch_size = 32
 
         # NN Params
         '''
         Neural Network.
-        Input: Current observation image
+        Input: Current state 
         Output: Estimated reward for each possible action
         '''
-        self.nn_dimensions = [5, 10, 10, len(self.possible_actions)]
+        self.nn_dimensions = [self.env.state_size, 10, 10, len(self.possible_actions)]
         self.learning_rate = 0.1
         self.activation_functions = ['ReLU', 'ReLU', 'ReLU', 'ReLU']
         self.q_network = NeuralNetwork(self.nn_dimensions, self.learning_rate, self.activation_functions)
         self.target_q_network = self.q_network
 
 
-    def get_action(self, image):
+    def get_action(self, state):
         '''
         Select action based on eps-greedy policy based on Q network
         '''
@@ -66,24 +70,25 @@ class DQLAgent:
 
         # Else select action which leads to max reward estimated by Q. 
         else:
-            q_values = self.q_network.feed_forward(image)
+            print(state)
+            q_values = self.q_network.feed_forward(state)
             action = self.possible_actions[np.argmax(q_values)]
 
         return action
 
     def execute_action(self, action):
         '''
-        Execute action in emulator and observe image and reward
+        Execute action in emulator and observe state and reward, also score for determining if state is terminal
         '''
-        image, reward = self.env.step(action)
-        return image, reward 
+        state, reward, score = self.env.step(action)
+        return state, reward, score
 
-    def preprocessor(self, sequence):
+    def preprocessor(self, state):
         '''
-        Preprocesses a sequence s returning a (typically smaller in size) preprocessed sequence phi.
+        Preprocesses a state s returning a (typically smaller in size) preprocessed state phi.
         '''
-        # Because for the moment no images are used, phi equals sequence and no preprocessing needs be done
-        return sequence
+        # Because for the moment no actual images are used, phi equals state and no preprocessing needs be done
+        return state
 
     def gd_on_minibatch(self, minibatch):
         '''
@@ -93,13 +98,13 @@ class DQLAgent:
         for transition in minibatch:
             phi, action, reward, next_phi, terminal = transition
 
+            # Initially, target = network prediction
+            target_rewards = self.q_network.feed_forward(phi)
             # If episode terminates at next step, reward = current reward for the taken action. 
-            # TODO: But what should it be for the other actions? Using 0 for the moment.
-            target_rewards = [0 for _ in range(len(self.possible_actions))]
             taken = self.possible_actions.index(action)
             target_rewards[taken] = reward
 
-            if !terminal:
+            if not terminal:
                 # If episode doesn't terminate, add the estimated rewards for each future action
                 target_q_value = self.target_q_network.feed_forward(next_phi)
                 for i in range(len(target_rewards)):
@@ -115,22 +120,21 @@ class DQLAgent:
         '''
         for episode in range(n_of_episodes):
             terminal = False
-            image = self.env.get_image()
-            # Initial sequence is just the initial image
-            sequence = (None, None, image)
-            phi = self.preprocessor(sequence)
+            score = self.env.score
+            # Initalize state 
+            state = self.env.make_observation()
+            phi = self.preprocessor(state)
 
-            while !terminal:
-                # Play one game step and observe new image and reward
+            # Play until terminal state/frame is reached
+            while not terminal:
+                # Play one frame and observe new state and reward
                 action = self.get_action(phi)
-                next_image, reward, terminal = execute_action(action)
-                next_sequence = (sequence, image, action, reward)
-                next_phi = self.preprocessor(next_sequence)
+                state, reward, next_score = execute_action(action)
+                next_phi = self.preprocessor(state)
+
 
                 # Check if episode terminates, it does when the score updates
-                score = image[-1]
-                next_score = next_image[-1]
-                terminal = True if score != next_score
+                terminal = score != next_score
 
                 transition = (phi, action, reward, next_phi, terminal)
                 self.memory.store(transition)
@@ -140,7 +144,10 @@ class DQLAgent:
 
                 if t % self.update_frequency == 0:
                     # TODO: Do this with weight sync because python likes to copy by reference. Also implement storing networks to disk
-                    self.target_q_network = self.q_network
+                    self.target_q_network = self.q_network.copy()
+
+                # Roll over all variables
+                state, score, phi = next_state, next_score, next_phi
 
     def play(self):
         return
@@ -148,6 +155,9 @@ class DQLAgent:
 
 
 def main():
-    pass
+    env = PongEnv()
+    agt = DQLAgent(env)
+    
+    agt.learn(10)
 
 if __name__ == '__main__': main()

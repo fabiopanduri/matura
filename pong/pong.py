@@ -344,14 +344,13 @@ class PongEnv:
         self.score = [0, 0]
         self.pygame_graphics = PongGraphics()
         self.possible_actions = ['up', 'down', 'stay']
+        self.state_size = len(self.make_observation())
 
-    def get_image(self):
+    def make_observation(self):
         '''
         Helper method returning current game's current internal state.
-        Note: The term 'image' is used when speaking about the current position of the game, even though 
-        there is no actual image data. 
         '''
-        return (self.left_paddle.relative_y_position(), self.right_paddle.relative_y_position(), self.ball.relative_position, self.ball.velocity, self.score)
+        return (self.left_paddle.relative_y_position(), self.right_paddle.relative_y_position(), *self.ball.relative_position(), *self.ball.velocity)
 
     def step(self, action):
         '''
@@ -383,7 +382,7 @@ class PongEnv:
             # Positive reward if agent gets a point
             reward = 1 
         
-        return self.get_image(), reward
+        return self.make_observation(), reward, self.score
 
 
 def main():
