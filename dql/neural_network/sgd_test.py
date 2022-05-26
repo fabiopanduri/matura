@@ -16,10 +16,13 @@ def f(x) -> float:
 	return (np.cos(x) + 1) / 2
 
 def main():
+	'''
 	NN = NeuralNetwork([1, 4, 1], 0.1,
 			activation_functions = ['ReLU', 'ReLU', 'sigmoid'],
 			)
-	NN.load_network('sgd_test.npz')
+	'''
+
+	NN = NeuralNetwork.load_network('sgd_test.npz')
 
 	START = 0
 	STOP = np.pi 

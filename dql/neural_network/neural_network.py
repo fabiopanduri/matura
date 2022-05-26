@@ -116,7 +116,8 @@ class NeuralNetwork:
 		print(f'[INFO] Saved data to \'{file_name}\'')
 
 
-	def load_network(self, file_name: str) -> None:
+	@classmethod
+	def load_network(cls, file_name: str) -> None:
 		'''
 		This method loads the current network from a file.
 		'''
@@ -126,7 +127,7 @@ class NeuralNetwork:
 		
 		data = np.load(file_name, allow_pickle=True)
 
-		self.__init__(list(data['dimensions']),
+		new_instance = cls(list(data['dimensions']),
 			float(data['eta']),
 			weights = data['weights'],
 			biases = data['biases'],
@@ -134,6 +135,8 @@ class NeuralNetwork:
 		)
 		
 		print(f'[INFO] loaded Neural Network from \'{file_name}\'')
+
+		return new_instance
 
 
 	def feed_forward(self, input_vector: 'numpy_array') -> 'numpy_array':
