@@ -25,6 +25,12 @@ class NodeGene:
 		self.activation_function = activation_function
 
 
+	def __eq__(self, other):
+		if isinstance(other, NodeGene):
+			return self.id == other.id
+		return False
+
+
 class ConnectionGene:
 	def __init__(self, 
 		out_node_id, 
@@ -52,6 +58,8 @@ class Genome:
 		self.nodes = {node.id : node for node in nodes}
 
 		self.connections = connections
+
+		self.fitness = 0
 
 	
 	@classmethod
@@ -89,6 +97,45 @@ class Genome:
 			node_id += 1
 
 		return cls(nodes, [])
+
+
+	@classmethod
+	def crossover(cls, parent1, parent2):
+		# get all nodes from both parents
+		nodes = parent1.nodes.copy()
+		for node_id, node in parent2.nodes.items():
+			if node_id not in nodes:
+				nodes[node_id] = node
+
+		connections = []
+		p1_connections = {c.innovation_number : c for c in parent1.connections}
+		p2_connections = {c.innovation_number : c for c in parent2.connections}
+
+		m = max(max(p1_connections.keys()), max(p2_connections.keys()))
+		for i in range(m + 1):
+			if i in p1_connections and i in p2_connections:
+				if parent1.fitness > parent2.fitness:
+					connections.append(
+						p1_connections[i]
+					)
+				if parent1.fitness < parent2.fitness:
+					connections.append(
+						p2_connections[i]
+					)
+				else:
+					connections.append(
+						random.choice([p1_connections[i], p2_connections[i]])
+					)
+			elif i in p1_connections and i not in p2_connections:
+				connections.append(
+					p1_connections[i]
+				)
+			elif i not in p1_connections and i in p2_connections:
+				connections.append(
+					p2_connections[i]
+				)
+
+		return cls(nodes.values(), connections)
 
 
 	def save_network(self, file_name = None):
@@ -292,21 +339,42 @@ class Genome:
 
 
 def main():
-	G = Genome(
+
+	G1 = Genome(
 		[
 			NodeGene(0, 'input', 'linear'), 
 			NodeGene(1, 'hidden', 'linear'), 
-			NodeGene(2, 'hidden', 'linear'), 
 			NodeGene(3, 'hidden', 'linear'),
+			NodeGene(5, 'hidden', 'linear'),
 			NodeGene(4, 'output', 'linear')
 		],
 		[
 			ConnectionGene(0, 1, -0.5, 0), 
-			ConnectionGene(0, 2, 0.5, 1), 
-			ConnectionGene(1, 4, 0.5, 2),
-			ConnectionGene(2, 4, 2, 3)
+			ConnectionGene(1, 4, 0.5, 2, enabled=False),
+			ConnectionGene(5, 4, 2, 6),
 		]
 	)
+	G2 = Genome(
+		[
+			NodeGene(0, 'input', 'linear'), 
+			NodeGene(1, 'hidden', 'linear'), 
+			NodeGene(2, 'hidden', 'linear'), 
+			NodeGene(5, 'hidden', 'linear'), 
+			NodeGene(4, 'output', 'linear')
+		],
+		[
+			ConnectionGene(0, 2, 0.5, 1), 
+			ConnectionGene(1, 4, 0.5, 2),
+			ConnectionGene(2, 4, 2, 3),
+			ConnectionGene(2, 5, 2, 7),
+		]
+	)
+
+	G3 = Genome.crossover(G1, G2)
+	G1.draw()
+	G2.draw()
+	G3.draw()
+
 
 
 	'''
@@ -323,7 +391,8 @@ def main():
 
 	G.load_network('test.json')	
 	'''
-	
+
+	'''
 	G2 = Genome.load_network('test.json')	
 
 	G.add_node(10, 20)
@@ -332,5 +401,8 @@ def main():
 		print(connection.__dict__)
 
 	G.draw()
+
+	print(NodeGene(2, 'output', 'linear') == NodeGene(1, 'input', 'linear'))
+	'''
 
 if __name__ == '__main__': main()

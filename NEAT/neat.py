@@ -18,21 +18,38 @@ class NEAT:
 
 	def __init__(self,
 		population_size,
+		nn_base_dimensions,
 		):
 		self.population_size = population_size
+		self.nn_dimensions = nn_base_dimensions
+		self.global_innovation_number = 0
 
 
 	def make_population(self):
+		'''
+		Makes a generation of the given population size with the given nn_base_dimensions
+		The nets in the population are connection free, so they only contain nodes
+		'''
+
 		self.population = []
 
 		for i in range(self.population_size):
-			self.population.append(Genome.empty_genome(4, 2, 4))
+			self.population.append(
+				Genome.empty_genome(self.nn_dimensions[0], sum(self.nn_dimensions[1:-1]), self.nn_dimensions[-1])
+			)
+
+
+	def train(self, T):
+		pass
+
 
 def main():
-	N = NEAT(10)
+	'''
+	N = NEAT(1, [4, 3, 2, 1, 4])
 	N.make_population()
 	for p in N.population:
 		p.draw()
+	'''
 
 if __name__ == '__main__': main()
 
