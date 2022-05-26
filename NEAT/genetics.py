@@ -127,8 +127,9 @@ class Genome:
 
 		print(f'[INFO] Saved data to \'{file_name}\'')
 
-
-	def load_network(self, file_name) -> None:
+	
+	@classmethod
+	def load_network(cls, file_name) -> None:
 		'''
 		This method loads the current network from a file.
 		'''
@@ -143,9 +144,11 @@ class Genome:
 
 		nodes = {node_id: NodeGene(**params) for node_id, params in data['nodes'].items()}
 
-		self.__init__(list(nodes.values()), connections)
+		new_instance = cls(list(nodes.values()), connections)
 
 		print(f'[INFO] loaded Neural Network from \'{file_name}\'')
+
+		return new_instance 
 
 
 	def add_connection(self, innovation_number):
@@ -320,6 +323,8 @@ def main():
 
 	G.load_network('test.json')	
 	'''
+	
+	G2 = Genome.load_network('test.json')	
 
 	G.add_node(10, 20)
 
