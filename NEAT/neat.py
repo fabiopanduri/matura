@@ -21,6 +21,18 @@ class NEAT:
 		):
 		self.population_size = population_size
 
+
 	def make_population(self):
-		pass
+		self.population = []
+
+		for i in range(self.population_size):
+			self.population.append(Genome.empty_genome(4, 2, 4))
+
+def main():
+	N = NEAT(10)
+	N.make_population()
+	for p in N.population:
+		p.draw()
+
+if __name__ == '__main__': main()
 
