@@ -53,6 +53,43 @@ class Genome:
 
 		self.connections = connections
 
+	
+	@classmethod
+	def empty_genome(cls, 
+		n_inputs, 
+		n_hidden, 
+		n_outputs, 
+		activation_functions_hidden = [],
+		activation_functions_output = []
+		):
+
+		nodes = []
+		node_id = 0
+
+		for _ in range(n_inputs):
+			nodes.append(NodeGene(node_id, 'input', 'linear'))
+			node_id += 1
+
+		for i in range(n_hidden):
+			try:
+				act_func = activation_functions_hidden[i]
+			except IndexError:
+				act_func = 'linear'
+
+			nodes.append(NodeGene(node_id, 'hidden', act_func))
+			node_id += 1
+
+		for i in range(n_outputs):
+			try:
+				act_func = activation_functions_output[i]
+			except IndexError:
+				act_func = 'linear'
+
+			nodes.append(NodeGene(node_id, 'output', act_func))
+			node_id += 1
+
+		return cls(nodes, [])
+
 
 	def save_network(self, file_name = None):
 		'''
