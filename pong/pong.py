@@ -18,7 +18,7 @@ from typing import List, Tuple
 # Adjust as needed
 WINDOW_SIZE = (800, 500) # (0|0) is on the top left. x-Axis is right, y-Axis down
 BALL_RADIUS = 12
-BALL_SPEED = 3
+BALL_SPEED = 4
 PADDLE_SPEED = 3
 PADDLE_WIDTH = 20
 PADDLE_HEIGHT = 100

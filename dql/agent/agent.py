@@ -8,28 +8,34 @@
 import sys
 sys.path.insert(0,'/home/lnapkin/Documents/maturaarbeit_code')
 import random
+from collections import deque
 import numpy as np
 from dql.neural_network.neural_network import NeuralNetwork
 from pong.pong import PongEnv
 
 class ReplayMemory:
-    # TODO: Implement max size for Replay Memory
-    def __init__(self, size):
-        self.memory_size = size
-        self.memory = [] 
+    def __init__(self, max_size):
+        self.max_size = max_size
+        self.memory = deque() 
     
-    def store_transition(self, transition):
+    def size(self):
+        return len(self.memory)
+
+    def store(self, transition):
         '''
         Store a transition to replay memory (with corresponding time t of transition). Transition format: phi, action, reward, next_phi, terminal
+        If memory is full, delete oldest transition.
         '''
-        self.memory.append((time, transition))
+        self.memory.append(transition)
+        while self.size() > self.max_size:
+            self.memory.popleft()
 
 
     def sample(self, sample_size):
         '''
         Sample an amount of random uniform entries from replay memory
         '''
-        return random.sample(self.memory, k=sample_size)
+        return random.sample(self.memory, sample_size)
     
 
 class DQLAgent:
@@ -57,8 +63,12 @@ class DQLAgent:
         self.learning_rate = 0.1
         self.activation_functions = ['ReLU', 'ReLU', 'ReLU', 'ReLU']
         self.q_network = NeuralNetwork(self.nn_dimensions, self.learning_rate, self.activation_functions)
-        self.target_q_network = self.q_network
+        self.q_network.initialize_network()
+        self.update_target_network()
 
+
+    def update_target_network(self):
+        self.target_q_network = NeuralNetwork(self.nn_dimensions, self.learning_rate, self.activation_functions, self.q_network.weights, self.q_network.biases)
 
     def get_action(self, state):
         '''
@@ -70,7 +80,6 @@ class DQLAgent:
 
         # Else select action which leads to max reward estimated by Q. 
         else:
-            print(state)
             q_values = self.q_network.feed_forward(state)
             action = self.possible_actions[np.argmax(q_values)]
 
@@ -90,10 +99,15 @@ class DQLAgent:
         # Because for the moment no actual images are used, phi equals state and no preprocessing needs be done
         return state
 
-    def gd_on_minibatch(self, minibatch):
+    def replay(self):
         '''
-        Perform stochastic gradient descent step on minibatch of stored transitions
+        Perform experience replay on minibatch of transitions from memory. Update network with stochastic gradient descent.
         '''
+        # Dont perform replay if memory is too small
+        if self.minibatch_size > self.memory.size():
+            return
+
+        minibatch = self.memory.sample(self.minibatch_size)
         training_batch = []
         for transition in minibatch:
             phi, action, reward, next_phi, terminal = transition
@@ -106,13 +120,13 @@ class DQLAgent:
 
             if not terminal:
                 # If episode doesn't terminate, add the estimated rewards for each future action
-                target_q_value = self.target_q_network.feed_forward(next_phi)
+                target_q_values = self.target_q_network.feed_forward(next_phi)
                 for i in range(len(target_rewards)):
                     target_rewards[i] += target_q_values[i]
 
-            training_batch.append((phi, target_rewards))
+            training_batch.append((np.array(phi), target_rewards))
 
-        self.gd_on_q_network(training_batch)
+        self.q_network.stochastic_gradient_descent(training_batch)
 
     def learn(self, n_of_episodes):
         '''
@@ -121,15 +135,15 @@ class DQLAgent:
         for episode in range(n_of_episodes):
             terminal = False
             score = self.env.score
-            # Initalize state 
             state = self.env.make_observation()
             phi = self.preprocessor(state)
 
+            t = 0
             # Play until terminal state/frame is reached
             while not terminal:
                 # Play one frame and observe new state and reward
                 action = self.get_action(phi)
-                state, reward, next_score = execute_action(action)
+                state, reward, next_score = self.execute_action(action)
                 next_phi = self.preprocessor(state)
 
 
@@ -139,15 +153,16 @@ class DQLAgent:
                 transition = (phi, action, reward, next_phi, terminal)
                 self.memory.store(transition)
 
-                minibatch = self.memory.sample(self.minibatch_size)
-                self.experience_replay(minibatch)
+                self.replay()
 
                 if t % self.update_frequency == 0:
-                    # TODO: Do this with weight sync because python likes to copy by reference. Also implement storing networks to disk
-                    self.target_q_network = self.q_network.copy()
+                    print(t)
+                    self.target_q_network = self.q_network
+                    self.update_target_network()
 
                 # Roll over all variables
-                state, score, phi = next_state, next_score, next_phi
+                score, phi = [i for i in next_score], next_phi
+                t += 1
 
     def play(self):
         return
@@ -158,6 +173,6 @@ def main():
     env = PongEnv()
     agt = DQLAgent(env)
     
-    agt.learn(10)
+    agt.learn(1000)
 
 if __name__ == '__main__': main()

@@ -29,9 +29,9 @@ class NeuralNetwork:
 	def __init__(self, 
 		dimensions, 
 		eta,
+		activation_functions = [],
 		weights = [],
-		biases = [],
-		activation_functions = []
+		biases = []
 		) -> None:
 
 		self.dimensions = dimensions
