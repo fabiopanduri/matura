@@ -8,33 +8,39 @@
 import numpy as np
 from typing import Dict, Callable
 
+
 def sigmoid(x):
     return 1 / (1 + np.exp(-x))
 
+
 def sigmoid_derivative(x):
-	return sigmoid(x) * (1 - sigmoid(x))
+    return sigmoid(x) * (1 - sigmoid(x))
+
 
 def ReLU(x):
-	return max(0, x)
+    return max(0, x)
+
 
 def ReLU_derivative(x):
-	return 1 if x > 0 else 0
+    return 1 if x > 0 else 0
+
 
 def linear(x):
-	return x
-	
+    return x
+
+
 def linear_derivative(x):
-	return 1
+    return 1
 
 
 activation_functions: Dict[str, Callable] = {
-	'sigmoid' : sigmoid,
-	'ReLU' : ReLU,
-	'linear' : linear,
+    "sigmoid": sigmoid,
+    "ReLU": ReLU,
+    "linear": linear,
 }
 
 activation_functions_derivatives: Dict[str, Callable] = {
-	'sigmoid' : sigmoid_derivative,
-	'ReLU' : ReLU_derivative,
-	'linear' : linear_derivative,
+    "sigmoid": sigmoid_derivative,
+    "ReLU": ReLU_derivative,
+    "linear": linear_derivative,
 }

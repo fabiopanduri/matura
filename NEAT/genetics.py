@@ -16,383 +16,368 @@ from activation_functions import *
 
 
 class NodeGene:
-	def __init__(self, node_id, node_type, activation_function):
-		self.id = node_id
+    def __init__(self, node_id, node_type, activation_function):
+        self.id = node_id
 
-		# specifies the type of the function, either 'input', 'hidden' or 'output'
-		self.type = node_type
-		
-		self.activation_function = activation_function
+        # specifies the type of the function, either 'input', 'hidden' or 'output'
+        self.type = node_type
 
+        self.activation_function = activation_function
 
-	def __eq__(self, other):
-		if isinstance(other, NodeGene):
-			return self.id == other.id
-		return False
+    def __eq__(self, other):
+        if isinstance(other, NodeGene):
+            return self.id == other.id
+        return False
 
 
 class ConnectionGene:
-	def __init__(self, 
-		out_node_id, 
-		in_node_id, 
-		weight, 
-		innovation_number,
-		enabled = True
-		):
+    def __init__(
+        self, out_node_id, in_node_id, weight, innovation_number, enabled=True
+    ):
 
-		# specifies the tail of the connection arc 
-		self.out_node_id = out_node_id
+        # specifies the tail of the connection arc
+        self.out_node_id = out_node_id
 
-		# specifies the head of the connection arc 
-		self.in_node_id = in_node_id
+        # specifies the head of the connection arc
+        self.in_node_id = in_node_id
 
-		self.weight = weight
+        self.weight = weight
 
-		self.innovation_number = innovation_number
+        self.innovation_number = innovation_number
 
-		self.enabled = enabled
+        self.enabled = enabled
 
 
 class Genome:
-	def __init__(self, nodes, connections):
-		self.nodes = {node.id : node for node in nodes}
+    def __init__(self, nodes, connections):
+        self.nodes = {node.id: node for node in nodes}
 
-		self.connections = connections
+        self.connections = connections
 
-		self.fitness = 0
+        self.fitness = 0
 
-	
-	@classmethod
-	def empty_genome(cls, 
-		n_inputs, 
-		n_hidden, 
-		n_outputs, 
-		activation_functions_hidden = [],
-		activation_functions_output = []
-		):
+    @classmethod
+    def empty_genome(
+        cls,
+        n_inputs,
+        n_hidden,
+        n_outputs,
+        activation_functions_hidden=[],
+        activation_functions_output=[],
+    ):
 
-		nodes = []
-		node_id = 0
+        nodes = []
+        node_id = 0
 
-		for _ in range(n_inputs):
-			nodes.append(NodeGene(node_id, 'input', 'linear'))
-			node_id += 1
+        for _ in range(n_inputs):
+            nodes.append(NodeGene(node_id, "input", "linear"))
+            node_id += 1
 
-		for i in range(n_hidden):
-			try:
-				act_func = activation_functions_hidden[i]
-			except IndexError:
-				act_func = 'linear'
+        for i in range(n_hidden):
+            try:
+                act_func = activation_functions_hidden[i]
+            except IndexError:
+                act_func = "linear"
 
-			nodes.append(NodeGene(node_id, 'hidden', act_func))
-			node_id += 1
+            nodes.append(NodeGene(node_id, "hidden", act_func))
+            node_id += 1
 
-		for i in range(n_outputs):
-			try:
-				act_func = activation_functions_output[i]
-			except IndexError:
-				act_func = 'linear'
+        for i in range(n_outputs):
+            try:
+                act_func = activation_functions_output[i]
+            except IndexError:
+                act_func = "linear"
 
-			nodes.append(NodeGene(node_id, 'output', act_func))
-			node_id += 1
+            nodes.append(NodeGene(node_id, "output", act_func))
+            node_id += 1
 
-		return cls(nodes, [])
+        return cls(nodes, [])
 
+    @classmethod
+    def crossover(cls, parent1, parent2):
+        # get all nodes from both parents
+        nodes = parent1.nodes.copy()
+        for node_id, node in parent2.nodes.items():
+            if node_id not in nodes:
+                nodes[node_id] = node
 
-	@classmethod
-	def crossover(cls, parent1, parent2):
-		# get all nodes from both parents
-		nodes = parent1.nodes.copy()
-		for node_id, node in parent2.nodes.items():
-			if node_id not in nodes:
-				nodes[node_id] = node
+        connections = []
+        p1_connections = {c.innovation_number: c for c in parent1.connections}
+        p2_connections = {c.innovation_number: c for c in parent2.connections}
 
-		connections = []
-		p1_connections = {c.innovation_number : c for c in parent1.connections}
-		p2_connections = {c.innovation_number : c for c in parent2.connections}
+        m = max(max(p1_connections.keys()), max(p2_connections.keys()))
+        for i in range(m + 1):
+            if i in p1_connections and i in p2_connections:
+                if parent1.fitness > parent2.fitness:
+                    connections.append(p1_connections[i])
+                if parent1.fitness < parent2.fitness:
+                    connections.append(p2_connections[i])
+                else:
+                    connections.append(
+                        random.choice([p1_connections[i], p2_connections[i]])
+                    )
+            elif i in p1_connections and i not in p2_connections:
+                connections.append(p1_connections[i])
+            elif i not in p1_connections and i in p2_connections:
+                connections.append(p2_connections[i])
 
-		m = max(max(p1_connections.keys()), max(p2_connections.keys()))
-		for i in range(m + 1):
-			if i in p1_connections and i in p2_connections:
-				if parent1.fitness > parent2.fitness:
-					connections.append(
-						p1_connections[i]
-					)
-				if parent1.fitness < parent2.fitness:
-					connections.append(
-						p2_connections[i]
-					)
-				else:
-					connections.append(
-						random.choice([p1_connections[i], p2_connections[i]])
-					)
-			elif i in p1_connections and i not in p2_connections:
-				connections.append(
-					p1_connections[i]
-				)
-			elif i not in p1_connections and i in p2_connections:
-				connections.append(
-					p2_connections[i]
-				)
+        return cls(nodes.values(), connections)
 
-		return cls(nodes.values(), connections)
+    def save_network(self, file_name=None):
+        """
+        Method to save a genome to a .json file
+        """
 
+        if file_name == None:
+            file_name = (
+                f"NEAT-{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')}.json"
+            )
 
-	def save_network(self, file_name = None):
-		'''
-		Method to save a genome to a .json file
-		'''
+        if file_name.split(".")[-1] != "json":
+            file_name = (
+                f"NEAT-{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')}.json"
+            )
+            print(
+                f"[ERROR] Specified file is not a json file. Saving to '{file_name}' instead."
+            )
 
-		if file_name == None:
-			file_name = f'NEAT-{datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")}.json'
+        if os.path.exists(file_name):
+            inp = input(
+                f"[WARNING] The file {file_name} already exists. Do you want to proceed? [y/n] "
+            ).lower()
+            while True:
+                if inp == "y":
+                    print(f"[INFO] Saving to {file_name}...")
+                    break
+                elif inp == "n":
+                    print("[INFO] Saving aborted")
+                    return
+                else:
+                    inp = input(
+                        f"Invalid answer. Do you want to proceed? [y/n] "
+                    ).lower()
 
-		if file_name.split('.')[-1] != 'json':
-			file_name = f'NEAT-{datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")}.json'
-			print(f'[ERROR] Specified file is not a json file. Saving to \'{file_name}\' instead.')
+        data = {
+            "connections": [connection.__dict__ for connection in self.connections],
+            "nodes": {node_id: node.__dict__ for node_id, node in self.nodes.items()},
+        }
 
-		if os.path.exists(file_name):
-			inp = input(f'[WARNING] The file {file_name} already exists. Do you want to proceed? [y/n] ').lower()
-			while True:
-				if inp == 'y':
-					print(f'[INFO] Saving to {file_name}...')
-					break
-				elif inp == 'n':
-					print('[INFO] Saving aborted')
-					return
-				else:
-					inp = input(f'Invalid answer. Do you want to proceed? [y/n] ').lower()
+        json_data = json.dumps(data, indent=4)
 
-		data = {
-			'connections': [connection.__dict__ for connection in self.connections], 
-			'nodes': {node_id: node.__dict__ for node_id, node in self.nodes.items()}
-		}
-		
-		json_data = json.dumps(data, indent=4)	
+        with open(file_name, "w") as f:
+            f.write(json_data)
 
-		with open(file_name, 'w') as f:
-			f.write(json_data)
+        print(f"[INFO] Saved data to '{file_name}'")
 
-		print(f'[INFO] Saved data to \'{file_name}\'')
+    @classmethod
+    def load_network(cls, file_name) -> None:
+        """
+        This method loads the current network from a file.
+        """
 
-	
-	@classmethod
-	def load_network(cls, file_name) -> None:
-		'''
-		This method loads the current network from a file.
-		'''
+        if not os.path.exists(file_name):
+            print("[ERROR] The specified file does not exist")
 
-		if not os.path.exists(file_name):
-			print('[ERROR] The specified file does not exist')
+        with open(file_name, "r") as f:
+            data = json.loads(f.read())
 
-		with open(file_name, 'r') as f:
-			data = json.loads(f.read())
+        connections = [ConnectionGene(**params) for params in data["connections"]]
 
-		connections = [ConnectionGene(**params) for params in data['connections']]
+        nodes = {
+            node_id: NodeGene(**params) for node_id, params in data["nodes"].items()
+        }
 
-		nodes = {node_id: NodeGene(**params) for node_id, params in data['nodes'].items()}
+        new_instance = cls(list(nodes.values()), connections)
 
-		new_instance = cls(list(nodes.values()), connections)
+        print(f"[INFO] loaded Neural Network from '{file_name}'")
 
-		print(f'[INFO] loaded Neural Network from \'{file_name}\'')
+        return new_instance
 
-		return new_instance 
+    def add_connection(self, innovation_number):
+        """
+        Mutation method that adds a connections between two nodes that were not connected before
+        """
 
+        done = False
+        while not done:
+            in_node, out_node = random.sample(list(self.nodes.values()), k=2)
 
-	def add_connection(self, innovation_number):
-		'''
-		Mutation method that adds a connections between two nodes that were not connected before
-		'''
-		
-		done = False
-		while not done:
-			in_node, out_node = random.sample(list(self.nodes.values()), k = 2)
+            # the new connection cannot go between input layer node or output layer nodes
+            # in addition, they must not lead to an input or come from an output node
+            if not (
+                (in_node.type == "input" and out_node.type == "input")
+                or (in_node.type == "output" and out_node.type == "output")
+                or (out_node.type == "output")
+                or (in_node.type == "input")
+            ):
+                done = True
 
-			# the new connection cannot go between input layer node or output layer nodes
-			# in addition, they must not lead to an input or come from an output node
-			if not ((in_node.type == 'input' and out_node.type == 'input') or 
-				(in_node.type == 'output' and out_node.type == 'output') or
-				(out_node.type == 'output') or (in_node.type == 'input')):
-				done = True
+            # check if connection does not already exist
+            for connection in self.connections:
+                if (
+                    connection.in_node_id == in_node.id
+                    and connection.out_node_id == out_node.id
+                ) or (
+                    connection.out_node_id == in_node.id
+                    and connection.in_node_id == out_node.id
+                ):
+                    done = False
 
-			# check if connection does not already exist
-			for connection in self.connections:
-				if ((connection.in_node_id == in_node.id and 
-					connection.out_node_id == out_node.id) or
-					(connection.out_node_id == in_node.id and 
-					connection.in_node_id == out_node.id)):
-					done = False
+        self.connections.append(
+            ConnectionGene(out_node.id, in_node.id, random.random(), innovation_number)
+        )
 
-		self.connections.append(
-			ConnectionGene(out_node.id, in_node.id, random.random(), innovation_number)
-		)
-		
+    def add_node(self, node_id, innovation_number, activation_function="linear"):
+        """
+        Mutation method that splits a connection between two nodes and inserts a new node in the
+        middle
+        """
 
-	def add_node(self, node_id, innovation_number, activation_function = 'linear'):
-		'''
-		Mutation method that splits a connection between two nodes and inserts a new node in the
-		middle
-		'''
+        new_node = NodeGene(node_id, "hidden", activation_function)
+        self.nodes[node_id] = new_node
 
-		new_node = NodeGene(node_id, 'hidden', activation_function)
-		self.nodes[node_id] = new_node
+        connection = random.choice(self.connections)
+        connection.enabled = False
 
-		connection = random.choice(self.connections)
-		connection.enabled = False
+        out_node_id = connection.out_node_id
+        connection_to_new_node = ConnectionGene(
+            out_node_id, node_id, 1, innovation_number
+        )
+        self.connections.append(connection_to_new_node)
 
-		out_node_id = connection.out_node_id
-		connection_to_new_node = ConnectionGene(
-			out_node_id, 
-			node_id, 
-			1, 
-			innovation_number
-		)
-		self.connections.append(connection_to_new_node)
+        in_node_id = connection.in_node_id
+        connection_from_new_node = ConnectionGene(
+            node_id, in_node_id, connection.weight, innovation_number + 1
+        )
+        self.connections.append(connection_from_new_node)
 
-		in_node_id = connection.in_node_id
-		connection_from_new_node = ConnectionGene(
-			node_id, 
-			in_node_id, 
-			connection.weight, 
-			innovation_number + 1
-		)
-		self.connections.append(connection_from_new_node)
-		
-		
+    def calculate_node(self, node_id):
+        """
+        Function to recursively calculate the activation of nodes
+        """
 
+        if node_id in self.table:
+            return self.table[node_id]
 
-	def calculate_node(self, node_id):
-		'''
-		Function to recursively calculate the activation of nodes
-		'''
-	
-		if node_id in self.table:
-			return self.table[node_id]
+        inputs = []
 
-		inputs = []
+        # if the node value has not been calculated yet, calculate it with all the inputs going in
+        # to the node
+        for connection in self.connections:
+            if connection.in_node_id == node_id and connection.enabled:
+                inputs.append(
+                    self.calculate_node(connection.out_node_id) * connection.weight
+                )
 
-		# if the node value has not been calculated yet, calculate it with all the inputs going in
-		# to the node
-		for connection in self.connections:
-			if connection.in_node_id == node_id and connection.enabled:
-				inputs.append(
-					self.calculate_node(
-						connection.out_node_id
-					) * connection.weight)
+        activation = self.nodes[node_id].activation_function(sum(inputs))
+        self.table[node_id] = activation
+        return activation
 
-		activation = self.nodes[node_id].activation_function(sum(inputs))
-		self.table[node_id] = activation
-		return activation
+    def feed_forward(self, input_vector):
+        """
+        Feeds the given input through the network induced by the genotype
+        """
 
+        # set up a table to store the activations of the different nodes
+        self.table = {}
 
-	def feed_forward(self, input_vector):
-		'''
-		Feeds the given input through the network induced by the genotype
-		'''
+        # store the input layer activation in the table
+        for index, input_activation in enumerate(list(input_vector)):
+            self.table[index] = input_activation
 
-		# set up a table to store the activations of the different nodes
-		self.table = {}
+        # iterate over all output nodes and calculate their activation recursively
+        for node_id, node in self.nodes.items():
+            if node.type == "output":
+                self.calculate_node(node_id)
 
-		# store the input layer activation in the table
-		for index, input_activation in enumerate(list(input_vector)):
-			self.table[index] = input_activation
-	
-		# iterate over all output nodes and calculate their activation recursively
-		for node_id, node in self.nodes.items():
-			if node.type == 'output':
-				self.calculate_node(node_id)
+        return self.table
 
-		return self.table
+    def draw(self, weight=False):
+        Graph = nx.Graph()
 
+        c = (i for i in range(0, len(self.nodes)))
+        for node in self.nodes.values():
+            if node.type == "input":
+                Graph.add_node(node.id, pos=(0, len(self.nodes) // 2 + node.id))
+            elif node.type == "output":
+                Graph.add_node(node.id, pos=(10, node.id))
+            else:
+                Graph.add_node(node.id, pos=(5, next(c)))
 
-	def draw(self, weight = False):
-		Graph = nx.Graph()
+        for connection in self.connections:
+            Graph.add_edge(
+                connection.in_node_id,
+                connection.out_node_id,
+                weight=connection.weight,
+                color="tab:blue" if connection.enabled else "tab:red",
+            )
 
-		c = (i for i in range(0, len(self.nodes)))
-		for node in self.nodes.values():
-			if node.type == 'input':
-				Graph.add_node(node.id, pos=(0, len(self.nodes)//2 + node.id))
-			elif node.type == 'output':
-				Graph.add_node(node.id, pos=(10, node.id))
-			else:
-				Graph.add_node(node.id, pos=(5, next(c)))
+        pos = nx.get_node_attributes(Graph, "pos")
+        edge_color = nx.get_edge_attributes(Graph, "color").values()
+        nx.draw_networkx(Graph, pos=pos, with_labels=True, edge_color=edge_color)
 
-		for connection in self.connections:
-			Graph.add_edge(
-				connection.in_node_id, 
-				connection.out_node_id,
-				weight=connection.weight,
-				color='tab:blue' if connection.enabled else 'tab:red'
-			)
+        if weight:
+            labels = nx.get_edge_attributes(Graph, "weight")
+        else:
+            labels = {e: "" for e in Graph.edges}
+        nx.draw_networkx_edge_labels(Graph, pos=pos, edge_labels=labels)
 
-		pos = nx.get_node_attributes(Graph, 'pos')
-		edge_color = nx.get_edge_attributes(Graph, 'color').values()
-		nx.draw_networkx(Graph, pos=pos, with_labels=True, edge_color=edge_color)
-		
-		if weight:
-			labels = nx.get_edge_attributes(Graph, 'weight') 
-		else:
-			labels = {e: '' for e in Graph.edges}
-		nx.draw_networkx_edge_labels(Graph, pos=pos, edge_labels=labels)
-
-		plt.show()
-
+        plt.show()
 
 
 def main():
 
-	G1 = Genome(
-		[
-			NodeGene(0, 'input', 'linear'), 
-			NodeGene(1, 'hidden', 'linear'), 
-			NodeGene(3, 'hidden', 'linear'),
-			NodeGene(5, 'hidden', 'linear'),
-			NodeGene(4, 'output', 'linear')
-		],
-		[
-			ConnectionGene(0, 1, -0.5, 0), 
-			ConnectionGene(1, 4, 0.5, 2, enabled=False),
-			ConnectionGene(5, 4, 2, 6),
-		]
-	)
-	G2 = Genome(
-		[
-			NodeGene(0, 'input', 'linear'), 
-			NodeGene(1, 'hidden', 'linear'), 
-			NodeGene(2, 'hidden', 'linear'), 
-			NodeGene(5, 'hidden', 'linear'), 
-			NodeGene(4, 'output', 'linear')
-		],
-		[
-			ConnectionGene(0, 2, 0.5, 1), 
-			ConnectionGene(1, 4, 0.5, 2),
-			ConnectionGene(2, 4, 2, 3),
-			ConnectionGene(2, 5, 2, 7),
-		]
-	)
+    G1 = Genome(
+        [
+            NodeGene(0, "input", "linear"),
+            NodeGene(1, "hidden", "linear"),
+            NodeGene(3, "hidden", "linear"),
+            NodeGene(5, "hidden", "linear"),
+            NodeGene(4, "output", "linear"),
+        ],
+        [
+            ConnectionGene(0, 1, -0.5, 0),
+            ConnectionGene(1, 4, 0.5, 2, enabled=False),
+            ConnectionGene(5, 4, 2, 6),
+        ],
+    )
+    G2 = Genome(
+        [
+            NodeGene(0, "input", "linear"),
+            NodeGene(1, "hidden", "linear"),
+            NodeGene(2, "hidden", "linear"),
+            NodeGene(5, "hidden", "linear"),
+            NodeGene(4, "output", "linear"),
+        ],
+        [
+            ConnectionGene(0, 2, 0.5, 1),
+            ConnectionGene(1, 4, 0.5, 2),
+            ConnectionGene(2, 4, 2, 3),
+            ConnectionGene(2, 5, 2, 7),
+        ],
+    )
 
-	G3 = Genome.crossover(G1, G2)
-	G1.draw()
-	G2.draw()
-	G3.draw()
+    G3 = Genome.crossover(G1, G2)
+    G1.draw()
+    G2.draw()
+    G3.draw()
 
-
-
-	'''
+    """
 	print([node.__dict__ for node in G.nodes.values()])
 	print([connection.__dict__ for connection in G.connections])
 	
 	print(G.feed_forward([1]))
-	'''
+	"""
 
-	'''
+    """
 	G.add_connection(10)
 	for connection in G.connections:
 		print(connection.__dict__)
 
 	G.load_network('test.json')	
-	'''
+	"""
 
-	'''
+    """
 	G2 = Genome.load_network('test.json')	
 
 	G.add_node(10, 20)
@@ -403,6 +388,8 @@ def main():
 	G.draw()
 
 	print(NodeGene(2, 'output', 'linear') == NodeGene(1, 'input', 'linear'))
-	'''
+	"""
 
-if __name__ == '__main__': main()
+
+if __name__ == "__main__":
+    main()
