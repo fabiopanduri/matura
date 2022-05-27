@@ -1,17 +1,15 @@
 # Copyright (C) 2022 Luis Hartmann and Fabio Panduri
-
 # This file is part of maturaarbeit_code.
 # maturaarbeit_code is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 3.
 # maturaarbeit_code is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 # You should have received a copy of the GNU General Public License along with maturaarbeit_code. If not, see <https://www.gnu.org/licenses/>.
-
-import random
-import json
 import datetime
+import json
 import os
-import networkx as nx
-import matplotlib.pyplot as plt
+import random
 
+import matplotlib.pyplot as plt
+import networkx as nx
 from activation_functions import *
 
 
@@ -181,7 +179,8 @@ class Genome:
         with open(file_name, "r") as f:
             data = json.loads(f.read())
 
-        connections = [ConnectionGene(**params) for params in data["connections"]]
+        connections = [ConnectionGene(**params)
+                       for params in data["connections"]]
 
         nodes = {
             node_id: NodeGene(**params) for node_id, params in data["nodes"].items()
@@ -193,12 +192,27 @@ class Genome:
 
         return new_instance
 
-    def add_connection(self, innovation_number):
+    def has_cycle(self, pot_out_node, pot_in_node):
+        """
+        Check if a new connection would introduce a cycle
+        """
+
+        for connection in self.connections:
+            if connection.out_node_id == pot_in_node:
+                if connection.in_node_id == pot_out_node:
+                    return True
+                elif self.has_cycle(pot_out_node, connection.in_node_id):
+                    return True
+
+        return False
+
+    def add_connection(self, innovation_number, thresh=100):
         """
         Mutation method that adds a connections between two nodes that were not connected before
         """
 
         done = False
+        i = 0
         while not done:
             in_node, out_node = random.sample(list(self.nodes.values()), k=2)
 
@@ -222,9 +236,19 @@ class Genome:
                     and connection.in_node_id == out_node.id
                 ):
                     done = False
+                    continue
+
+            # make sure the new graph would not create a cycle to avoid infinite loops
+            if self.has_cycle(out_node.id, in_node.id):
+                done = False
+
+            i += 1
+            if i > thresh:
+                return
 
         self.connections.append(
-            ConnectionGene(out_node.id, in_node.id, random.random(), innovation_number)
+            ConnectionGene(out_node.id, in_node.id,
+                           random.random(), innovation_number)
         )
 
     def add_node(self, node_id, innovation_number, activation_function="linear"):
@@ -266,7 +290,8 @@ class Genome:
         for connection in self.connections:
             if connection.in_node_id == node_id and connection.enabled:
                 inputs.append(
-                    self.calculate_node(connection.out_node_id) * connection.weight
+                    self.calculate_node(
+                        connection.out_node_id) * connection.weight
                 )
 
         activation = self.nodes[node_id].activation_function(sum(inputs))
@@ -298,23 +323,25 @@ class Genome:
         c = (i for i in range(0, len(self.nodes)))
         for node in self.nodes.values():
             if node.type == "input":
-                Graph.add_node(node.id, pos=(0, len(self.nodes) // 2 + node.id))
+                Graph.add_node(node.id, pos=(
+                    0, len(self.nodes) // 2 + node.id))
             elif node.type == "output":
                 Graph.add_node(node.id, pos=(10, node.id))
             else:
-                Graph.add_node(node.id, pos=(5, next(c)))
+                Graph.add_node(node.id, pos=(random.randint(3, 7), next(c)))
 
         for connection in self.connections:
             Graph.add_edge(
-                connection.in_node_id,
                 connection.out_node_id,
+                connection.in_node_id,
                 weight=connection.weight,
                 color="tab:blue" if connection.enabled else "tab:red",
             )
 
         pos = nx.get_node_attributes(Graph, "pos")
         edge_color = nx.get_edge_attributes(Graph, "color").values()
-        nx.draw_networkx(Graph, pos=pos, with_labels=True, edge_color=edge_color)
+        nx.draw_networkx(Graph, pos=pos, with_labels=True, edge_color=edge_color, arrowstyle="->",
+                         arrowsize=10, arrows=True)
 
         if weight:
             labels = nx.get_edge_attributes(Graph, "weight")
@@ -362,33 +389,41 @@ def main():
     G2.draw()
     G3.draw()
 
-    """
-	print([node.__dict__ for node in G.nodes.values()])
-	print([connection.__dict__ for connection in G.connections])
-	
-	print(G.feed_forward([1]))
-	"""
+    for connection in G3.connections:
+        print(connection.__dict__)
+
+    for i in range(2):
+        G3.add_connection(10+2*i)
+
+    G3.draw()
 
     """
-	G.add_connection(10)
-	for connection in G.connections:
-		print(connection.__dict__)
-
-	G.load_network('test.json')	
-	"""
+    print([node.__dict__ for node in G.nodes.values()])
+    print([connection.__dict__ for connection in G.connections])
+    
+    print(G.feed_forward([1]))
+    """
 
     """
-	G2 = Genome.load_network('test.json')	
+    G.add_connection(10)
+    for connection in G.connections:
+        print(connection.__dict__)
 
-	G.add_node(10, 20)
+    G.load_network('test.json')    
+    """
 
-	for connection in G.connections:
-		print(connection.__dict__)
+    """
+    G2 = Genome.load_network('test.json')    
 
-	G.draw()
+    G.add_node(10, 20)
 
-	print(NodeGene(2, 'output', 'linear') == NodeGene(1, 'input', 'linear'))
-	"""
+    for connection in G.connections:
+        print(connection.__dict__)
+
+    G.draw()
+
+    print(NodeGene(2, 'output', 'linear') == NodeGene(1, 'input', 'linear'))
+    """
 
 
 if __name__ == "__main__":
