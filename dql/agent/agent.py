@@ -48,10 +48,10 @@ class DQLAgent:
         self.possible_actions = env.possible_actions
         self.memory_size = 10000
         self.memory = ReplayMemory(self.memory_size)
-        self.eps = 0.01
         self.update_frequency = 100
         self.discount_factor = 0.01
         self.minibatch_size = 32
+        self.total_step = 0
 
         # NN Params
         '''
@@ -70,20 +70,29 @@ class DQLAgent:
     def update_target_network(self):
         self.target_q_network = NeuralNetwork(self.nn_dimensions, self.learning_rate, self.activation_functions, self.q_network.weights, self.q_network.biases)
 
+    def get_eps(self, step, terminal_eps=0.01):
+        '''
+        Get Epsilon (exploration rate). Linearly adjusted from 1.0 to terminal_eps.
+        '''
+        # y = -(1-terminal_eps)/1'000'000x + 1.0
+        eps = - (0.8 - terminal_eps) / 1000000 * step + 1.0
+        return eps
+
     def get_action(self, state):
         '''
-        Select action based on eps-greedy policy based on Q network
+        Select action (movement) based on eps-greedy policy based on Q network
         '''
-        # With probability eps select random action of possible actions
-        if random.random() < self.eps:
-            action = random.choice(self.possible_actions)
+        # With probability eps select random movement of possible movements
+        if random.random() < self.get_eps(self.total_step):
+            movement = random.choice(self.possible_actions)
 
         # Else select action which leads to max reward estimated by Q. 
         else:
             q_values = self.q_network.feed_forward(state)
-            action = self.possible_actions[np.argmax(q_values)]
+            print(q_values)
+            movement = self.possible_actions[np.argmax(q_values)]
 
-        return action
+        return [movement]
 
     def execute_action(self, action):
         '''
@@ -115,7 +124,7 @@ class DQLAgent:
             # Initially, target = network prediction
             target_rewards = self.q_network.feed_forward(phi)
             # If episode terminates at next step, reward = current reward for the taken action. 
-            taken = self.possible_actions.index(action)
+            taken = self.possible_actions.index(action[0])
             target_rewards[taken] = reward
 
             if not terminal:
@@ -138,7 +147,7 @@ class DQLAgent:
             state = self.env.make_observation()
             phi = self.preprocessor(state)
 
-            t = 0
+            step = 0
             # Play until terminal state/frame is reached
             while not terminal:
                 # Play one frame and observe new state and reward
@@ -155,14 +164,15 @@ class DQLAgent:
 
                 self.replay()
 
-                if t % self.update_frequency == 0:
-                    print(t)
+                if step % self.update_frequency == 0:
+                    #print(step)
                     self.target_q_network = self.q_network
                     self.update_target_network()
 
                 # Roll over all variables
                 score, phi = [i for i in next_score], next_phi
-                t += 1
+                step += 1
+                self.total_step += 1
 
     def play(self):
         return
