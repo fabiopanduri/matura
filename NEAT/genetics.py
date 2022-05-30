@@ -23,7 +23,7 @@ class NodeGene:
         self.activation_function = activation_function
 
     def __eq__(self, other):
-        if isinstance(other, NodeGene):
+        if isinstance(other, type(self)):
             return self.id == other.id
         return False
 
@@ -47,12 +47,17 @@ class ConnectionGene:
 
 
 class Genome:
-    def __init__(self, nodes, connections):
+    def __init__(self, nodes, connections, speciation_constants=(1, 1, 1)):
         self.nodes = {node.id: node for node in nodes}
 
         self.connections = connections
 
         self.fitness = 0
+
+        self.speciation_constants = speciation_constants
+
+    def connection_dict(self):
+        return {c.innovation_number: c for c in self.connections}
 
     @classmethod
     def empty_genome(
@@ -100,8 +105,8 @@ class Genome:
                 nodes[node_id] = node
 
         connections = []
-        p1_connections = {c.innovation_number: c for c in parent1.connections}
-        p2_connections = {c.innovation_number: c for c in parent2.connections}
+        p1_connections = parent1.connection_dict()
+        p2_connections = parent2.connection_dict()
 
         m = max(max(p1_connections.keys()), max(p2_connections.keys()))
         for i in range(m + 1):
@@ -120,6 +125,53 @@ class Genome:
                 connections.append(p2_connections[i])
 
         return cls(nodes.values(), connections)
+
+    def delta(self, other):
+        """
+        This method gives the compatibility distance delta of the instance and another instance
+        """
+
+        if not isinstance(other, type(self)):
+            raise ValueError(f"Type must be {type(self)} not {type(self)}.")
+
+        self_connections = self.connection_dict()
+        other_connections = other.connection_dict()
+        self_biggest = max(self_connections.keys())
+        other_biggest = max(other_connections.keys())
+
+        N = max(len(self_connections), len(other_connections))
+        E, D = 0, 0
+        weight_difference_sum = 0
+        weight_difference_count = 0
+
+        m = max(self_biggest, other_biggest)
+        for i in range(m + 1):
+            if i in self_connections and i in other_connections:
+                weight_difference_sum += abs(
+                    self_connections[i].weight - other_connections[i].weight
+                )
+                weight_difference_count += 1
+            elif i in self_connections and i not in other_connections:
+                if i > other_biggest:
+                    E += 1
+                else:
+                    D += 1
+            elif i not in self_connections and i in other_connections:
+                if i > self_biggest:
+                    E += 1
+                else:
+                    D += 1
+
+        W_bar = weight_difference_sum / weight_difference_count
+
+        print(f"{N=}")
+        print(f"{E=}")
+        print(f"{D=}")
+        print(f"{W_bar=}")
+
+        c_1, c_2, c_3 = self.speciation_constants
+
+        return (c_1 * E) / N + (c_2 * D) / N + c_3 * W_bar
 
     def save_network(self, file_name=None):
         """
@@ -384,6 +436,17 @@ def main():
         ],
     )
 
+    print(G1.delta(G2))
+
+    print("G1:")
+    for connection in G1.connections:
+        print(connection.__dict__)
+
+    print("G2:")
+    for connection in G2.connections:
+        print(connection.__dict__)
+
+    """
     G3 = Genome.crossover(G1, G2)
     G1.draw()
     G2.draw()
@@ -396,6 +459,7 @@ def main():
         G3.add_connection(10+2*i)
 
     G3.draw()
+    """
 
     """
     print([node.__dict__ for node in G.nodes.values()])
