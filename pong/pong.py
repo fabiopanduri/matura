@@ -422,16 +422,16 @@ class PongEnv:
              right_movement,
              self.pygame_graphics
              )
-
-        if self.score == prev_score:
-            # Slight negative reward for each game tick which is not a point
-            reward = 0
-        elif self.score[0] == prev_score[0] + 1:
+        
+        if self.score[0] == prev_score[0] + 1:
             # Negative reward if opponent gets a point
             reward = -1
         elif self.score[1] == prev_score[1] + 1:
             # Positive reward if agent gets a point
             reward = 1
+        else:
+            # Slight negative reward if no point made
+            reward = 0.001
 
         return self.make_observation(), reward, self.score
 

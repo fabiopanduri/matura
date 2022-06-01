@@ -80,10 +80,8 @@ class DQLAgent:
         '''
         Get Epsilon (exploration rate). Linearly adjusted from 1.0 to terminal_eps.
         '''
-        # y = -(1-terminal_eps)/1'000'000x + 1.0
-        eps = - (1.0 - terminal_eps) / 100000 * step + 1.0
-        # return eps
-        return 0.01
+        eps = - (1.0 - terminal_eps) / 10000 * step + 1.0
+        return eps
 
     def get_action(self, state):
         '''
@@ -132,16 +130,17 @@ class DQLAgent:
             # If episode terminates at next step, reward = current reward for the taken action.
             taken = self.possible_actions.index(action[0])
             target_rewards[taken] = reward
-            if self.total_step % self.update_frequency == 0:
-                print(target_rewards)
 
             if not terminal:
                 # If episode doesn't terminate, add the estimated rewards for each future action
                 target_q_values = self.target_q_network.feed_forward(next_phi)
                 for i in range(len(target_rewards)):
-                    target_rewards[i] += target_q_values[i]
+                    target_rewards[i] += self.discount_factor * target_q_values[i]
 
             training_batch.append((np.array(phi), target_rewards))
+
+        if self.total_step % self.update_frequency == 0:
+            print(self.total_step, target_rewards, "Max: ", self.possible_actions[np.argmax(target_rewards)])
 
         self.q_network.stochastic_gradient_descent(training_batch)
 
@@ -172,13 +171,10 @@ class DQLAgent:
                 self.replay()
 
                 if step % self.update_frequency == 0:
-                    print(self.total_step)
-                    self.q_network.print_network([3])
                     self.target_q_network = self.q_network
                     self.update_target_network()
 
                 if self.total_step % self.save_frequency == 0:
-                    self.q_network.print_network()
                     self.q_network.save_network()
 
                 # Roll over all variables
@@ -192,7 +188,7 @@ class DQLAgent:
 
 def main():
     env = PongEnv()
-    agt = DQLAgent(env, "NN_saves/NN-2022-06-01-13-44-14.npz")
+    agt = DQLAgent(env)
 
     agt.learn(1000)
 
