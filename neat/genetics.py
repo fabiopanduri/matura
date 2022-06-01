@@ -332,7 +332,7 @@ class Genome:
                            random.random(), innovation_number)
         )
 
-    def add_node(self, node_id, innovation_number, activation_function="linear"):
+    def add_node(self, node_id, innovation_number_nodes, activation_function="linear"):
         """
         Mutation method that splits a connection between two nodes and inserts a new node in the
         middle
@@ -346,13 +346,13 @@ class Genome:
 
         out_node_id = connection.out_node_id
         connection_to_new_node = ConnectionGene(
-            out_node_id, node_id, 1, innovation_number
+            out_node_id, node_id, 1, innovation_number_nodes
         )
         self.connections.append(connection_to_new_node)
 
         in_node_id = connection.in_node_id
         connection_from_new_node = ConnectionGene(
-            node_id, in_node_id, connection.weight, innovation_number + 1
+            node_id, in_node_id, connection.weight, innovation_number_nodes + 1
         )
         self.connections.append(connection_from_new_node)
 
