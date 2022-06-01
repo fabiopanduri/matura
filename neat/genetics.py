@@ -48,14 +48,12 @@ class ConnectionGene:
 
 
 class Genome:
-    def __init__(self, nodes, connections, speciation_constants=(1, 1, 1)):
+    def __init__(self, nodes, connections):
         self.nodes = {node.id: node for node in nodes}
 
         self.connections = connections
 
         self.fitness = 0
-
-        self.speciation_constants = speciation_constants
 
     def connection_dict(self):
         return {c.innovation_number: c for c in self.connections}
@@ -127,7 +125,7 @@ class Genome:
 
         return cls(nodes.values(), connections)
 
-    def delta(self, other):
+    def delta(self, other, speciation_constants=(1, 1, 1)):
         """
         This method gives the compatibility distance delta of the instance and another instance
         """
@@ -165,12 +163,7 @@ class Genome:
 
         W_bar = weight_difference_sum / weight_difference_count
 
-        print(f"{N=}")
-        print(f"{E=}")
-        print(f"{D=}")
-        print(f"{W_bar=}")
-
-        c_1, c_2, c_3 = self.speciation_constants
+        c_1, c_2, c_3 = speciation_constants
 
         return (c_1 * E) / N + (c_2 * D) / N + c_3 * W_bar
 
@@ -328,9 +321,26 @@ class Genome:
         )
         self.connections.append(connection_from_new_node)
 
+    def mutate_weights(self, weight_mutation_constants=(0.8, 0.9)):
+        """
+        With a given chance mutate a weight either by multiplying it with a number or by getting a
+        completely new value
+        First element in weight_mutation_constants is the chance a weight is mutated
+        The second one is the chance it is multiplied if it is mutated
+        """
+
+        mut_chance, mult_chance = weight_mutation_constants
+
+        for connection in self.connection:
+            if random.random() < mut_chance:
+                if random.random < mult_chance:
+                    connection.weight *= random.uniform(-2, 2)
+                else:
+                    connection.weight = random.uniform(-2, 2)
+
     def calculate_node(self, node_id):
         """
-        Function to recursively calculate the activation of nodes
+        Method to recursively calculate the activation of nodes
         """
 
         if node_id in self.table:
