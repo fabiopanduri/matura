@@ -394,14 +394,15 @@ class PongEnv:
         self.ball = Ball()
         self.score = [0, 0]
         self.pygame_graphics = PongGraphics()
-        self.possible_actions = ['up', 'down', 'stay']
+        self.possible_actions = ['up', 'stay', 'down']
         self.state_size = len(self.make_observation())
 
     def make_observation(self):
         '''
         Helper method returning current game's current internal state.
         '''
-        return (self.left_paddle.relative_y_position(), self.right_paddle.relative_y_position(), *self.ball.relative_position(), *self.ball.velocity)
+        # return (self.left_paddle.relative_y_position(), self.right_paddle.relative_y_position(), *self.ball.relative_position(), *self.ball.velocity)
+        return (self.right_paddle.relative_y_position(), self.ball.relative_position()[1])
 
     def step(self, action):
         '''
@@ -422,7 +423,7 @@ class PongEnv:
              right_movement,
              self.pygame_graphics
              )
-        
+
         if self.score[0] == prev_score[0] + 1:
             # Negative reward if opponent gets a point
             reward = -1

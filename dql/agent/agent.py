@@ -96,6 +96,10 @@ class DQLAgent:
             q_values = self.q_network.feed_forward(state)
             movement = self.possible_actions[np.argmax(q_values)]
 
+            if self.total_step % self.update_frequency == 0:
+                print(self.total_step, q_values, "Max: ",
+                      self.possible_actions[np.argmax(q_values)])
+
         return [movement]
 
     def execute_action(self, action):
@@ -135,12 +139,10 @@ class DQLAgent:
                 # If episode doesn't terminate, add the estimated rewards for each future action
                 target_q_values = self.target_q_network.feed_forward(next_phi)
                 for i in range(len(target_rewards)):
-                    target_rewards[i] += self.discount_factor * target_q_values[i]
+                    target_rewards[i] += self.discount_factor * \
+                        target_q_values[i]
 
             training_batch.append((np.array(phi), target_rewards))
-
-        if self.total_step % self.update_frequency == 0:
-            print(self.total_step, target_rewards, "Max: ", self.possible_actions[np.argmax(target_rewards)])
 
         self.q_network.stochastic_gradient_descent(training_batch)
 
@@ -188,9 +190,9 @@ class DQLAgent:
 
 def main():
     env = PongEnv()
-    agt = DQLAgent(env)
+    agt = DQLAgent(env, "NN_saves/NN-2022-06-01-17-17-38.npz")
 
-    agt.learn(1000)
+    agt.learn(100000)
 
 
 if __name__ == '__main__':
