@@ -10,7 +10,8 @@ import random
 
 import matplotlib.pyplot as plt
 import networkx as nx
-from activation_functions import *
+
+from etc.activation_functions import *
 
 
 class NodeGene:
