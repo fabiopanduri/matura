@@ -374,7 +374,7 @@ class PongEnv:
         
         if self.score == prev_score:
             # Slight negative reward for each game tick which is not a point
-            reward = -0.001 
+            reward = 0 
         elif self.score[0] == prev_score[0] + 1:
             # Negative reward if opponent gets a point
             reward = -1 

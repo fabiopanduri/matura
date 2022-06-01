@@ -200,6 +200,14 @@ class NeuralNetwork:
 			self.biases[l] = self.biases[l] - bias_delta_sum[l] * self.eta / len(training_batch)
 
 
+	def print_network(self):
+		'''
+        For debugging purposes. Print the current weights and biases of the network.
+        '''
+		for l in range(1, self.layers):
+			print(f'Layer {l}: {self.weights[l]}; {self.biases[l]}')
+
+
 def main():
 
 	'''
