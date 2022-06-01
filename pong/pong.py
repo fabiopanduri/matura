@@ -1,22 +1,21 @@
 # Copyright (C) 2022 Luis Hartmann and Fabio Panduri
-
 # This file is part of maturaarbeit_code.
 # maturaarbeit_code is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 3.
 # maturaarbeit_code is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 # You should have received a copy of the GNU General Public License along with maturaarbeit_code. If not, see <https://www.gnu.org/licenses/>.
-
 # Pong game to be played by ML algorithms
-
+import math
+import random
+import time
+from typing import List
+from typing import Tuple
 
 import numpy as np
-import random
-import math
-import time
 import pygame
-from typing import List, Tuple
 
 # Adjust as needed
-WINDOW_SIZE = (800, 500)  # (0|0) is on the top left. x-Axis is right, y-Axis down
+# (0|0) is on the top left. x-Axis is right, y-Axis down
+WINDOW_SIZE = (800, 500)
 BALL_RADIUS = 12
 BALL_SPEED = 4
 PADDLE_SPEED = 3
@@ -76,7 +75,8 @@ class Ball:
 
         # norm of velocity must = BALL_SPEED
         self.velocity = np.array(
-            [math.sqrt(BALL_SPEED**2 - random_y_velocity**2), random_y_velocity]
+            [math.sqrt(BALL_SPEED**2 - random_y_velocity**2),
+             random_y_velocity]
         )
 
     def reset(self):
@@ -155,7 +155,8 @@ class PaddleSprite(pygame.sprite.Sprite):
         self.image.fill(COLOR_BACKGROUND)
         self.image.set_colorkey(COLOR_BACKGROUND)
 
-        pygame.draw.rect(self.image, COLOR_SPRITE, [0, 0, PADDLE_WIDTH, PADDLE_HEIGHT])
+        pygame.draw.rect(self.image, COLOR_SPRITE, [
+                         0, 0, PADDLE_WIDTH, PADDLE_HEIGHT])
 
         self.rect = self.image.get_rect()
 
@@ -186,19 +187,23 @@ class BallSprite(pygame.sprite.Sprite):
         self.rect.x = ball_position[0] - BALL_RADIUS
         self.rect.y = ball_position[1] - BALL_RADIUS
 
+
 class Scoreboard:
     def __init__(self):
-        self.font = pygame.font.SysFont('FreeMono.ttf', 48) # Initialize Font. Takes a few seconds
-        
+        # Initialize Font. Takes a few seconds
+        self.font = pygame.font.SysFont('FreeMono.ttf', 48)
+
     def render_score(self, screen, score):
-        self.text = self.font.render(f'{score[0]} : {score[1]}', True, COLOR_FOREGROUND)
+        self.text = self.font.render(
+            f'{score[0]} : {score[1]}', True, COLOR_FOREGROUND)
         screen.blit(self.text, (0, 0))
-        
-        
+
+
 class PongGraphics:
     '''
     Handles all graphics/pygame related stuff for pong game.
     '''
+
     def __init__(self):
         '''
         Create pygame environment with screen an sprites for paddles and ball.
@@ -208,9 +213,10 @@ class PongGraphics:
         self.left_paddle_sprite = PaddleSprite()
         self.right_paddle_sprite = PaddleSprite()
         self.ball_sprite = BallSprite()
-        
-        self.sprite_group.add(self.left_paddle_sprite, self.right_paddle_sprite, self.ball_sprite)
-        
+
+        self.sprite_group.add(self.left_paddle_sprite,
+                              self.right_paddle_sprite, self.ball_sprite)
+
         self.scoreboard = Scoreboard()
         self.screen = pygame.display.set_mode(WINDOW_SIZE)
 
@@ -224,28 +230,18 @@ class PongGraphics:
         self.ball_sprite.update(ball_position)
 
         self.screen.fill(COLOR_BACKGROUND)
-        pygame.draw.line(self.screen, COLOR_FOREGROUND, [WINDOW_SIZE[0] // 2, 0], [WINDOW_SIZE[0] // 2, WINDOW_SIZE[1]], 5)
-        
+        pygame.draw.line(self.screen, COLOR_FOREGROUND, [
+                         WINDOW_SIZE[0] // 2, 0], [WINDOW_SIZE[0] // 2, WINDOW_SIZE[1]], 5)
+
         # Draw Sprites
         self.sprite_group.draw(self.screen)
-        
+
         # Update Scoreboard
         self.scoreboard.render_score(self.screen, score)
         pygame.display.flip()
 
 
-def tick(
-    left_paddle,
-    right_paddle,
-    ball,
-    screen,
-    sprites,
-    sprite_group,
-    score,
-    scoreboard,
-    left_movement="",
-    right_movement="",
-):
+def tick(left_paddle, right_paddle, ball, score, left_movement, right_movement, pygame_graphics):
     """
     Handle one game Tick. Uses parsed arguments for movement if given, else pygame keyboard input.
     Movement options are 'stay', 'up', 'down'.
@@ -273,11 +269,12 @@ def tick(
             right_paddle.move("up")
     else:
         right_paddle.move(right_movement)
-    
+
     ball.update(left_paddle, right_paddle, score)
 
     # Perform graphics operations
-    pygame_graphics.update_screen(left_paddle.position, right_paddle.position, ball.position, score)
+    pygame_graphics.update_screen(
+        left_paddle.position, right_paddle.position, ball.position, score)
 
     return (
         left_paddle.relative_y_position(),
@@ -424,18 +421,18 @@ class PongEnv:
              left_movement,
              right_movement,
              self.pygame_graphics
-            )
-        
+             )
+
         if self.score == prev_score:
             # Slight negative reward for each game tick which is not a point
-            reward = 0 
+            reward = 0
         elif self.score[0] == prev_score[0] + 1:
             # Negative reward if opponent gets a point
-            reward = -1 
+            reward = -1
         elif self.score[1] == prev_score[1] + 1:
             # Positive reward if agent gets a point
-            reward = 1 
-        
+            reward = 1
+
         return self.make_observation(), reward, self.score
 
 
@@ -456,16 +453,16 @@ def _main():
     right_paddle = Paddle("right")
     ball = Ball()
     score = [0, 0]
-    
+
     # Sprites do no math and have no mechanics other than displaying the Ball and Paddles
     sprite_group = pygame.sprite.Group()
     sprites = [PaddleSprite(), PaddleSprite(), BallSprite()]
     for sprite in sprites:
         sprite_group.add(sprite)
-        
+
     screen = pygame.display.set_mode(WINDOW_SIZE)
     scoreboard = Scoreboard()
-        
+
     # Game loop
     clock = pygame.time.Clock()
     while True:
