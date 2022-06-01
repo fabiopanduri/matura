@@ -59,7 +59,7 @@ class Genome:
         return {c.innovation_number: c for c in self.connections}
 
     @classmethod
-    def empty_genome(
+    def make_empty_genome(
         cls,
         n_inputs,
         n_hidden,
@@ -94,6 +94,41 @@ class Genome:
             node_id += 1
 
         return cls(nodes, [])
+
+    @classmethod
+    def make_connected_genome(cls, n_inputs, n_outputs, activation_functions_output=[]):
+        """
+        Method to crate a network where all input nodes have a connection to all output nodes
+        """
+
+        nodes = []
+        node_id = 0
+
+        for _ in range(n_inputs):
+            nodes.append(NodeGene(node_id, "input", "linear"))
+            node_id += 1
+
+        for i in range(n_outputs):
+            try:
+                act_func = activation_functions_output[i]
+            except IndexError:
+                act_func = "linear"
+
+            nodes.append(NodeGene(node_id, "output", act_func))
+            node_id += 1
+
+        connections = []
+        innov = 0
+        for out_node in nodes:
+            for in_node in nodes:
+                if out_node != in_node and out_node.type == 'input' and in_node.type == 'output':
+                    connections.append(
+                        ConnectionGene(out_node.id, in_node.id,
+                                       random.uniform(-2, 2), innov)
+                    )
+                    innov += 1
+
+        return cls(nodes, connections)
 
     @classmethod
     def crossover(cls, parent1, parent2):
@@ -416,7 +451,7 @@ class Genome:
 
 
 def main():
-
+    """
     G1 = Genome(
         [
             NodeGene(0, "input", "linear"),
@@ -456,6 +491,10 @@ def main():
     print("G2:")
     for connection in G2.connections:
         print(connection.__dict__)
+    """
+
+    G = Genome.make_connected_genome(5, 2)
+    G.draw()
 
     """
     G3 = Genome.crossover(G1, G2)
