@@ -19,7 +19,8 @@ class NEAT:
         population_size,
         nn_base_dimensions,
         speciation_constants,
-        weight_mutation_constants
+        weight_mutation_constants,
+        delta_t
     ):
         self.env = env
         self.population_size = population_size
@@ -28,6 +29,7 @@ class NEAT:
         self.global_innovation_number = 0
         self.speciation_constants = speciation_constants
         self.weight_mutation_constants = weight_mutation_constants
+        self.delta_t = delta_t
 
     def simulate_population(self, max_T):
         """
@@ -55,6 +57,39 @@ class NEAT:
 
             else:
                 individual.fitness = 0
+
+    def speciation(self, previous_gen_species):
+        """
+        This method will create species for the current generation based of the species of the last
+        generation
+        If an individual does not fit into any species a new species is created
+        """
+
+        species = {}
+        for individual in self.population:
+            for i, representatives in previous_gen_species.items():
+                if random.choice(representatives).delta(individual) < self.delta_t:
+                    if i in species:
+                        species[i].append(individual)
+                    else:
+                        species[i] = [individual]
+                    break
+
+            else:
+                if not species.keys() and not previous_gen_species.keys():
+                    new_species_i = 0
+                elif not species.keys():
+                    new_species_i = max(previous_gen_species.keys()) + 1
+                elif not previous_gen_species.keys():
+                    new_species_i = max(species.keys()) + 1
+                else:
+                    new_species_i = max(
+                        max(species.keys()),
+                        max(previous_gen_species.keys())
+                    ) + 1
+                species[new_species_i] = [individual]
+
+        return species
 
     def make_population_empty(self, activation_functions_hidden=[], activation_functions_output=[]):
         """
@@ -95,10 +130,18 @@ class NEAT:
 
 
 def main():
-    N = NEAT(1, [4, 3, 2, 1, 4], (1, 1, 1), (0.8, 0.9))
+    N = NEAT(int, 4, [4, 4], (1, 1, 1), (0.8, 0.9), 1)
     N.make_population_connected()
+
+    s1 = N.speciation({})
+    print(s1)
+    s2 = N.speciation(s1)
+    print(s2)
+
+    """
     for p in N.population:
         p.draw()
+    """
 
 
 if __name__ == "__main__":
