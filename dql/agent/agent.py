@@ -38,7 +38,7 @@ class ReplayMemory:
 
 
 class DQLAgent:
-    def __init__(self, env):
+    def __init__(self, env, load_network_path=None):
         '''
         Adjust these parameters as you wish
         '''
@@ -62,8 +62,12 @@ class DQLAgent:
                               10, 10, len(self.possible_actions)]
         self.learning_rate = 0.1
         self.activation_functions = ['sigmoid' for _ in range(4)]
-        self.q_network = NeuralNetwork(
-            self.nn_dimensions, self.learning_rate, self.activation_functions)
+        # Allows for loading of previously trained q_networks from files
+        if load_network_path == None:
+            self.q_network = NeuralNetwork(
+                self.nn_dimensions, self.learning_rate, self.activation_functions)
+        else:
+            self.q_network = NeuralNetwork.load_network(load_network_path)
         self.q_network.initialize_network()
         self.update_target_network()
         self.save_frequency = 10000
@@ -77,8 +81,9 @@ class DQLAgent:
         Get Epsilon (exploration rate). Linearly adjusted from 1.0 to terminal_eps.
         '''
         # y = -(1-terminal_eps)/1'000'000x + 1.0
-        eps = - (0.8 - terminal_eps) / 100000 * step + 1.0
-        return eps
+        eps = - (1.0 - terminal_eps) / 100000 * step + 1.0
+        # return eps
+        return 0.01
 
     def get_action(self, state):
         '''
@@ -91,7 +96,6 @@ class DQLAgent:
         # Else select action which leads to max reward estimated by Q.
         else:
             q_values = self.q_network.feed_forward(state)
-            print(q_values)
             movement = self.possible_actions[np.argmax(q_values)]
 
         return [movement]
@@ -125,10 +129,11 @@ class DQLAgent:
 
             # Initially, target = network prediction
             target_rewards = self.q_network.feed_forward(phi)
-            # self.q_network.print_network()
             # If episode terminates at next step, reward = current reward for the taken action.
             taken = self.possible_actions.index(action[0])
             target_rewards[taken] = reward
+            if self.total_step % self.update_frequency == 0:
+                print(target_rewards)
 
             if not terminal:
                 # If episode doesn't terminate, add the estimated rewards for each future action
@@ -167,12 +172,13 @@ class DQLAgent:
                 self.replay()
 
                 if step % self.update_frequency == 0:
-                    self.q_network.print_network()
+                    print(self.total_step)
+                    self.q_network.print_network([3])
                     self.target_q_network = self.q_network
                     self.update_target_network()
 
-                if step % self.step_frequency == 0:
-                    print(self.total_step)
+                if self.total_step % self.save_frequency == 0:
+                    self.q_network.print_network()
                     self.q_network.save_network()
 
                 # Roll over all variables
@@ -186,7 +192,7 @@ class DQLAgent:
 
 def main():
     env = PongEnv()
-    agt = DQLAgent(env)
+    agt = DQLAgent(env, "NN_saves/NN-2022-06-01-13-44-14.npz")
 
     agt.learn(1000)
 

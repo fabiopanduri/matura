@@ -90,11 +90,12 @@ class NeuralNetwork:
         '''
 
         if file_name == None:
-            file_name = f'NN-{datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")}.npz'
+            file_name = f'NN_saves/NN-{datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")}.npz'
 
         if os.path.exists(file_name):
             inp = input(
                 f'[WARNING] The file {file_name} already exists. Do you want to proceed? [y/n] ').lower()
+            inp = 'n' # Remove this if input should be gathered. 
             while True:
                 if inp == 'y':
                     print(f'[INFO] Saving to {file_name}...')
@@ -205,12 +206,17 @@ Input: Training batch of form [(in, target_out), (in, target_out), ...]
             self.biases[l] = self.biases[l] - \
                 bias_delta_sum[l] * self.eta / len(training_batch)
 
-    def print_network(self):
+    def print_network(self, layers = []):
         '''
-For debugging purposes. Print the current weights and biases of the network.
+For debugging purposes. Print the current weights and biases of the network to stdout. If layers is parsed print only those layers
 '''
-        for l in range(1, self.layers):
-            print(f'Layer {l}: {self.weights[l]}; {self.biases[l]}')
+        if layers == []:
+            for l in range(1, self.layers):
+                print(f'Layer {l}: {self.weights[l]}; {self.biases[l]}')
+        else:
+            for l in layers:
+                print(f'Layer {l}: {self.weights[l]}; {self.biases[l]}')
+
 
 
 def main():
