@@ -59,7 +59,7 @@ class DQLAgent:
         Output: Estimated reward for each possible action
         '''
         self.nn_dimensions = [self.env.state_size,
-                              10, 10, len(self.possible_actions)]
+                              5, 5, len(self.possible_actions)]
         self.learning_rate = 0.1
         self.activation_functions = ['tanh' for _ in range(4)]
         # Allows for loading of previously trained q_networks from files
@@ -133,11 +133,11 @@ class DQLAgent:
             target_rewards = self.q_network.feed_forward(phi)
             # If episode terminates at next step, reward = current reward for the taken action.
             taken = self.possible_actions.index(action[0])
-            target_rewards[taken] = reward
+            target_rewards[taken] = 0
 
             if not terminal:
                 # If episode doesn't terminate, add the estimated rewards for each future action
-                target_rewards[taken] += np.max(
+                target_rewards[taken] += self.discount_factor * np.max(
                     self.target_q_network.feed_forward(next_phi))
 
             training_batch.append((np.array(phi), target_rewards))
@@ -187,7 +187,7 @@ class DQLAgent:
 
 def main():
     env = PongEnv()
-    agt = DQLAgent(env, "NN_saves/NN-2022-06-01-17-55-52.npz")
+    agt = DQLAgent(env)
 
     agt.learn(100000)
 

@@ -8,7 +8,7 @@ import os
 
 import numpy as np
 
-import dql.neural_network.activation_functions as af
+import etc.activation_functions as af
 
 
 def mean_squared_error_derivative(activation, y):
