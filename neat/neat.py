@@ -91,6 +91,20 @@ class NEAT:
 
         return species
 
+    def get_species_sizes(self, species):
+        """
+        Calculate the number of offspring each species can produce 
+        """
+
+        s_fitness = {i: 0 for i in species.keys()}
+        for s_index, s in species:
+            for individual in s:
+                s_fitness[s_index] += individual.fitness
+
+        total_fitness = sum(s_fitness.values())
+
+        return {i: s_f // total_fitness for i, s_f in s_fitness.items()}
+
     def make_population_empty(self, activation_functions_hidden=[], activation_functions_output=[]):
         """
         Makes a generation of the given population size with the given nn_base_dimensions

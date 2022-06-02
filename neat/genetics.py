@@ -202,6 +202,14 @@ class Genome:
 
         return (c_1 * E) / N + (c_2 * D) / N + c_3 * W_bar
 
+    def adjust_fitness(self, species):
+        """
+        This method updates the fitness of the genome according to the number of individuals in the
+        species
+        """
+
+        self.fitness /= len(species)
+
     def save_network(self, file_name=None):
         """
         Method to save a genome to a .json file
