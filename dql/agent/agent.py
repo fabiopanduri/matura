@@ -137,10 +137,8 @@ class DQLAgent:
 
             if not terminal:
                 # If episode doesn't terminate, add the estimated rewards for each future action
-                target_q_values = self.target_q_network.feed_forward(next_phi)
-                for i in range(len(target_rewards)):
-                    target_rewards[i] += self.discount_factor * \
-                        target_q_values[i]
+                target_rewards[taken] += np.max(
+                    self.target_q_network.feed_forward(next_phi))
 
             training_batch.append((np.array(phi), target_rewards))
 
@@ -173,7 +171,6 @@ class DQLAgent:
                 self.replay()
 
                 if step % self.update_frequency == 0:
-                    self.target_q_network = self.q_network
                     self.update_target_network()
 
                 if self.total_step % self.save_frequency == 0:
@@ -190,7 +187,7 @@ class DQLAgent:
 
 def main():
     env = PongEnv()
-    agt = DQLAgent(env, "NN_saves/NN-2022-06-01-17-17-38.npz")
+    agt = DQLAgent(env, "NN_saves/NN-2022-06-01-17-55-52.npz")
 
     agt.learn(100000)
 
