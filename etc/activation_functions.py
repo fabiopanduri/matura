@@ -30,14 +30,34 @@ def linear_derivative(x):
     return 1
 
 
+def tanh(x):
+    return (np.exp(x) - np.exp(-x)) / (np.exp(x) + np.exp(-x))
+
+
+def tanh_derivative(x):
+    return (1 - tanh(x)**2)
+
+
+def PReLU(x, alpha):
+    return alpha * x if x < 0 else x
+
+
+def PReLU_derivative(x, alpha):
+    return alpha if x < 0 else 1
+
+
 activation_functions = {
     "sigmoid": sigmoid,
     "ReLU": ReLU,
     "linear": linear,
+    "tanh": tanh,
+    "PReLU": PReLU,
 }
 
 activation_functions_derivatives = {
     "sigmoid": sigmoid_derivative,
     "ReLU": ReLU_derivative,
     "linear": linear_derivative,
+    "tanh": tanh_derivative,
+    "PReLU": PReLU_derivative,
 }
