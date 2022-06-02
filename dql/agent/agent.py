@@ -61,7 +61,7 @@ class DQLAgent:
         self.nn_dimensions = [self.env.state_size,
                               10, 10, len(self.possible_actions)]
         self.learning_rate = 0.1
-        self.activation_functions = ['sigmoid' for _ in range(4)]
+        self.activation_functions = ['tanh' for _ in range(4)]
         # Allows for loading of previously trained q_networks from files
         if load_network_path == None:
             self.q_network = NeuralNetwork(
