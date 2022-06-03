@@ -76,11 +76,14 @@ class DQLAgent:
         self.target_q_network = NeuralNetwork(
             self.nn_dimensions, self.learning_rate, self.activation_functions, self.q_network.weights, self.q_network.biases)
 
-    def get_eps(self, step, terminal_eps=0.01):
+    def get_eps(self, step, terminal_eps=0.1):
         '''
-        Get Epsilon (exploration rate). Linearly adjusted from 1.0 to terminal_eps.
+        Get Epsilon (exploration rate). 
         '''
-        eps = - (1.0 - terminal_eps) / 10000 * step + 1.0
+        # Linear:
+        # eps = - (1.0 - terminal_eps) / 100000 * step + 1.0
+        # Exp decay:
+        eps = max(terminal_eps, 1.0 * (2 ** (-step / 30000)))
         return eps
 
     def get_action(self, state):
@@ -173,7 +176,8 @@ class DQLAgent:
                 if step % self.update_frequency == 0:
                     self.update_target_network()
 
-                if self.total_step % self.save_frequency == 0:
+                # The +1 is that it doesn't always save on start -> less clutter
+                if (self.total_step + 1) % self.save_frequency == 0:
                     self.q_network.save_network()
 
                 # Roll over all variables
