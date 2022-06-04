@@ -277,7 +277,11 @@ class PongGame:
         Output: terminated = True if a new game started
         '''
 
+        self.left_paddle.move(left_movement)
+        self.right_paddle.move(right_movement)
         side_collision = self.ball.update(self.left_paddle, self.right_paddle)
+
+        # Calculate new score
         terminated = True
         if side_collision == 'left':
             self.score[1] += 1
