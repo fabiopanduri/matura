@@ -41,7 +41,7 @@ class Paddle:
         elif self.side == "right":
             self.position[0] = WINDOW_SIZE[0] - PADDLE_WIDTH
 
-    def move(self, direction: str) -> None:
+    def move(self, direction):
         """
         Handle movement and top / bottom Collision
         """
@@ -56,7 +56,7 @@ class Paddle:
                 self.position[1] + PADDLE_SPEED, WINDOW_SIZE[1] - PADDLE_HEIGHT
             )
 
-    def relative_y_position(self) -> float:
+    def relative_y_position(self):
         """
         Returns a value from 0 to 1 indicating how far the paddle has travelled
         """
@@ -84,7 +84,7 @@ class Ball:
     def reset(self):
         self.__init__()
 
-    def border_collision(self) -> None:
+    def border_collision(self):
         side_collision = ''
         if (self.position[0] - BALL_RADIUS) <= 0:
             # Collision with left wall
@@ -102,7 +102,9 @@ class Ball:
             # Collision with top or bottom wall
             self.velocity = np.multiply(self.velocity, np.array([1, -1]))
 
-    def paddle_collision(self, left_paddle, right_paddle) -> None:
+        return side_collision
+
+    def paddle_collision(self, left_paddle, right_paddle):
         # Apply rectangle-circle collision function to ball with both paddles
         self.velocity = rect_circle_collision(
             (
@@ -125,7 +127,7 @@ class Ball:
             self.velocity,
         )
 
-    def update(self, left_paddle, right_paddle) -> None:
+    def update(self, left_paddle, right_paddle):
         '''
         Check for collision with walls (side and top/bottom) and paddles.
         Move ball according to velocity.
@@ -137,7 +139,7 @@ class Ball:
         self.position += self.velocity
         return side_collision
 
-    def relative_position(self) -> Tuple[float, float]:
+    def relative_position(self):
         """
         Return the balls position in the playing field as two floats from 0 to 1
         (relative horizontal and vertical position)
@@ -293,12 +295,11 @@ class PongGame:
             terminated = False
 
         if self.graphics_enabled:
-            self.update_screen(
-                self.left_paddle.position, self.right_paddle.position, self.ball.position, self.score)
+            self.update_screen()
 
         return terminated
 
-    def update_screen(self, left_paddle_position, right_paddle_position, ball_position, score):
+    def update_screen(self):
         '''
         Update pygame window with new sprite positions and new score.
         '''
@@ -306,9 +307,9 @@ class PongGame:
             return
 
         # Update Sprites
-        self.left_paddle_sprite.update(left_paddle_position)
-        self.right_paddle_sprite.update(right_paddle_position)
-        self.ball_sprite.update(ball_position)
+        self.left_paddle_sprite.update(self.left_paddle.position)
+        self.right_paddle_sprite.update(self.right_paddle.position)
+        self.ball_sprite.update(self.ball.position)
 
         self.screen.fill(COLOR_BACKGROUND)
         pygame.draw.line(self.screen, COLOR_FOREGROUND, [
@@ -318,7 +319,7 @@ class PongGame:
         self.sprite_group.draw(self.screen)
 
         # Update Scoreboard
-        self.scoreboard.render_score(self.screen, score)
+        self.scoreboard.render_score(self.screen, self.score)
         pygame.display.flip()
 
 

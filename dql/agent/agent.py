@@ -42,26 +42,23 @@ class DQLAgent:
         '''
         Adjust these parameters as you wish
         '''
-        # DQL Params
         self.env = env
         self.possible_actions = env.possible_actions
         self.memory_size = 10000
         self.memory = ReplayMemory(self.memory_size)
         self.update_frequency = 100
+        self.save_frequency = 10000
         self.discount_factor = 0.01
         self.minibatch_size = 32
         self.total_step = 0
-
-        # NN Params
-        '''
-        Neural Network.
-        Input: Current state 
-        Output: Estimated reward for each possible action
-        '''
-        self.nn_dimensions = [self.env.state_size,
-                              5, 5, len(self.possible_actions)]
         self.learning_rate = 0.1
-        self.activation_functions = ['tanh' for _ in range(4)]
+
+        # Neural Network.
+        # Input: Current state
+        # Output: Estimated reward for each possible action
+        self.nn_dimensions = [self.env.state_size,
+                              20, len(self.possible_actions)]
+        self.activation_functions = ['tanh', 'tanh', 'linear']
         # Allows for loading of previously trained q_networks from files
         if load_network_path == None:
             self.q_network = NeuralNetwork(
@@ -70,7 +67,6 @@ class DQLAgent:
             self.q_network = NeuralNetwork.load_network(load_network_path)
         self.q_network.initialize_network()
         self.update_target_network()
-        self.save_frequency = 10000
 
     def update_target_network(self):
         self.target_q_network = NeuralNetwork(
