@@ -56,7 +56,7 @@ def rect_circle_collision(
             return np.multiply(circle_velocity, np.array([-1, 1]))
 
     # Bottom side
-    if circle[1] > rectangle[1] and rectangle[0] < circle[0] < rectangle[2]:
+    if circle[1] > rectangle[2] and rectangle[0] < circle[0] < rectangle[2]:
         # Collision?
         if circle[1] - circle[2] <= rectangle[1]:
             return np.multiply(circle_velocity, np.array([1, -1]))
@@ -68,7 +68,7 @@ def rect_circle_collision(
             return np.multiply(circle_velocity, np.array([-1, 1]))
 
     # Top side
-    if circle[1] < rectangle[1] and rectangle[0] < circle[1] < rectangle[2]:
+    if circle[1] < rectangle[1] and rectangle[0] < circle[0] < rectangle[2]:
         # Collision?
         if circle[1] + circle[2] >= rectangle[1]:
             return np.multiply(circle_velocity, np.array([1, -1]))

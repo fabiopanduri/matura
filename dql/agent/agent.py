@@ -48,7 +48,7 @@ class DQLAgent:
         self.memory = ReplayMemory(self.memory_size)
         self.update_frequency = 100
         self.save_frequency = 10000
-        self.discount_factor = 0.01
+        self.discount_factor = 0.95
         self.minibatch_size = 32
         self.total_step = 0
         self.learning_rate = 0.1
@@ -57,8 +57,8 @@ class DQLAgent:
         # Input: Current state
         # Output: Estimated reward for each possible action
         self.nn_dimensions = [self.env.state_size,
-                              20, len(self.possible_actions)]
-        self.activation_functions = ['tanh', 'tanh', 'linear']
+                              20, 20, len(self.possible_actions)]
+        self.activation_functions = ['ReLU', 'ReLU', 'ReLU', 'linear']
         # Allows for loading of previously trained q_networks from files
         if load_network_path == None:
             self.q_network = NeuralNetwork(
@@ -79,7 +79,7 @@ class DQLAgent:
         # Linear:
         # eps = - (1.0 - terminal_eps) / 100000 * step + 1.0
         # Exp decay:
-        eps = max(terminal_eps, 1.0 * (2 ** (-step / 30000)))
+        eps = max(terminal_eps, 1.0 * (2 ** (-step / 5000)))
         return eps
 
     def get_action(self, state):
@@ -132,7 +132,7 @@ class DQLAgent:
             target_rewards = self.q_network.feed_forward(phi)
             # If episode terminates at next step (terminal=True), reward = current reward for the taken action.
             taken = self.possible_actions.index(action[0])
-            target_rewards[taken] = 0
+            target_rewards[taken] = reward
 
             if not terminal:
                 # If episode doesn't terminate, add the estimated rewards for each future action

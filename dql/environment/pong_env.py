@@ -51,7 +51,7 @@ class PongEnv:
             reward = 1
         else:
             # Slight negative reward if no point made
-            reward = -0.0001
+            reward = 0
 
         return self.make_observation(), reward, terminated
 
