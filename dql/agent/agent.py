@@ -9,8 +9,8 @@ from collections import deque
 
 import numpy as np
 
+from dql.environment.pong_env import PongEnv
 from dql.neural_network.neural_network import NeuralNetwork
-from pong.pong import PongEnv
 
 
 class ReplayMemory:
@@ -109,8 +109,8 @@ class DQLAgent:
         '''
         Execute action in emulator and observe state and reward, also score for determining if state is terminal
         '''
-        state, reward, score = self.env.step(action)
-        return state, reward, score
+        state, reward, terminated = self.env.step(action)
+        return state, reward, terminated
 
     def preprocessor(self, state):
         '''
@@ -134,7 +134,7 @@ class DQLAgent:
 
             # Initially, target = network prediction
             target_rewards = self.q_network.feed_forward(phi)
-            # If episode terminates at next step, reward = current reward for the taken action.
+            # If episode terminates at next step (terminal=True), reward = current reward for the taken action.
             taken = self.possible_actions.index(action[0])
             target_rewards[taken] = 0
 
@@ -152,23 +152,19 @@ class DQLAgent:
         Perform Q Learning as described by Algorithm 1 in Mnih et al. 2015
         '''
         for episode in range(n_of_episodes):
-            terminal = False
-            score = self.env.score
+            terminated = False
             state = self.env.make_observation()
             phi = self.preprocessor(state)
 
             step = 0
             # Play until terminal state/frame is reached
-            while not terminal:
+            while not terminated:
                 # Play one frame and observe new state and reward
                 action = self.get_action(phi)
-                state, reward, next_score = self.execute_action(action)
+                state, reward, terminated = self.execute_action(action)
                 next_phi = self.preprocessor(state)
 
-                # Check if episode terminates, it does when the score updates
-                terminal = score != next_score
-
-                transition = (phi, action, reward, next_phi, terminal)
+                transition = (phi, action, reward, next_phi, terminated)
                 self.memory.store(transition)
 
                 self.replay()
@@ -181,7 +177,7 @@ class DQLAgent:
                     self.q_network.save_network()
 
                 # Roll over all variables
-                score, phi = [i for i in next_score], next_phi
+                phi = next_phi
                 step += 1
                 self.total_step += 1
 

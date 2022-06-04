@@ -13,6 +13,8 @@ from typing import Tuple
 import numpy as np
 import pygame
 
+from pong.geometry import *
+
 # Adjust as needed
 # (0|0) is on the top left. x-Axis is right, y-Axis down
 WINDOW_SIZE = (800, 500)
@@ -82,16 +84,17 @@ class Ball:
     def reset(self):
         self.__init__()
 
-    def wall_collision(self, score) -> None:
+    def border_collision(self) -> None:
+        side_collision = ''
         if (self.position[0] - BALL_RADIUS) <= 0:
             # Collision with left wall
-            score[1] += 1
             self.reset()
+            side_collision += 'left'
 
-        if (self.position[0] + BALL_RADIUS) >= WINDOW_SIZE[0]:
+        elif (self.position[0] + BALL_RADIUS) >= WINDOW_SIZE[0]:
             # Collision with right wall
-            score[0] += 1
             self.reset()
+            side_collision += 'right'
 
         if (self.position[1] - BALL_RADIUS) <= 0 or (
             self.position[1] + BALL_RADIUS
@@ -122,11 +125,17 @@ class Ball:
             self.velocity,
         )
 
-    def update(self, left_paddle, right_paddle, score) -> None:
-        self.wall_collision(score)
+    def update(self, left_paddle, right_paddle) -> None:
+        '''
+        Check for collision with walls (side and top/bottom) and paddles.
+        Move ball according to velocity.
+        Side collisions are returned to calculate the score
+        '''
+        side_collision = self.border_collision()
         self.paddle_collision(left_paddle, right_paddle)
 
         self.position += self.velocity
+        return side_collision
 
     def relative_position(self) -> Tuple[float, float]:
         """
@@ -199,52 +208,9 @@ class Scoreboard:
         screen.blit(self.text, (0, 0))
 
 
-class PongGraphics:
-    '''
-    Handles all graphics/pygame related stuff for pong game.
-    '''
-
-    def __init__(self):
-        '''
-        Create pygame environment with screen an sprites for paddles and ball.
-        '''
-        pygame.init()
-        self.sprite_group = pygame.sprite.Group()
-        self.left_paddle_sprite = PaddleSprite()
-        self.right_paddle_sprite = PaddleSprite()
-        self.ball_sprite = BallSprite()
-
-        self.sprite_group.add(self.left_paddle_sprite,
-                              self.right_paddle_sprite, self.ball_sprite)
-
-        self.scoreboard = Scoreboard()
-        self.screen = pygame.display.set_mode(WINDOW_SIZE)
-
-    def update_screen(self, left_paddle_position, right_paddle_position, ball_position, score):
-        '''
-        Update Screen with new sprite positions and new score.
-        '''
-        # Update Sprites
-        self.left_paddle_sprite.update(left_paddle_position)
-        self.right_paddle_sprite.update(right_paddle_position)
-        self.ball_sprite.update(ball_position)
-
-        self.screen.fill(COLOR_BACKGROUND)
-        pygame.draw.line(self.screen, COLOR_FOREGROUND, [
-                         WINDOW_SIZE[0] // 2, 0], [WINDOW_SIZE[0] // 2, WINDOW_SIZE[1]], 5)
-
-        # Draw Sprites
-        self.sprite_group.draw(self.screen)
-
-        # Update Scoreboard
-        self.scoreboard.render_score(self.screen, score)
-        pygame.display.flip()
-
-
-def tick(left_paddle, right_paddle, ball, score, left_movement, right_movement, pygame_graphics):
+def get_pygame_keys():
     """
-    Handle one game Tick. Uses parsed arguments for movement if given, else pygame keyboard input.
-    Movement options are 'stay', 'up', 'down'.
+    Get keyboard input from pygame for manual playing. Currently NOT IN USE.
     """
     # PyGame event handling
     for event in pygame.event.get():
@@ -272,169 +238,84 @@ def tick(left_paddle, right_paddle, ball, score, left_movement, right_movement, 
 
     ball.update(left_paddle, right_paddle, score)
 
-    # Perform graphics operations
-    pygame_graphics.update_screen(
-        left_paddle.position, right_paddle.position, ball.position, score)
 
-    return (
-        left_paddle.relative_y_position(),
-        right_paddle.relative_y_position(),
-        ball.relative_position(),
-        ball.velocity,
-    )
+class PongGame:
+    '''
+    Put everything together to make the game Pong.
+    '''
 
-
-def circle_corner_bounce(
-    corner: Tuple[int, int], circle: Tuple[int, int, int], circle_velocity
-):
-    """
-    Handle bounce of a circle with a single point
-    """
-
-    # Deconstruct velocity vector into component parallel and component perpendicular to touching radius
-    radius_vector = np.array([corner[0] - circle[0], corner[1] - circle[1]])
-    radius_normal_vector = np.array([-radius_vector[1], radius_vector[0]])
-
-    # solve equation velocity = u * (radius_vector) + v * (radius_normal_vector) <=> A * scalars = velocity
-    A = np.array(
-        [
-            [radius_vector[0], radius_normal_vector[0]],
-            [radius_vector[1], radius_normal_vector[1]],
-        ]
-    )
-
-    scalars = np.linalg.solve(A, circle_velocity)
-    parallel_velocity = scalars[0] * radius_vector
-    perpendicular_velocity = scalars[1] * radius_normal_vector
-
-    # When colliding a circle with a point, the resulting velocity = -1 * (velocity_parallel_to_radius) + (velocity_perpendicular_to_radius)
-    return -1 * (parallel_velocity) + (perpendicular_velocity)
-
-
-def rect_circle_collision(
-    rectangle: Tuple[int, int, int, int], circle: Tuple[int, int, int], circle_velocity
-):
-    """
-    Collide a moving circle with a rectangle. Parse rectangle as top left and bottom right point, circle as centre and radius.
-    """
-
-    # There are 8 possibilites where the ball can be relative to the rectangle.
-    # Four are facing each side of the rectangle
-    # Four are closest to each corner
-
-    # Left side
-    if circle[0] < rectangle[0] and rectangle[1] < circle[1] < rectangle[3]:
-        # Collision?
-        if circle[0] + circle[2] >= rectangle[0]:
-            return np.multiply(circle_velocity, np.array([-1, 1]))
-
-    # Bottom side
-    if circle[1] > rectangle[1] and rectangle[0] < circle[0] < rectangle[2]:
-        # Collision?
-        if circle[1] - circle[2] <= rectangle[1]:
-            return np.multiply(circle_velocity, np.array([1, -1]))
-
-    # Right side
-    if circle[0] > rectangle[2] and rectangle[1] < circle[1] < rectangle[3]:
-        # Collision?
-        if circle[0] - circle[2] <= rectangle[2]:
-            return np.multiply(circle_velocity, np.array([-1, 1]))
-
-    # Top side
-    if circle[1] < rectangle[1] and rectangle[0] < circle[1] < rectangle[2]:
-        # Collision?
-        if circle[1] + circle[2] >= rectangle[1]:
-            return np.multiply(circle_velocity, np.array([1, -1]))
-
-    # If the ball is not facing any sides, check if it makes contact with any corner
-    # Top left corner
-    if (rectangle[0] - circle[0]) ** 2 + (rectangle[1] - circle[1]) ** 2 <= circle[
-        2
-    ] ** 2:
-        return circle_corner_bounce(
-            (rectangle[0], rectangle[1]), circle, circle_velocity
-        )
-
-    # Bottom left corner
-    if (rectangle[0] - circle[0]) ** 2 + (rectangle[3] - circle[1]) ** 2 <= circle[
-        2
-    ] ** 2:
-        return circle_corner_bounce(
-            (rectangle[0], rectangle[3]), circle, circle_velocity
-        )
-
-    # Bottom right corner
-    if (rectangle[2] - circle[0]) ** 2 + (rectangle[3] - circle[1]) ** 2 <= circle[
-        2
-    ] ** 2:
-        return circle_corner_bounce(
-            (rectangle[2], rectangle[3]), circle, circle_velocity
-        )
-
-    # Top right corner
-    if (rectangle[2] - circle[0]) ** 2 + (rectangle[1] - circle[1]) ** 2 <= circle[
-        2
-    ] ** 2:
-        return circle_corner_bounce(
-            (rectangle[2], rectangle[1]), circle, circle_velocity
-        )
-
-    # If none of the above options are applicable, the circle didn't collide, so just return
-    # the input velocity
-    return circle_velocity
-
-
-class PongEnv:
-    def __init__(self):
+    def __init__(self, graphics_enabled=True):
         '''
-        Reset the game to initial state and return initial state
+        Create pygame environment with screen an sprites for paddles and ball.
+        If graphics_enabled = False no graphics will be displayed, but game will play the same.
         '''
+        # Logical game Objects
         self.left_paddle = Paddle('left')
         self.right_paddle = Paddle('right')
         self.ball = Ball()
         self.score = [0, 0]
-        self.pygame_graphics = PongGraphics()
-        self.possible_actions = ['up', 'stay', 'down']
-        self.state_size = len(self.make_observation())
 
-    def make_observation(self):
+        self.graphics_enabled = graphics_enabled
+        # Pygame Graphics
+        if graphics_enabled:
+            pygame.init()
+            self.sprite_group = pygame.sprite.Group()
+            self.left_paddle_sprite = PaddleSprite()
+            self.right_paddle_sprite = PaddleSprite()
+            self.ball_sprite = BallSprite()
+
+            self.sprite_group.add(self.left_paddle_sprite,
+                                  self.right_paddle_sprite, self.ball_sprite)
+
+            self.scoreboard = Scoreboard()
+            self.screen = pygame.display.set_mode(WINDOW_SIZE)
+
+    def tick(self, left_movement, right_movement):
         '''
-        Helper method returning current game's current internal state.
+        Perform one game tick.
+        Input: Movement for left and right paddle. ('up', 'stay', 'down')
+        Output: terminated = True if a new game started
         '''
-        # return (self.left_paddle.relative_y_position(), self.right_paddle.relative_y_position(), *self.ball.relative_position(), *self.ball.velocity)
-        return (self.right_paddle.relative_y_position(), self.ball.relative_position()[1])
 
-    def step(self, action):
-        '''
-        Do one game move with given action and return image, reward and wheter or not the game terminates
-        '''
-        prev_score = self.score.copy()
+        side_collision = self.ball.update(self.left_paddle, self.right_paddle)
+        terminated = True
+        if side_collision == 'left':
+            self.score[1] += 1
 
-        # Get desired paddle movement from first (and only) entry of action tuple
-        right_movement = action[0]
+        elif side_collision == 'right':
+            self.score[0] += 1
 
-        # For the time being, make the opponent unmoving
-        left_movement = 'stay'
-        tick(self.left_paddle,
-             self.right_paddle,
-             self.ball,
-             self.score,
-             left_movement,
-             right_movement,
-             self.pygame_graphics
-             )
-
-        if self.score[0] == prev_score[0] + 1:
-            # Negative reward if opponent gets a point
-            reward = -1
-        elif self.score[1] == prev_score[1] + 1:
-            # Positive reward if agent gets a point
-            reward = 1
         else:
-            # Slight negative reward if no point made
-            reward = -0.0001
+            terminated = False
 
-        return self.make_observation(), reward, self.score
+        if self.graphics_enabled:
+            self.update_screen(
+                self.left_paddle.position, self.right_paddle.position, self.ball.position, self.score)
+
+        return terminated
+
+    def update_screen(self, left_paddle_position, right_paddle_position, ball_position, score):
+        '''
+        Update pygame window with new sprite positions and new score.
+        '''
+        if not self.graphics_enabled:
+            return
+
+        # Update Sprites
+        self.left_paddle_sprite.update(left_paddle_position)
+        self.right_paddle_sprite.update(right_paddle_position)
+        self.ball_sprite.update(ball_position)
+
+        self.screen.fill(COLOR_BACKGROUND)
+        pygame.draw.line(self.screen, COLOR_FOREGROUND, [
+                         WINDOW_SIZE[0] // 2, 0], [WINDOW_SIZE[0] // 2, WINDOW_SIZE[1]], 5)
+
+        # Draw Sprites
+        self.sprite_group.draw(self.screen)
+
+        # Update Scoreboard
+        self.scoreboard.render_score(self.screen, score)
+        pygame.display.flip()
 
 
 def main():
@@ -443,44 +324,3 @@ def main():
     while True:
         # print("Step: ", env.step(['stay']), "Score: ", env.score)
         clock.tick(FPS_LIMIT)
-
-
-def _main():
-    pygame.init()
-    screen = pygame.display.set_mode(WINDOW_SIZE)
-    pygame.display.set_caption("Pong")
-
-    left_paddle = Paddle("left")
-    right_paddle = Paddle("right")
-    ball = Ball()
-    score = [0, 0]
-
-    # Sprites do no math and have no mechanics other than displaying the Ball and Paddles
-    sprite_group = pygame.sprite.Group()
-    sprites = [PaddleSprite(), PaddleSprite(), BallSprite()]
-    for sprite in sprites:
-        sprite_group.add(sprite)
-
-    screen = pygame.display.set_mode(WINDOW_SIZE)
-    scoreboard = Scoreboard()
-
-    # Game loop
-    clock = pygame.time.Clock()
-    while True:
-        tick(
-            left_paddle,
-            right_paddle,
-            ball,
-            screen,
-            sprites,
-            sprite_group,
-            score,
-            scoreboard,
-        )
-        print(score)
-        clock.tick(FPS_LIMIT)
-        continue
-
-
-if __name__ == "__main__":
-    main()
