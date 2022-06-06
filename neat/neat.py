@@ -20,17 +20,42 @@ class NEAT:
         population_size,
         speciation_constants,
         weight_mutation_constants,
-        delta_t
+        node_connection_mutation_constants,
+        delta_t,
+        r,
+        simulation_time,
     ):
         self.env = env
         temp_env = env()
         self.nn_base_dimensions = temp_env.nn_base_dimensions()
         self.population_size = population_size
-        self.population = []
-        self.global_innovation_number = 0
         self.speciation_constants = speciation_constants
         self.weight_mutation_constants = weight_mutation_constants
+        self.node_connection_mutation_constants = node_connection_mutation_constants
         self.delta_t = delta_t
+        self.r = r
+        self.simulation_time = simulation_time
+
+        self.population = []
+        self.global_connection_innovation_number = self.nn_base_dimensions[0] * \
+            self.nn_base_dimensions[1]
+        self.global_node_innovation_number = sum(self.nn_base_dimensions)
+        self.species = {}
+
+    def iteration(self):
+        """
+        Function that runs one iteration of NEAT
+        """
+
+        self.simulate_population(self.simulation_time)
+
+        self.speciation()
+
+        self.adjust_population_fitness()
+
+        new_N = self.get_species_sizes()
+
+        self.mate(new_N)
 
     def simulate_population(self, max_T):
         """
@@ -62,7 +87,7 @@ class NEAT:
             else:
                 individual.fitness = 0
 
-    def speciation(self, previous_gen_species):
+    def speciation(self):
         """
         This method will create species for the current generation based of the species of the last
         generation
@@ -71,7 +96,7 @@ class NEAT:
 
         species = {}
         for individual in self.population:
-            for i, representatives in previous_gen_species.items():
+            for i, representatives in self.species.items():
                 if random.choice(representatives).delta(individual) < self.delta_t:
                     if i in species:
                         species[i].append(individual)
@@ -80,34 +105,87 @@ class NEAT:
                     break
 
             else:
-                if not species.keys() and not previous_gen_species.keys():
+                if not species.keys() and not self.species.keys():
                     new_species_i = 0
                 elif not species.keys():
-                    new_species_i = max(previous_gen_species.keys()) + 1
-                elif not previous_gen_species.keys():
+                    new_species_i = max(self.species.keys()) + 1
+                elif not self.species.keys():
                     new_species_i = max(species.keys()) + 1
                 else:
                     new_species_i = max(
                         max(species.keys()),
-                        max(previous_gen_species.keys())
+                        max(self.species.keys())
                     ) + 1
                 species[new_species_i] = [individual]
 
-        return species
+        self.species = species
 
-    def get_species_sizes(self, species):
+    def adjust_population_fitness(self):
+        """
+        Adjust the fitness of all individuals in the population
+        """
+
+        for s in self.species.values():
+            for individual in s:
+                individual.adjust_fitness(s)
+
+    def get_species_sizes(self):
         """
         Calculate the number of offspring each species can produce 
         """
 
-        s_fitness = {i: 0 for i in species.keys()}
-        for s_index, s in species:
+        s_fitness = {i: 0 for i in self.species.keys()}
+        for s_index, s in self.species.items():
             for individual in s:
                 s_fitness[s_index] += individual.fitness
 
         total_fitness = sum(s_fitness.values())
 
-        return {i: s_f // total_fitness for i, s_f in s_fitness.items()}
+        return {i: int(s_f / total_fitness) for i, s_f in s_fitness.items()}
+
+    def mate(self, new_N):
+        """
+        This method performs the mating step and generates a new generation
+        """
+
+        new_generation = []
+
+        for s_index, s in self.species.items():
+            sorted_s = sorted(s, key=lambda x: - x.fitness)
+            l = max(len(sorted_s) * self.r, 1)
+            mating_s = sorted_s[0:l]
+            N = new_N[s_index]
+
+            for i in range(N):
+                p1, p2 = random.sample(mating_s, k=2)
+                child = p1.crossover(p2)
+
+        self.population = new_generation
+
+    def mutate(self):
+        """
+        Mutate every individual in the population
+        """
+
+        for individual in self.population:
+            individual.mutate_weights(
+                weight_mutation_constants=self.weight_mutation_constants)
+
+            if random.random() < self.node_connection_mutation_constants[0]:
+                individual.add_node(
+                    self.global_node_innovation_number,
+                    self.global_connection_innovation_number
+                )
+
+                self.global_node_innovation_number += 1
+                self.global_connection_innovation_number += 1
+
+            if random.random() < self.node_connection_mutation_constants[1]:
+                individual.add_connection(
+                    self.global_connection_innovation_number
+                )
+
+                self.global_connection_innovation_number += 1
 
     def make_population_empty(self, activation_functions_hidden=[], activation_functions_output=[]):
         """
@@ -148,11 +226,20 @@ class NEAT:
 
 
 def main():
-    N = NEAT(PongEnv, 4, (1, 1, 1), (0.8, 0.9), 1)
+    N = NEAT(PongEnv, 10, (1, 1, 1), (0.8, 0.9), (0.1, 0.1), 1, 0.5, 1000)
     N.make_population_connected()
+    N.iteration()
 
-    N.simulate_population(100000)
+    N.simulate_population(10000)
 
+    for individual in N.population:
+        print(individual.fitness)
+
+    s1 = N.speciation()
+    s2 = N.speciation()
+    N.adjust_population_fitness()
+
+    print("")
     for individual in N.population:
         print(individual.fitness)
 
@@ -160,7 +247,7 @@ def main():
     s1 = N.speciation({})
     print(s1)
     s2 = N.speciation(s1)
-    pripong_envnt(s2)
+    print(s2)
     """
 
     """
