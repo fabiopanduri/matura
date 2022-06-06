@@ -49,7 +49,10 @@ class NEAT:
 
                 if terminated:
                     # use a weighted reward depending on when the terminal state is reached
-                    individual.fitness = (1 - (t / max_T)) * reward
+                    if reward > 0:
+                        individual.fitness = (1 - (t / max_T)) * reward
+                    else:
+                        individual.fitness = ((t / max_T) - 2) * abs(reward)
                     t = max_T
                     break
 
