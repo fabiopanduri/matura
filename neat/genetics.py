@@ -11,7 +11,7 @@ import random
 import matplotlib.pyplot as plt
 import networkx as nx
 
-from etc.activation_functions import *
+import etc.activation_functions as af
 
 
 class NodeGene:
@@ -21,7 +21,8 @@ class NodeGene:
         # specifies the type of the function, either 'input', 'hidden' or 'output'
         self.type = node_type
 
-        self.activation_function = activation_function
+        # get the activation function by name
+        self.activation_function = af.activation_functions[activation_function]
 
     def __eq__(self, other):
         if isinstance(other, type(self)):

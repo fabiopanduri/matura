@@ -5,6 +5,7 @@
 # You should have received a copy of the GNU General Public License along with maturaarbeit_code. If not, see <https://www.gnu.org/licenses/>.
 from etc.activation_functions import *
 from neat.genetics import *
+from neat.pong_env import PongEnv
 
 
 class NEAT:
@@ -17,15 +18,15 @@ class NEAT:
         self,
         env,
         population_size,
-        nn_base_dimensions,
         speciation_constants,
         weight_mutation_constants,
         delta_t
     ):
         self.env = env
+        temp_env = env()
+        self.nn_base_dimensions = temp_env.nn_base_dimensions()
         self.population_size = population_size
         self.population = []
-        self.nn_dimensions = nn_base_dimensions
         self.global_innovation_number = 0
         self.speciation_constants = speciation_constants
         self.weight_mutation_constants = weight_mutation_constants
@@ -43,10 +44,10 @@ class NEAT:
 
             state_0 = env.make_observation()
             action = individual.feed_forward(state_0)
-            for t in range(max_t):
-                state, reward = env.step(action)
+            for t in range(max_T):
+                state, reward, terminated = env.step(action)
 
-                if env.is_terminal():
+                if terminated:
                     # use a weighted reward depending on when the terminal state is reached
                     individual.fitness = (1 - (t / max_T)) * reward
                     t = max_T
@@ -116,9 +117,9 @@ class NEAT:
         for i in range(self.population_size):
             self.population.append(
                 Genome.make_empty_genome(
-                    self.nn_dimensions[0],
-                    sum(self.nn_dimensions[1:-1]),
-                    self.nn_dimensions[-1],
+                    self.nn_base_dimensions[0],
+                    sum(self.nn_base_dimensions[1:-1]),
+                    self.nn_base_dimensions[-1],
                     activation_functions_hidden,
                     activation_functions_output
                 )
@@ -136,21 +137,28 @@ class NEAT:
         for i in range(self.population_size):
             self.population.append(
                 Genome.make_connected_genome(
-                    self.nn_dimensions[0],
-                    self.nn_dimensions[-1],
+                    self.nn_base_dimensions[0],
+                    self.nn_base_dimensions[-1],
                     activation_functions
                 )
             )
 
 
 def main():
-    N = NEAT(int, 4, [4, 4], (1, 1, 1), (0.8, 0.9), 1)
+    N = NEAT(PongEnv, 4, (1, 1, 1), (0.8, 0.9), 1)
     N.make_population_connected()
 
+    N.simulate_population(100000)
+
+    for individual in N.population:
+        print(individual.fitness)
+
+    """
     s1 = N.speciation({})
     print(s1)
     s2 = N.speciation(s1)
-    print(s2)
+    pripong_envnt(s2)
+    """
 
     """
     for p in N.population:
