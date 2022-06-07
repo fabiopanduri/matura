@@ -52,6 +52,11 @@ class Genome:
     def __init__(self, nodes, connections):
         self.nodes = {node.id: node for node in nodes}
 
+        self.output_nodes = {}
+        for node in nodes:
+            if node.type == "output":
+                self.output_nodes[node.id] = node
+
         self.connections = connections
 
         self.fitness = 0
@@ -423,7 +428,7 @@ class Genome:
             if node.type == "output":
                 self.calculate_node(node_id)
 
-        return self.table
+        return [self.table[i] for i in sorted(list(self.output_nodes.keys()))]
 
     def draw(self, weight=False):
         Graph = nx.Graph()

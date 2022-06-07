@@ -3,6 +3,8 @@
 # maturaarbeit_code is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 3.
 # maturaarbeit_code is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 # You should have received a copy of the GNU General Public License along with maturaarbeit_code. If not, see <https://www.gnu.org/licenses/>.
+import numpy as np
+
 from etc.activation_functions import *
 from neat.genetics import *
 from neat.pong_env import PongEnv
@@ -81,7 +83,10 @@ class NEAT:
                     t = max_T
                     break
 
-                action = individual.feed_forward(state)
+                prediction = individual.feed_forward(state)
+                action_i = np.argmax(np.array(prediction))
+
+                action = env.possible_actions[action_i]
                 t += 1
 
             else:
@@ -226,8 +231,10 @@ class NEAT:
 
 
 def main():
-    N = NEAT(PongEnv, 10, (1, 1, 1), (0.8, 0.9), (0.1, 0.1), 1, 0.5, 1000)
+    N = NEAT(PongEnv, 10, (1, 1, 1), (0.8, 0.9), (0.1, 0.1), 1, 0.5, 100000)
+
     N.make_population_connected()
+
     N.iteration()
 
     N.simulate_population(10000)
