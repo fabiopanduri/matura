@@ -3,6 +3,8 @@
 # maturaarbeit_code is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 3.
 # maturaarbeit_code is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 # You should have received a copy of the GNU General Public License along with maturaarbeit_code. If not, see <https://www.gnu.org/licenses/>.
+import math
+
 import numpy as np
 
 from etc.activation_functions import *
@@ -52,10 +54,12 @@ class NEAT:
         self.simulate_population(self.simulation_time)
 
         self.speciation()
+        print(self.species)
 
         self.adjust_population_fitness()
 
         new_N = self.get_species_sizes()
+        print(new_N)
 
         self.mate(new_N)
 
@@ -144,9 +148,11 @@ class NEAT:
             for individual in s:
                 s_fitness[s_index] += individual.fitness
 
-        total_fitness = sum(s_fitness.values())
+            s_fitness[s_index] /= len(s)
 
-        return {i: int(s_f / total_fitness) for i, s_f in s_fitness.items()}
+        mean_adjusted_fitness = sum(s_fitness.values())
+
+        return {i: int(s_f / mean_adjusted_fitness * self.population_size) for i, s_f in s_fitness.items()}
 
     def mate(self, new_N):
         """
@@ -156,14 +162,25 @@ class NEAT:
         new_generation = []
 
         for s_index, s in self.species.items():
+            print(s_index, s)
+
             sorted_s = sorted(s, key=lambda x: - x.fitness)
-            l = max(len(sorted_s) * self.r, 1)
+            l = max(math.ceil(len(sorted_s) * self.r), 1)
             mating_s = sorted_s[0:l]
             N = new_N[s_index]
 
             for i in range(N):
+                print(i)
+                if len(mating_s) == 1:
+                    new_generation.append(mating_s[0])
+                    continue
+
                 p1, p2 = random.sample(mating_s, k=2)
-                child = p1.crossover(p2)
+                child = Genome.crossover(p1, p2)
+
+                new_generation.append(child)
+
+        print(new_generation)
 
         self.population = new_generation
 
@@ -237,11 +254,15 @@ def main():
 
     N.iteration()
 
-    N.simulate_population(10000)
+    for individual in N.population:
+        print(individual.fitness)
+
+    N.iteration()
 
     for individual in N.population:
         print(individual.fitness)
 
+    """
     s1 = N.speciation()
     s2 = N.speciation()
     N.adjust_population_fitness()
@@ -249,6 +270,7 @@ def main():
     print("")
     for individual in N.population:
         print(individual.fitness)
+        """
 
     """
     s1 = N.speciation({})
