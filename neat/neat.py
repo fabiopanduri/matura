@@ -4,6 +4,7 @@
 # maturaarbeit_code is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 # You should have received a copy of the GNU General Public License along with maturaarbeit_code. If not, see <https://www.gnu.org/licenses/>.
 import math
+import time
 
 import numpy as np
 
@@ -51,13 +52,19 @@ class NEAT:
         Function that runs iterations of NEAT
         """
 
+        t_0 = time.perf_counter()
         for i in range(generations):
             self.simulate_population(self.simulation_time)
 
             if i % print_frequency == 0:
+                t = time.perf_counter() - t_0
                 best = sorted(self.population,
                               key=lambda x: x.fitness)[-1].fitness
-                print(f'[INFO] Generation {i} done. Best = {best}')
+                print(
+                    f'[INFO] Generation {i} done. Took {t:.2f} s. Best = {best:.2f}')
+                print(
+                    f'[INFO] Species: {len(self.species)}. Population Count: {len(self.population)}')
+                t_0 = time.perf_counter()
 
             self.speciation()
 
@@ -267,16 +274,23 @@ class NEAT:
 
 
 def main():
-    N = NEAT(PongEnv, 10, (1, 1, 1), (0.8, 0.9), (0.1, 0.1), 1, 0.5, 100000)
+    N = NEAT(PongEnv, 20, (1, 1, 1), (0.8, 0.9), (0.01, 0.01), 1, 0.5, 10000)
 
     N.make_population_connected()
 
-    N.iterate(1000, print_frequency=50)
+    N.iterate(20, print_frequency=1)
 
     N.simulate_population(10000)
 
+    """
     for individual in N.population:
         print(individual.fitness)
+    """
+
+    """
+    for individual in N.population:
+        individual.draw()
+        """
 
     """
     s1 = N.speciation()
