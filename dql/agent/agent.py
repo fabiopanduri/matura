@@ -3,6 +3,7 @@
 # maturaarbeit_code is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 3.
 # maturaarbeit_code is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 # You should have received a copy of the GNU General Public License along with maturaarbeit_code. If not, see <https://www.gnu.org/licenses/>.
+import os
 import random
 import sys
 from collections import deque
@@ -63,6 +64,9 @@ class DQLAgent:
         if load_network_path == None:
             self.q_network = NeuralNetwork(
                 self.nn_dimensions, self.learning_rate, self.activation_functions)
+        elif load_network_path == 'latest':
+            latest = sorted(list(os.listdir('NN_saves')))[-1]
+            self.q_network = NeuralNetwork.load_network(f'NN_saves/{latest}')
         else:
             self.q_network = NeuralNetwork.load_network(load_network_path)
         self.q_network.initialize_network()
@@ -183,7 +187,7 @@ class DQLAgent:
 
 def main():
     env = PongEnv()
-    agt = DQLAgent(env)
+    agt = DQLAgent(env, load_network_path='latest')
 
     agt.learn(100000)
 
