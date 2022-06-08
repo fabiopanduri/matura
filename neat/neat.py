@@ -3,6 +3,7 @@
 # maturaarbeit_code is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 3.
 # maturaarbeit_code is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 # You should have received a copy of the GNU General Public License along with maturaarbeit_code. If not, see <https://www.gnu.org/licenses/>.
+import json
 import math
 import time
 
@@ -47,7 +48,7 @@ class NEAT:
         self.global_node_innovation_number = sum(self.nn_base_dimensions)
         self.species = {}
 
-    def iterate(self, generations, print_frequency=1):
+    def iterate(self, generations, print_frequency=1, save_frequency=10):
         """
         Function that runs iterations of NEAT
         """
@@ -65,6 +66,9 @@ class NEAT:
                 print(
                     f'[INFO] Species: {len(self.species)}. Population Count: {len(self.population)}')
                 t_0 = time.perf_counter()
+
+            if i % save_frequency == 0:
+                self.save_population()
 
             self.speciation()
 
@@ -92,9 +96,10 @@ class NEAT:
                 if terminated:
                     # use a weighted reward depending on when the terminal state is reached
                     if reward > 0:
-                        individual.fitness = (1 - (t / max_T)) * reward
+                        individual.fitness = (1 - (t / max_T)) * reward + 2
                     else:
-                        individual.fitness = ((t / max_T) - 2) * abs(reward)
+                        individual.fitness = (
+                            (t / max_T) - 2) * abs(reward) + 2
                     t = max_T
                     break
 
@@ -105,7 +110,7 @@ class NEAT:
                 t += 1
 
             else:
-                individual.fitness = 0
+                individual.fitness = 2
 
     def speciation(self):
         """
@@ -176,7 +181,13 @@ class NEAT:
             s = base_mod_1[additional % len(self.species)]
             base_int[s[0]] += 1
 
-        return {i: offspring - 1 for i, offspring in base_int.items()}
+        """
+        print(f"{base=}")
+        print(f"{base_int=}")
+        print(f"{base_mod_1=}")
+        """
+
+        return base_int
 
     def mate(self, new_N):
         """
@@ -191,12 +202,15 @@ class NEAT:
             sorted_s = sorted(s, key=lambda x: - x.fitness)
             l = max(math.ceil(len(sorted_s) * self.r), 1)
             mating_s = sorted_s[0:l]
-            best.append(mating_s[0])
             N = new_N[s_index]
 
             for i in range(N):
                 if len(mating_s) == 1:
                     new_generation.append(mating_s[0])
+                    continue
+
+                elif i == 1:
+                    best.append(mating_s[0])
                     continue
 
                 p1, p2 = random.sample(mating_s, k=2)
@@ -234,6 +248,55 @@ class NEAT:
                 self.global_connection_innovation_number += 1
 
         return offspring
+
+    def save_population(self, file_name=None):
+        """
+        Saves the current population to a json file
+        """
+
+        if file_name == None:
+            file_name = (
+                f"NEAT-{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')}.json"
+            )
+
+        if file_name.split(".")[-1] != "json":
+            file_name = (
+                f"NEAT-{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')}.json"
+            )
+            print(
+                f"[ERROR] Specified file is not a json file. Saving to '{file_name}' instead."
+            )
+
+        if os.path.exists(file_name):
+            inp = input(
+                f"[WARNING] The file {file_name} already exists. Do you want to proceed? [y/n] "
+            ).lower()
+            while True:
+                if inp == "y":
+                    print(f"[INFO] Saving to {file_name}...")
+                    break
+                elif inp == "n":
+                    print("[INFO] Saving aborted")
+                    return
+                else:
+                    inp = input(
+                        f"Invalid answer. Do you want to proceed? [y/n] "
+                    ).lower()
+
+        time = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S'),
+        population_data = {
+            "time": time,
+            "population": []
+        }
+
+        for individual in self.population:
+            individual_data = individual.save_network_raw_data()
+            population_data["population"].append(individual_data)
+
+        with open(f"NEAT_saves/{file_name}", "w") as f:
+            f.write(json.dumps(population_data, indent=4))
+
+        print(f"[INFO] Saved population to {file_name}.")
 
     def make_population_empty(self, activation_functions_hidden=[], activation_functions_output=[]):
         """
@@ -274,7 +337,8 @@ class NEAT:
 
 
 def main():
-    N = NEAT(PongEnv, 20, (1, 1, 1), (0.8, 0.9), (0.01, 0.01), 1, 0.5, 10000)
+    N = NEAT(PongEnv, 20, (1, 1, 0.4), (0.8, 0.9),
+             (0.02, 0.02), 0.1, 0.5, 10000)
 
     N.make_population_connected()
 
@@ -287,10 +351,8 @@ def main():
         print(individual.fitness)
     """
 
-    """
-    for individual in N.population:
+    for individual in random.sample(N.population, k=5):
         individual.draw()
-        """
 
     """
     s1 = N.speciation()

@@ -24,10 +24,20 @@ class NodeGene:
         # get the activation function by name
         self.activation_function = af.activation_functions[activation_function]
 
+        self.activation_function_name = activation_function
+
     def __eq__(self, other):
         if isinstance(other, type(self)):
             return self.id == other.id
         return False
+
+    @property
+    def __dict__(self):
+        d = {
+            "id": self.id,
+            "type": self.type,
+            "activation_function": self.activation_function_name
+        }
 
 
 class ConnectionGene:
@@ -216,6 +226,18 @@ class Genome:
 
         self.fitness /= len(species)
 
+    def save_network_raw_data(self):
+        """
+        Method to generate the dictionary that can be parsed to the NEAT class to save a population
+        """
+
+        data = {
+            "connections": [connection.__dict__ for connection in self.connections],
+            "nodes": {node_id: node.__dict__ for node_id, node in self.nodes.items()},
+        }
+
+        return data
+
     def save_network(self, file_name=None):
         """
         Method to save a genome to a .json file
@@ -223,12 +245,12 @@ class Genome:
 
         if file_name == None:
             file_name = (
-                f"NEAT-{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')}.json"
+                f"NEAT-NN-{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')}.json"
             )
 
         if file_name.split(".")[-1] != "json":
             file_name = (
-                f"NEAT-{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')}.json"
+                f"NEAT-NN-{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')}.json"
             )
             print(
                 f"[ERROR] Specified file is not a json file. Saving to '{file_name}' instead."
