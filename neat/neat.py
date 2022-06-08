@@ -318,7 +318,8 @@ class NEAT:
 
         print(f"[INFO] Saved population to {file_name}.")
 
-    def load_population(self, file_name=None):
+    @staticmethod
+    def load_population(file_name=None):
         """
         This method loads the current network from a file.
         """
@@ -332,15 +333,15 @@ class NEAT:
         with open(f"NEAT_saves/{file_name}", "r") as f:
             data = json.loads(f.read())
 
-        print(data)
-
-        self.population = []
+        population = []
         for individual_data in data["population"]:
-            self.population.append(
+            population.append(
                 Genome.load_network_from_raw_data(individual_data)
             )
 
         print(f"[INFO] Loaded Population from '{file_name}'")
+
+        return population
 
     def make_population_empty(self, activation_functions_hidden=[], activation_functions_output=[]):
         """
@@ -385,7 +386,7 @@ def main():
              (0.02, 0.02), 0.1, 0.5, 10000)
 
     # N.make_population_connected()
-    N.load_population()
+    N.population = NEAT.load_population()
 
     N.iterate(20, print_frequency=1)
 
