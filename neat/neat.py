@@ -169,7 +169,7 @@ class NEAT:
             s = base_mod_1[additional % len(self.species)]
             base_int[s[0]] += 1
 
-        return base_int
+        return {i: offspring - 1 for i, offspring in base_int.items()}
 
     def mate(self, new_N):
         """
@@ -177,12 +177,14 @@ class NEAT:
         """
 
         new_generation = []
+        best = []
 
         for s_index, s in self.species.items():
 
             sorted_s = sorted(s, key=lambda x: - x.fitness)
             l = max(math.ceil(len(sorted_s) * self.r), 1)
             mating_s = sorted_s[0:l]
+            best.append(mating_s[0])
             N = new_N[s_index]
 
             for i in range(N):
@@ -195,14 +197,16 @@ class NEAT:
 
                 new_generation.append(child)
 
-        self.population = new_generation
+        new_generation = self.mutate_offspring(new_generation)
 
-    def mutate(self):
+        self.population = new_generation + best
+
+    def mutate_offspring(self, offspring):
         """
         Mutate every individual in the population
         """
 
-        for individual in self.population:
+        for individual in offspring:
             individual.mutate_weights(
                 weight_mutation_constants=self.weight_mutation_constants)
 
@@ -221,6 +225,8 @@ class NEAT:
                 )
 
                 self.global_connection_innovation_number += 1
+
+        return offspring
 
     def make_population_empty(self, activation_functions_hidden=[], activation_functions_output=[]):
         """

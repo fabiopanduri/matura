@@ -381,9 +381,9 @@ class Genome:
 
         mut_chance, mult_chance = weight_mutation_constants
 
-        for connection in self.connection:
+        for connection in self.connections:
             if random.random() < mut_chance:
-                if random.random < mult_chance:
+                if random.random() < mult_chance:
                     connection.weight *= random.uniform(-2, 2)
                 else:
                     connection.weight = random.uniform(-2, 2)
