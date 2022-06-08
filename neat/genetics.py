@@ -34,10 +34,12 @@ class NodeGene:
     @property
     def __dict__(self):
         d = {
-            "id": self.id,
-            "type": self.type,
+            "node_id": self.id,
+            "node_type": self.type,
             "activation_function": self.activation_function_name
         }
+
+        return d
 
 
 class ConnectionGene:
@@ -285,9 +287,26 @@ class Genome:
         print(f"[INFO] Saved data to '{file_name}'")
 
     @classmethod
+    def load_network_from_raw_data(cls, data) -> None:
+        """
+        This method loads a network from a parsed data coming from the NEAT class
+        """
+
+        connections = [ConnectionGene(**params)
+                       for params in data["connections"]]
+
+        nodes = {
+            node_id: NodeGene(**params) for node_id, params in data["nodes"].items()
+        }
+
+        new_instance = cls(list(nodes.values()), connections)
+
+        return new_instance
+
+    @classmethod
     def load_network(cls, file_name) -> None:
         """
-        This method loads the current network from a file.
+        This method loads network from a file
         """
 
         if not os.path.exists(file_name):
@@ -305,7 +324,7 @@ class Genome:
 
         new_instance = cls(list(nodes.values()), connections)
 
-        print(f"[INFO] loaded Neural Network from '{file_name}'")
+        print(f"[INFO] Loaded Neural Network from '{file_name}'")
 
         return new_instance
 
@@ -368,7 +387,7 @@ class Genome:
                            random.random(), innovation_number)
         )
 
-    def add_node(self, innovation_number_nodes, innovation_number_connections, activation_function="linear"):
+    def add_node(self, innovation_number_nodes, innovation_number_connections, activation_function="sigmoid"):
         """
         Mutation method that splits a connection between two nodes and inserts a new node in the
         middle

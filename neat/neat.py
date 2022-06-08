@@ -5,6 +5,7 @@
 # You should have received a copy of the GNU General Public License along with maturaarbeit_code. If not, see <https://www.gnu.org/licenses/>.
 import json
 import math
+import os
 import time
 
 import numpy as np
@@ -122,6 +123,7 @@ class NEAT:
         species = {}
         for individual in self.population:
             for i, representatives in self.species.items():
+                # individual fits into a species
                 if random.choice(representatives).delta(individual) < self.delta_t:
                     if i in species:
                         species[i].append(individual)
@@ -129,7 +131,9 @@ class NEAT:
                         species[i] = [individual]
                     break
 
+            # individual does not fit into a species
             else:
+                # making sure the new key is not already taken
                 if not species.keys() and not self.species.keys():
                     new_species_i = 0
                 elif not species.keys():
@@ -160,6 +164,8 @@ class NEAT:
         """
 
         s_fitness = {i: 0 for i in self.species.keys()}
+
+        # get the average fitness of any species
         for s_index, s in self.species.items():
             for individual in s:
                 s_fitness[s_index] += individual.fitness
@@ -168,9 +174,15 @@ class NEAT:
 
         mean_adjusted_fitness = sum(s_fitness.values())
 
+        # float values for offspring numbers
         base = {i: (s_f / mean_adjusted_fitness) *
                 self.population_size for i, s_f in s_fitness.items()}
+
+        # rounded down offspring numbers
         base_int = {i: math.floor(b) for i, b in base.items()}
+
+        # the offspring numbers mod 1 -> the species with the higher number get more additional
+        # offspring depending on how much more are needed to fill the population
         base_mod_1 = sorted([(i, b % 1)
                             for i, b in base.items()], key=lambda x: x[1])
 
@@ -199,9 +211,13 @@ class NEAT:
 
         for s_index, s in self.species.items():
 
+            # best individual to worst individual of the species
             sorted_s = sorted(s, key=lambda x: - x.fitness)
+
+            # index such that the best r% of the species are chosen
             l = max(math.ceil(len(sorted_s) * self.r), 1)
             mating_s = sorted_s[0:l]
+
             N = new_N[s_index]
 
             for i in range(N):
@@ -209,6 +225,7 @@ class NEAT:
                     new_generation.append(mating_s[0])
                     continue
 
+                # the best performing individual is always passed on to the new generation
                 elif i == 1:
                     best.append(mating_s[0])
                     continue
@@ -218,6 +235,7 @@ class NEAT:
 
                 new_generation.append(child)
 
+        # all children are mutated, the best per species are not
         new_generation = self.mutate_offspring(new_generation)
 
         self.population = new_generation + best
@@ -231,6 +249,7 @@ class NEAT:
             individual.mutate_weights(
                 weight_mutation_constants=self.weight_mutation_constants)
 
+            # add a connection
             if random.random() < self.node_connection_mutation_constants[0]:
                 individual.add_node(
                     self.global_node_innovation_number,
@@ -240,6 +259,7 @@ class NEAT:
                 self.global_node_innovation_number += 1
                 self.global_connection_innovation_number += 1
 
+            # add a node
             if random.random() < self.node_connection_mutation_constants[1]:
                 individual.add_connection(
                     self.global_connection_innovation_number
@@ -298,6 +318,30 @@ class NEAT:
 
         print(f"[INFO] Saved population to {file_name}.")
 
+    def load_population(self, file_name=None):
+        """
+        This method loads the current network from a file.
+        """
+
+        if not file_name:
+            file_name = sorted(list(os.listdir('NEAT_saves')))[-1]
+
+        elif not os.path.exists(file_name):
+            print("[ERROR] The specified file does not exist")
+
+        with open(f"NEAT_saves/{file_name}", "r") as f:
+            data = json.loads(f.read())
+
+        print(data)
+
+        self.population = []
+        for individual_data in data["population"]:
+            self.population.append(
+                Genome.load_network_from_raw_data(individual_data)
+            )
+
+        print(f"[INFO] Loaded Population from '{file_name}'")
+
     def make_population_empty(self, activation_functions_hidden=[], activation_functions_output=[]):
         """
         Makes a generation of the given population size with the given nn_base_dimensions
@@ -340,9 +384,12 @@ def main():
     N = NEAT(PongEnv, 20, (1, 1, 0.4), (0.8, 0.9),
              (0.02, 0.02), 0.1, 0.5, 10000)
 
-    N.make_population_connected()
+    # N.make_population_connected()
+    N.load_population()
 
     N.iterate(20, print_frequency=1)
+
+    N.save_population()
 
     N.simulate_population(10000)
 
