@@ -46,20 +46,26 @@ class NEAT:
         self.global_node_innovation_number = sum(self.nn_base_dimensions)
         self.species = {}
 
-    def iteration(self):
+    def iterate(self, generations, print_frequency=1):
         """
-        Function that runs one iteration of NEAT
+        Function that runs iterations of NEAT
         """
 
-        self.simulate_population(self.simulation_time)
+        for i in range(generations):
+            self.simulate_population(self.simulation_time)
 
-        self.speciation()
+            if i % print_frequency == 0:
+                best = sorted(self.population,
+                              key=lambda x: x.fitness)[-1].fitness
+                print(f'[INFO] Generation {i} done. Best = {best}')
 
-        self.adjust_population_fitness()
+            self.speciation()
 
-        new_N = self.get_species_sizes()
+            self.adjust_population_fitness()
 
-        self.mate(new_N)
+            new_N = self.get_species_sizes()
+
+            self.mate(new_N)
 
     def simulate_population(self, max_T):
         """
@@ -259,12 +265,9 @@ def main():
 
     N.make_population_connected()
 
-    N.iteration()
+    N.iterate(1000, print_frequency=50)
 
-    for individual in N.population:
-        print(individual.fitness)
-
-    N.iteration()
+    N.simulate_population(10000)
 
     for individual in N.population:
         print(individual.fitness)
