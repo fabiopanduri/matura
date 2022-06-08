@@ -54,12 +54,10 @@ class NEAT:
         self.simulate_population(self.simulation_time)
 
         self.speciation()
-        print(self.species)
 
         self.adjust_population_fitness()
 
         new_N = self.get_species_sizes()
-        print(new_N)
 
         self.mate(new_N)
 
@@ -152,7 +150,20 @@ class NEAT:
 
         mean_adjusted_fitness = sum(s_fitness.values())
 
-        return {i: int(s_f / mean_adjusted_fitness * self.population_size) for i, s_f in s_fitness.items()}
+        base = {i: (s_f / mean_adjusted_fitness) *
+                self.population_size for i, s_f in s_fitness.items()}
+        base_int = {i: math.floor(b) for i, b in base.items()}
+        base_mod_1 = sorted([(i, b % 1)
+                            for i, b in base.items()], key=lambda x: x[1])
+
+        base_offspring = sum(base_int.values())
+        additional_offspring = self.population_size - base_offspring
+
+        for additional in range(additional_offspring):
+            s = base_mod_1[additional % len(self.species)]
+            base_int[s[0]] += 1
+
+        return base_int
 
     def mate(self, new_N):
         """
@@ -162,7 +173,6 @@ class NEAT:
         new_generation = []
 
         for s_index, s in self.species.items():
-            print(s_index, s)
 
             sorted_s = sorted(s, key=lambda x: - x.fitness)
             l = max(math.ceil(len(sorted_s) * self.r), 1)
@@ -170,7 +180,6 @@ class NEAT:
             N = new_N[s_index]
 
             for i in range(N):
-                print(i)
                 if len(mating_s) == 1:
                     new_generation.append(mating_s[0])
                     continue
@@ -179,8 +188,6 @@ class NEAT:
                 child = Genome.crossover(p1, p2)
 
                 new_generation.append(child)
-
-        print(new_generation)
 
         self.population = new_generation
 
