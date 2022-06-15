@@ -550,7 +550,10 @@ def main():
     """
 
     G = Genome.make_connected_genome(5, 2)
-    G.draw()
+
+    print(G.feed_forward([1, 1, 1, 1, 1]))
+
+    # G.draw()
 
     """
     G3 = Genome.crossover(G1, G2)

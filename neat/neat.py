@@ -47,7 +47,7 @@ class NEAT:
         self.global_connection_innovation_number = self.nn_base_dimensions[0] * \
             self.nn_base_dimensions[1]
         self.global_node_innovation_number = sum(self.nn_base_dimensions)
-        self.species = {}
+        self.species = []
 
     def iterate(self, generations, print_frequency=1, save_frequency=10):
         """
@@ -120,41 +120,27 @@ class NEAT:
         If an individual does not fit into any species a new species is created
         """
 
-        species = {}
+        species = [[] for _ in self.species]
+        representatives = [random.choice(s) for s in self.species]
         for individual in self.population:
-            for i, representatives in self.species.items():
+            for i, r in enumerate(representatives):
                 # individual fits into a species
-                if random.choice(representatives).delta(individual) < self.delta_t:
-                    if i in species:
-                        species[i].append(individual)
-                    else:
-                        species[i] = [individual]
+                if r.delta(individual) < self.delta_t:
+                    species[i].append(individual)
                     break
 
             # individual does not fit into a species
             else:
-                # making sure the new key is not already taken
-                if not species.keys() and not self.species.keys():
-                    new_species_i = 0
-                elif not species.keys():
-                    new_species_i = max(self.species.keys()) + 1
-                elif not self.species.keys():
-                    new_species_i = max(species.keys()) + 1
-                else:
-                    new_species_i = max(
-                        max(species.keys()),
-                        max(self.species.keys())
-                    ) + 1
-                species[new_species_i] = [individual]
+                species.append([individual])
 
-        self.species = species
+        self.species = [s for s in species if s]
 
     def adjust_population_fitness(self):
         """
         Adjust the fitness of all individuals in the population
         """
 
-        for s in self.species.values():
+        for s in self.species:
             for individual in s:
                 individual.adjust_fitness(s)
 
@@ -163,30 +149,30 @@ class NEAT:
         Calculate the number of offspring each species can produce 
         """
 
-        s_fitness = {i: 0 for i in self.species.keys()}
+        s_fitness = [0 for _ in range(len(self.species))]
 
         # get the average fitness of any species
-        for s_index, s in self.species.items():
+        for s_index, s in enumerate(self.species):
             for individual in s:
                 s_fitness[s_index] += individual.fitness
 
             s_fitness[s_index] /= len(s)
 
-        mean_adjusted_fitness = sum(s_fitness.values())
+        mean_adjusted_fitness = sum(s_fitness)
 
         # float values for offspring numbers
-        base = {i: (s_f / mean_adjusted_fitness) *
-                self.population_size for i, s_f in s_fitness.items()}
+        base = [(s_f / mean_adjusted_fitness) *
+                self.population_size for s_f in s_fitness]
 
         # rounded down offspring numbers
-        base_int = {i: math.floor(b) for i, b in base.items()}
+        base_int = [math.floor(b) for b in base]
 
         # the offspring numbers mod 1 -> the species with the higher number get more additional
         # offspring depending on how much more are needed to fill the population
         base_mod_1 = sorted([(i, b % 1)
-                            for i, b in base.items()], key=lambda x: x[1])
+                            for i, b in enumerate(base)], key=lambda x: x[1])
 
-        base_offspring = sum(base_int.values())
+        base_offspring = sum(base_int)
         additional_offspring = self.population_size - base_offspring
 
         for additional in range(additional_offspring):
@@ -209,7 +195,7 @@ class NEAT:
         new_generation = []
         best = []
 
-        for s_index, s in self.species.items():
+        for s_index, s in enumerate(self.species):
 
             # best individual to worst individual of the species
             sorted_s = sorted(s, key=lambda x: - x.fitness)
@@ -382,11 +368,14 @@ class NEAT:
 
 
 def main():
+    import sys
+    sys.setrecursionlimit(2**15)
+
     N = NEAT(PongEnv, 20, (1, 1, 0.4), (0.8, 0.9),
              (0.02, 0.02), 0.1, 0.5, 10000)
 
-    # N.make_population_connected()
-    N.population = NEAT.load_population()
+    N.make_population_connected()
+    #N.population = NEAT.load_population()
 
     N.iterate(20, print_frequency=1)
 
