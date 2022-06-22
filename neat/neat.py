@@ -79,11 +79,11 @@ class NEAT:
 
             self.mate(new_N)
 
-    def simulate_population(self, max_T):
+    def simulate_population(self, max_t):
         """
         Method to simulate the interaction of the agent with the environment for every individual in the 
         population.
-        This is done until a terminal state is reached or we have more than max_T steps
+        This is done until a terminal state is reached or we have more than max_t steps
         """
 
         for individual in self.population:
@@ -91,17 +91,12 @@ class NEAT:
 
             state_0 = env.make_observation()
             action = individual.feed_forward(state_0)
-            for t in range(max_T):
+            for t in range(max_t):
                 state, reward, terminated = env.step(action)
 
                 if terminated:
                     # use a weighted reward depending on when the terminal state is reached
-                    if reward > 0:
-                        individual.fitness = (1 - (t / max_T)) * reward + 2
-                    else:
-                        individual.fitness = (
-                            (t / max_T) - 2) * abs(reward) + 2
-                    t = max_T
+                    individual.fitness = env.fitness(t, max_t, reward)
                     break
 
                 prediction = individual.feed_forward(state)

@@ -58,6 +58,19 @@ class PongEnv:
 
         return self.make_observation(), reward, terminated
 
+    def fitness(self, t, max_t, reward):
+        """
+        Function to calculate the fitness of an individual based on time and reward he got
+        """
+        # weighted reward depending on when the terminal state is reached
+        if reward > 0:
+            f = (1 - (t / max_t)) * reward + 2
+        else:
+            f = (
+                (t / max_t) - 2) * abs(reward) + 2
+
+        return f
+
 
 def main():
     env = PongEnv()
