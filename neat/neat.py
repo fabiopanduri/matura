@@ -53,7 +53,8 @@ class NEAT:
         self.best_fitness_hist = []
         self.generation_time_hist = []
 
-    def iterate(self, generations, print_frequency=1, save_frequency=10):
+    def iterate(self, generations, print_frequency=1, save_frequency=10, live_f=False, live_b=False,
+                live_t=False):
         """
         Function that runs iterations of NEAT
         """
@@ -73,6 +74,15 @@ class NEAT:
 
             self.fitness_hist.append(average)
             self.best_fitness_hist.append(best)
+
+            if live_f:
+                self.plot_fitness_live()
+
+            if live_b:
+                self.plot_best_fitness_live()
+
+            if live_t:
+                self.plot_time_live()
 
             if i % print_frequency == 0:
                 print(
@@ -263,6 +273,42 @@ class NEAT:
                 self.global_connection_innovation_number += 1
 
         return offspring
+
+    def plot_time_live(self):
+        """
+        Plot the time history
+        """
+
+        y = self.generation_time_hist
+        x = list(range(len(y)))
+
+        plt.plot(x, y)
+        plt.show(block=False)
+        plt.pause(0.001)
+
+    def plot_best_fitness_live(self):
+        """
+        Plot the fitness of the best history
+        """
+
+        y = self.best_fitness_hist
+        x = list(range(len(y)))
+
+        plt.plot(x, y)
+        plt.show(block=False)
+        plt.pause(0.001)
+
+    def plot_fitness_live(self):
+        """
+        Plot the fitness history
+        """
+
+        y = self.fitness_hist
+        x = list(range(len(y)))
+
+        plt.plot(x, y)
+        plt.show(block=False)
+        plt.pause(0.001)
 
     def save_population(self, file_name=None):
         """

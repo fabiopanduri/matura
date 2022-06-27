@@ -56,10 +56,16 @@ def args() -> 'argparse':
     parser_neat = subparsers.add_parser('neat', help='Test NEAT')
     parser_neat.add_argument('-i', '--iterations', required=True,
                              help='Number of iterations', type=int)
+    parser_neat.add_argument('-P', '--population-size', dest="pop_size",
+                             help='Number of iterations', type=int, default=20)
     parser_neat.add_argument(
         '-p', '--plot', help="Plot the fitness and time at the end", action="store_true")
-    # parser_neat.add_argument(
-    #    '-l', '--live-plot', help="Plot the fitness live", action="store_true")
+    parser_neat.add_argument(
+        '-la', '--live-average', help="Plot the average fitness live", action="store_true")
+    parser_neat.add_argument(
+        '-lb', '--live-best', help="Plot the best fitness live", action="store_true")
+    parser_neat.add_argument(
+        '-lt', '--live-time', help="Plot the time live", action="store_true")
     parser_neat.add_argument('-g', '--game', help='Specify the game', required=True, dest='game',
                              choices=['pong'], type=str)
 
@@ -78,12 +84,18 @@ def main():
         }
         env = games[arguments.game]
 
-        N = NEAT(env, 20, (1, 1, 0.4), (0.8, 0.9),
+        N = NEAT(env, arguments.pop_size, (1, 1, 0.4), (0.8, 0.9),
                  (0.02, 0.02), 0.1, 0.5, 10000)
 
         N.make_population_connected()
 
-        N.iterate(arguments.iterations, print_frequency=1)
+        N.iterate(
+            arguments.iterations,
+            print_frequency=1,
+            live_f=arguments.live_average,
+            live_b=arguments.live_best,
+            live_t=arguments.live_time,
+        )
 
         N.save_population()
 
