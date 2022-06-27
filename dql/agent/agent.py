@@ -52,7 +52,7 @@ class DQLAgent:
         self.memory = ReplayMemory(self.memory_size)
         self.update_frequency = 100
         self.save_frequency = 10000
-        self.discount_factor = 0.95
+        self.discount_factor = 0.99
         self.minibatch_size = 32
         self.total_step = 0
         self.learning_rate = 0.1
@@ -61,8 +61,8 @@ class DQLAgent:
         # Input: Current state
         # Output: Estimated reward for each possible action
         self.nn_dimensions = [self.env.state_size,
-                              8, 8, len(self.possible_actions)]
-        self.activation_functions = ['ReLU', 'ReLU', 'ReLU', 'linear']
+                              5, len(self.possible_actions)]
+        self.activation_functions = ['ReLU', 'ReLU', 'linear']
 
         # Allows for loading of previously trained q_networks from files
         if load_network_path == None:
@@ -215,7 +215,7 @@ class DQLAgent:
 
 def main():
     env = PongEnvDQL(plot=True)
-    agt = DQLAgent(env, load_network_path='latest')
+    agt = DQLAgent(env)
 
     agt.learn(100000)
 
