@@ -50,7 +50,7 @@ def args() -> 'argparse':
     parser_dql.add_argument(
         '-l', '--live-plot', help="Plot the fitness live", action="store_true")
     parser_dql.add_argument('-g', '--game', help='Specify the game', required=True, dest='game',
-                            choices=['pong', 'cart-pole'], type=str)
+                            choices=['pong', 'cartpole'], type=str)
 
     # arguments for neat
     parser_neat = subparsers.add_parser('neat', help='Test NEAT')
@@ -105,7 +105,7 @@ def main():
     if arguments.subcommand == 'dql':
         games = {
             "pong": PongEnvDQL,
-            "cart-pole": CartpoleEnvDQL
+            "cartpole": CartpoleEnvDQL
         }
         env = games[arguments.game]
 
@@ -127,3 +127,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+# Example use: py -m eval.plot dql -g cartpole -e 1000 -l

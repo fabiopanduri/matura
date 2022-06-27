@@ -4,6 +4,8 @@
 # maturaarbeit_code is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 # You should have received a copy of the GNU General Public License along with maturaarbeit_code. If not, see <https://www.gnu.org/licenses/>.
 # Pong game to be played by ML algorithms
+import time
+
 import gym
 import numpy as np
 
@@ -22,18 +24,20 @@ class CartpoleEnvDQL:
         self.possible_actions = [0, 1]
         self.state_size = len(self.make_observation())
         self.plot = plot
+        self.frames_ellapsed = 0
+
+    def current_performance(self):
+        '''
+        Return the current game performance (time/steps since episode start)
+        '''
+        return self.frames_ellapsed
 
     def fitness(self, t, reward, alpha=1000):
         """
         Function to calculate the fitness of an individual based on time and reward he got
         """
         # weighted reward depending on when the terminal state is reached
-        if reward > 0:
-            f = 1 + np.exp(-t/alpha)
-        elif reward < 0:
-            f = 1 - np.exp(-t/alpha)
-        else:
-            f = 1
+        f = 1 + np.exp(-t/alpha)
         return f
 
     def make_observation(self):
@@ -48,8 +52,15 @@ class CartpoleEnvDQL:
         Do one game move with given action and return image, reward and wheter or not the game terminates
         '''
         observation, reward, done, info = self.gym_env.step(action[0])
+        self.frames_ellapsed += 1
         self.gym_env.render()
         return observation, reward, done
+
+    def terminate_episode(self):
+        '''
+        Function to be called after an episode (iteration of the game) ends
+        '''
+        self.frames_ellapsed = 0
 
 
 def main():
