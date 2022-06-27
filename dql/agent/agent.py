@@ -8,6 +8,7 @@ import random
 import sys
 from collections import deque
 
+import matplotlib.pyplot as plt
 import numpy as np
 
 from dql.environment.pong_env import PongEnv
@@ -58,19 +59,30 @@ class DQLAgent:
         # Input: Current state
         # Output: Estimated reward for each possible action
         self.nn_dimensions = [self.env.state_size,
-                              20, 20, len(self.possible_actions)]
+                              8, 8, len(self.possible_actions)]
         self.activation_functions = ['ReLU', 'ReLU', 'ReLU', 'linear']
+
         # Allows for loading of previously trained q_networks from files
         if load_network_path == None:
             self.q_network = NeuralNetwork(
                 self.nn_dimensions, self.learning_rate, self.activation_functions)
+            self.q_network.initialize_network(value_range=(-1, 1))
+
         elif load_network_path == 'latest':
             latest = sorted(list(os.listdir('NN_saves')))[-1]
-            self.q_network = NeuralNetwork.load_network(f'NN_saves/{latest}')
+            if latest != 'z':
+                self.q_network = NeuralNetwork.load_network(
+                    f'NN_saves/{latest}')
+            else:
+                self.q_network = NeuralNetwork(
+                    self.nn_dimensions, self.learning_rate, self.activation_functions)
+                self.q_network.initialize_network(value_range=(-1, 1))
         else:
             self.q_network = NeuralNetwork.load_network(load_network_path)
-        self.q_network.initialize_network()
+
         self.update_target_network()
+
+        self.score_hist = []
 
     def update_target_network(self):
         self.target_q_network = NeuralNetwork(
@@ -83,7 +95,9 @@ class DQLAgent:
         # Linear:
         # eps = - (1.0 - terminal_eps) / 100000 * step + 1.0
         # Exp decay:
-        eps = max(terminal_eps, 1.0 * (2 ** (-step / 5000)))
+        #eps = max(terminal_eps, 1.0 * (2 ** (-step / 5000)))
+        # Lin decay:
+        eps = max(terminal_eps, -0.001 * step + 1)
         return eps
 
     def get_action(self, state):
@@ -93,15 +107,19 @@ class DQLAgent:
         # With probability eps select random movement of possible movements
         if random.random() < self.get_eps(self.total_step):
             movement = random.choice(self.possible_actions)
+            q_values = None
 
         # Else select action which leads to max reward estimated by Q.
         else:
             q_values = self.q_network.feed_forward(state)
             movement = self.possible_actions[np.argmax(q_values)]
 
-            if self.total_step % self.update_frequency == 0:
-                print(self.total_step, q_values, "Max: ",
-                      self.possible_actions[np.argmax(q_values)])
+        if self.total_step % self.update_frequency == 0:
+            print(self.total_step, q_values, "Max: ",
+                  self.possible_actions[np.argmax(q_values)])
+            self.score_hist.append(self.env.game.score.copy())
+            print(self.score_hist)
+            self.plot_score()
 
         return [movement]
 
@@ -181,6 +199,19 @@ class DQLAgent:
                 step += 1
                 self.total_step += 1
 
+    def plot_score(self):
+        """
+        Plot the score history
+        """
+
+        y = [s[0] / s[1] for s in self.score_hist if s[1] != 0]
+        x = list(range(len(y)))
+
+        plt.plot(x, y)
+
+        #plt.plot(x, y)
+        plt.draw()
+
     def play(self):
         return
 
@@ -188,6 +219,8 @@ class DQLAgent:
 def main():
     env = PongEnv()
     agt = DQLAgent(env, load_network_path='latest')
+
+    plt.show()
 
     agt.learn(100000)
 
