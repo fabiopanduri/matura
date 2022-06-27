@@ -15,7 +15,7 @@ class CartpoleEnvDQL:
     Provide the environment for the game CartPole to the DQL Agent
     """
 
-    def __init__(self, plot=False):
+    def __init__(self, plot=False, render=True):
         '''
         Reset the game to initial state and return initial state
         '''
@@ -25,6 +25,7 @@ class CartpoleEnvDQL:
         self.state_size = len(self.make_observation())
         self.plot = plot
         self.frames_ellapsed = 0
+        self.render = render
 
     def current_performance(self):
         '''
@@ -53,7 +54,8 @@ class CartpoleEnvDQL:
         '''
         observation, reward, done, info = self.gym_env.step(action[0])
         self.frames_ellapsed += 1
-        self.gym_env.render()
+        if self.render:
+            self.gym_env.render()
         return observation, reward, done
 
     def terminate_episode(self):

@@ -48,21 +48,21 @@ class DQLAgent:
         '''
         self.env = env
         self.possible_actions = env.possible_actions
-        self.memory_size = 10000
+        self.memory_size = 2000
         self.memory = ReplayMemory(self.memory_size)
         self.update_frequency = 100
         self.save_frequency = 10000
         self.discount_factor = 0.99
         self.minibatch_size = 32
         self.total_step = 0
-        self.learning_rate = 0.1
+        self.learning_rate = 0.001
 
         # Neural Network.
         # Input: Current state
         # Output: Estimated reward for each possible action
         self.nn_dimensions = [self.env.state_size,
-                              5, len(self.possible_actions)]
-        self.activation_functions = ['ReLU', 'ReLU', 'sigmoid']
+                              24, 24, len(self.possible_actions)]
+        self.activation_functions = ['ReLU', 'ReLU', 'ReLU', 'linear']
 
         # Allows for loading of previously trained q_networks from files
         if load_network_path == None:
@@ -101,7 +101,8 @@ class DQLAgent:
         # Exp decay:
         #eps = max(terminal_eps, 1.0 * (2 ** (-step / 5000)))
         # Lin decay:
-        eps = max(terminal_eps, -0.001 * step + 1)
+        #eps = max(terminal_eps, -0.001 * step + 1)
+        eps = max(terminal_eps, 0.99**step)
         return eps
 
     def get_action(self, state):

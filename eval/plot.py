@@ -51,6 +51,8 @@ def args() -> 'argparse':
         '-l', '--live-plot', help="Plot the fitness live", action="store_true")
     parser_dql.add_argument('-g', '--game', help='Specify the game', required=True, dest='game',
                             choices=['pong', 'cartpole'], type=str)
+    parser_dql.add_argument(
+        '-r', '--render', help='Render the game', dest='render', action="store_true")
 
     # arguments for neat
     parser_neat = subparsers.add_parser('neat', help='Test NEAT')
@@ -121,7 +123,7 @@ def main():
         }
         env = games[arguments.game]
 
-        agt = DQLAgent(env(plot=arguments.live_plot))
+        agt = DQLAgent(env(plot=arguments.live_plot, render=arguments.render))
 
         agt.learn(arguments.episodes)
 
