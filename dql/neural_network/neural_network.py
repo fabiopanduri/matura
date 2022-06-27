@@ -59,7 +59,7 @@ class NeuralNetwork:
 
         self.eta = eta
 
-    def initialize_network(self) -> None:
+    def initialize_network(self, value_range=(0, 1)) -> None:
         '''
         This method randomly initializes the weights and the biases.
         '''
@@ -69,14 +69,14 @@ class NeuralNetwork:
 
         for l, dim in enumerate(self.dimensions[1:], 1):
             self.weights.append(
-                np.random.uniform(0, 1, (dim, self.dimensions[l - 1]))
+                np.random.uniform(*value_range, (dim, self.dimensions[l - 1]))
             )
 
         # add empty array to self.weights so that the index l corresponds to the l-th layer
         self.biases = [np.array([])]
 
         for dim_l in self.dimensions[1:]:
-            self.biases.append(np.random.uniform(0, 1, dim_l))
+            self.biases.append(np.random.uniform(*value_range, dim_l))
 
     def save_network(self, file_name: str = None) -> None:
         '''

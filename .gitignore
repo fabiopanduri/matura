@@ -1,6 +1,6 @@
 # Neural network saves 
-NN_saves/*
-NEAT_saves/*
+NN_saves/*.npz
+NEAT_saves/*.json
 # Stupid jetbrains stuff
 .idea/
 # .swp files created by vim
