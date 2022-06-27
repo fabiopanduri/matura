@@ -82,8 +82,6 @@ class DQLAgent:
 
         self.update_target_network()
 
-        self.score_hist = []
-
     def update_target_network(self):
         self.target_q_network = NeuralNetwork(
             self.nn_dimensions, self.learning_rate, self.activation_functions, self.q_network.weights, self.q_network.biases)
@@ -117,8 +115,9 @@ class DQLAgent:
         if self.total_step % self.update_frequency == 0:
             print(self.total_step, q_values, "Max: ",
                   self.possible_actions[np.argmax(q_values)])
-            self.score_hist.append(self.env.game.score.copy())
-            self.plot_score()
+            if self.env.plot == True:
+                self.env.score_hist.append(self.env.game.score.copy())
+                self.env.plot_score()
 
         return [movement]
 
@@ -198,27 +197,13 @@ class DQLAgent:
                 step += 1
                 self.total_step += 1
 
-    def plot_score(self):
-        """
-        Plot the score history
-        """
-
-        y = [s[0] / s[1] for s in self.score_hist if s[1] != 0]
-        x = list(range(len(y)))
-
-        plt.plot(x, y)
-        plt.show(block=False)
-        plt.pause(0.001)
-
     def play(self):
         return
 
 
 def main():
-    env = PongEnv()
+    env = PongEnv(plot=True)
     agt = DQLAgent(env, load_network_path='latest')
-
-    plt.show()
 
     agt.learn(100000)
 

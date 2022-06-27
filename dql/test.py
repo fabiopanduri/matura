@@ -18,7 +18,7 @@ from dql.neural_network.neural_network import NeuralNetwork
 
 
 def main():
-    env = PongEnv()
+    env = PongEnv(plot=True)
     agt = DQLAgent(env, load_network_path='latest')
 
     agt.learn(100000)

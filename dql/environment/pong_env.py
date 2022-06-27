@@ -14,13 +14,15 @@ class PongEnv:
     Provide the environment for the game Pong to the DQL Agent
     """
 
-    def __init__(self):
+    def __init__(self, plot=False):
         '''
         Reset the game to initial state and return initial state
         '''
         self.game = PongGame()
         self.possible_actions = ['up', 'stay', 'down']
         self.state_size = len(self.make_observation())
+        self.score_hist = []
+        self.plot = plot
 
     def make_observation(self):
         '''
@@ -56,6 +58,18 @@ class PongEnv:
             reward = 0
 
         return self.make_observation(), reward, terminated
+
+    def plot_score(self):
+        """
+        Plot the score history
+        """
+
+        y = [s[0] / s[1] for s in self.score_hist if s[1] != 0]
+        x = list(range(len(y)))
+
+        plt.plot(x, y)
+        plt.show(block=False)
+        plt.pause(0.001)
 
 
 def main():
