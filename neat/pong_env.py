@@ -4,10 +4,12 @@
 # maturaarbeit_code is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 # You should have received a copy of the GNU General Public License along with maturaarbeit_code. If not, see <https://www.gnu.org/licenses/>.
 # Pong game to be played by ML algorithms
+import numpy as np
+
 from pong.pong import PongGame
 
 
-class PongEnv:
+class PongEnvNEAT:
     """
     Provides the environment for the game Pong to the NEAT Agent
     """
@@ -58,17 +60,17 @@ class PongEnv:
 
         return self.make_observation(), reward, terminated
 
-    def fitness(self, t, max_t, reward):
+    def fitness(self, t, reward, alpha=1000):
         """
         Function to calculate the fitness of an individual based on time and reward he got
         """
         # weighted reward depending on when the terminal state is reached
         if reward > 0:
-            f = (1 - (t / max_t)) * reward + 2
+            f = 1 + np.exp(-t/alpha)
+        elif reward < 0:
+            f = 1 - np.exp(-t/alpha)
         else:
-            f = (
-                (t / max_t) - 2) * abs(reward) + 2
-
+            f = 1
         return f
 
 

@@ -6,7 +6,8 @@
 # Pong game to be played by ML algorithms
 import gym
 
-class CartpoleEnv:
+
+class CartpoleEnvDQL:
     """
     Provide the environment for the game CartPole to the DQL Agent
     """
@@ -16,7 +17,8 @@ class CartpoleEnv:
         Reset the game to initial state and return initial state
         '''
         self.gym_env = gym.make('CartPole-v1')
-        self.possible_actions = [0, 1]  # Note actions are defined through self.gym_env.action_space == Discrete(2)
+        # Note actions are defined through self.gym_env.action_space == Discrete(2)
+        self.possible_actions = [0, 1]
         self.state_size = len(self.make_observation())
 
     def make_observation(self):
@@ -33,7 +35,7 @@ class CartpoleEnv:
         observation, reward, done, info = self.gym_env.step(action[0])
         self.gym_env.render()
         return observation, reward, done
-    
+
 
 def main():
     env = PongEnv()

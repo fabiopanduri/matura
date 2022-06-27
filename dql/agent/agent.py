@@ -11,8 +11,8 @@ from collections import deque
 import matplotlib.pyplot as plt
 import numpy as np
 
-from dql.environment.pong_env import PongEnv
-from dql.environment.cartpole_gym_env import CartpoleEnv
+from dql.environment.cartpole_gym_env import CartpoleEnvDQL
+from dql.environment.pong_env import PongEnvDQL
 from dql.neural_network.neural_network import NeuralNetwork
 
 
@@ -82,6 +82,8 @@ class DQLAgent:
             self.q_network = NeuralNetwork.load_network(load_network_path)
 
         self.update_target_network()
+
+        self.fitness_hist = []
 
     def update_target_network(self):
         self.target_q_network = NeuralNetwork(
@@ -198,12 +200,15 @@ class DQLAgent:
                 step += 1
                 self.total_step += 1
 
+            fitness = self.env.fitness(step, reward)
+            self.fitness_hist.append(fitness)
+
     def play(self):
         return
 
 
 def main():
-    env = PongEnv(plot=True)
+    env = PongEnvDQL(plot=True)
     agt = DQLAgent(env, load_network_path='latest')
 
     agt.learn(100000)

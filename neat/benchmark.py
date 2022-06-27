@@ -15,7 +15,7 @@ import pygame
 from etc.activation_functions import *
 from neat.genetics import *
 from neat.neat import NEAT
-from neat.pong_env import PongEnv
+from neat.pong_env import PongEnvNEAT
 
 
 def main():
@@ -24,7 +24,7 @@ def main():
     print_frequency = 1
     FPS_LIMIT = 60
 
-    N = NEAT(PongEnv, 20, (1, 1, 0.4), (0.8, 0.9),
+    N = NEAT(PongEnvNEAT, 20, (1, 1, 0.4), (0.8, 0.9),
              (0.02, 0.02), 0.1, 0.5, 10000)
 
     # N.make_population_connected()
@@ -45,7 +45,7 @@ def main():
 
     chosen = random.choice(best)
 
-    env = PongEnv()
+    env = PongEnvNEAT()
     clock = pygame.time.Clock()
     state = env.make_observation()
     action = chosen.feed_forward(state)

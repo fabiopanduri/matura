@@ -12,7 +12,7 @@ import numpy as np
 
 from etc.activation_functions import *
 from neat.genetics import *
-from neat.pong_env import PongEnv
+from neat.pong_env import PongEnvNEAT
 
 
 class NEAT:
@@ -49,6 +49,10 @@ class NEAT:
         self.global_node_innovation_number = sum(self.nn_base_dimensions)
         self.species = []
 
+        self.fitness_hist = []
+        self.best_fitness_hist = []
+        self.generation_time_hist = []
+
     def iterate(self, generations, print_frequency=1, save_frequency=10):
         """
         Function that runs iterations of NEAT
@@ -60,8 +64,17 @@ class NEAT:
 
             if i % print_frequency == 0:
                 t = time.perf_counter() - t_0
-                best = sorted(self.population,
-                              key=lambda x: x.fitness)[-1].fitness
+
+                self.generation_time_hist.append(t)
+
+                sorted_pop = sorted(self.population, key=lambda x: x.fitness)
+                average = sum(map(lambda x: x.fitness, sorted_pop)
+                              ) / len(sorted_pop)
+                best = sorted_pop[-1].fitness
+
+                self.fitness_hist.append(average)
+                self.best_fitness_hist.append(best)
+
                 print(
                     f'[INFO] Generation {i} done. Took {t:.2f} s. Best = {best:.2f}')
                 print(
@@ -96,7 +109,7 @@ class NEAT:
 
                 if terminated:
                     # use a weighted reward depending on when the terminal state is reached
-                    individual.fitness = env.fitness(t, max_t, reward)
+                    individual.fitness = env.fitness(t, reward)
                     break
 
                 prediction = individual.feed_forward(state)
@@ -366,7 +379,7 @@ def main():
     import sys
     sys.setrecursionlimit(2**15)
 
-    N = NEAT(PongEnv, 20, (1, 1, 0.4), (0.8, 0.9),
+    N = NEAT(PongEnvNEAT, 20, (1, 1, 0.4), (0.8, 0.9),
              (0.02, 0.02), 0.1, 0.5, 10000)
 
     N.make_population_connected()
