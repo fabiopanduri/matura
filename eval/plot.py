@@ -105,7 +105,7 @@ def main():
         }
         env = games[arguments.game]
 
-        agt = DQLAgent(env(), load_network_path='latest')
+        agt = DQLAgent(env())
 
         agt.learn(arguments.episodes)
 

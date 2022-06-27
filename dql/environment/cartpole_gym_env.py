@@ -17,7 +17,7 @@ class CartpoleEnvDQL:
         '''
         Reset the game to initial state and return initial state
         '''
-        self.gym_env = gym.make('CartPole-v1')
+        self.gym_env = gym.make('CartPole-v0')
         # Note actions are defined through self.gym_env.action_space == Discrete(2)
         self.possible_actions = [0, 1]
         self.state_size = len(self.make_observation())
