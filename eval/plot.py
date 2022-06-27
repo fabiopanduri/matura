@@ -46,18 +46,22 @@ def args() -> 'argparse':
     parser_dql.add_argument('-e', '--episodes', dest='episodes', required=True,
                             help='Number of episodes', type=int)
     parser_dql.add_argument(
-        '-p', '--plot', help="Plot the fitness", action="store_true")
+        '-p', '--plot', help="Plot the fitness and time at the end", action="store_true")
+    parser_dql.add_argument(
+        '-l', '--live-plot', help="Plot the fitness live", action="store_true")
+    parser_dql.add_argument('-g', '--game', help='Specify the game', required=True, dest='game',
+                            choices=['pong', 'cart-pole'], type=str)
 
     # arguments for neat
     parser_neat = subparsers.add_parser('neat', help='Test NEAT')
     parser_neat.add_argument('-i', '--iterations', required=True,
                              help='Number of iterations', type=int)
     parser_neat.add_argument(
-        '-p', '--plot', help="Plot the fitness", action="store_true")
-
-    # general
-    parser.add_argument('-g', '--game', help='Specify the game', required=True, dest='game',
-                        choices=['pong', 'cart-pole'], type=str)
+        '-p', '--plot', help="Plot the fitness and time at the end", action="store_true")
+    # parser_neat.add_argument(
+    #    '-l', '--live-plot', help="Plot the fitness live", action="store_true")
+    parser_neat.add_argument('-g', '--game', help='Specify the game', required=True, dest='game',
+                             choices=['pong'], type=str)
 
     return parser.parse_args()
 
@@ -105,7 +109,7 @@ def main():
         }
         env = games[arguments.game]
 
-        agt = DQLAgent(env())
+        agt = DQLAgent(env(plot=arguments.live_plot))
 
         agt.learn(arguments.episodes)
 

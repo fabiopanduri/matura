@@ -62,27 +62,28 @@ class NEAT:
         for i in range(generations):
             self.simulate_population(self.simulation_time)
 
+            t = time.perf_counter() - t_0
+
+            self.generation_time_hist.append(t)
+
+            sorted_pop = sorted(self.population, key=lambda x: x.fitness)
+            average = sum(map(lambda x: x.fitness, sorted_pop)
+                          ) / len(sorted_pop)
+            best = sorted_pop[-1].fitness
+
+            self.fitness_hist.append(average)
+            self.best_fitness_hist.append(best)
+
             if i % print_frequency == 0:
-                t = time.perf_counter() - t_0
-
-                self.generation_time_hist.append(t)
-
-                sorted_pop = sorted(self.population, key=lambda x: x.fitness)
-                average = sum(map(lambda x: x.fitness, sorted_pop)
-                              ) / len(sorted_pop)
-                best = sorted_pop[-1].fitness
-
-                self.fitness_hist.append(average)
-                self.best_fitness_hist.append(best)
-
                 print(
                     f'[INFO] Generation {i} done. Took {t:.2f} s. Best = {best:.2f}')
                 print(
                     f'[INFO] Species: {len(self.species)}. Population Count: {len(self.population)}')
-                t_0 = time.perf_counter()
 
             if i % save_frequency == 0:
                 self.save_population()
+
+            t_0 = time.perf_counter()
 
             self.speciation()
 

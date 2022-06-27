@@ -120,9 +120,6 @@ class DQLAgent:
         if self.total_step % self.update_frequency == 0:
             print(self.total_step, q_values, "Max: ",
                   self.possible_actions[np.argmax(q_values)])
-            if self.env.plot == True:
-                self.env.score_hist.append(self.env.game.score.copy())
-                self.env.plot_score()
 
         return [movement]
 
@@ -209,6 +206,10 @@ class DQLAgent:
 
             fitness = self.env.fitness(step, reward)
             self.fitness_hist.append(fitness)
+
+            if self.env.plot == True:
+                self.env.score_hist.append(self.env.game.score.copy())
+                self.env.plot_score()
 
     def play(self):
         return
