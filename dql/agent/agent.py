@@ -62,7 +62,7 @@ class DQLAgent:
         # Output: Estimated reward for each possible action
         self.nn_dimensions = [self.env.state_size,
                               5, len(self.possible_actions)]
-        self.activation_functions = ['ReLU', 'ReLU', 'linear']
+        self.activation_functions = ['ReLU', 'ReLU', 'sigmoid']
 
         # Allows for loading of previously trained q_networks from files
         if load_network_path == None:
@@ -85,6 +85,7 @@ class DQLAgent:
         self.update_target_network()
 
         self.fitness_hist = []
+        self.performance_hist = []
         self.time_hist = []
 
     def update_target_network(self):
@@ -208,8 +209,22 @@ class DQLAgent:
             self.fitness_hist.append(fitness)
 
             if self.env.plot == True:
-                self.env.score_hist.append(self.env.game.score.copy())
-                self.env.plot_score()
+                self.performance_hist.append(self.env.current_performance())
+                self.plot_performance()
+
+            self.env.terminate_episode()
+
+    def plot_performance(self):
+        """
+        Plot the performance of the game up to now
+        """
+
+        y = self.performance_hist
+        x = list(range(len(y)))
+
+        plt.plot(x, y)
+        plt.show(block=False)
+        plt.pause(0.001)
 
     def play(self):
         return

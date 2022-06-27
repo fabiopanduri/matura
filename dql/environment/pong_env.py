@@ -22,8 +22,15 @@ class PongEnvDQL:
         self.game = PongGame()
         self.possible_actions = ['up', 'stay', 'down']
         self.state_size = len(self.make_observation())
-        self.score_hist = []
         self.plot = plot
+
+    def current_performance(self):
+        '''
+        Return current game performance (score ratio right/left)
+        '''
+        if self.game.score[0] == 0:
+            return 0
+        return self.game.score[1] / self.game.score[0]
 
     def make_observation(self):
         '''
@@ -60,18 +67,6 @@ class PongEnvDQL:
 
         return self.make_observation(), reward, terminated
 
-    def plot_score(self):
-        """
-        Plot the score history
-        """
-
-        y = [s[0] / s[1] for s in self.score_hist if s[1] != 0]
-        x = list(range(len(y)))
-
-        plt.plot(x, y)
-        plt.show(block=False)
-        plt.pause(0.001)
-
     def fitness(self, t, reward, alpha=1000):
         """
         Function to calculate the fitness of an individual based on time and reward he got
@@ -84,6 +79,12 @@ class PongEnvDQL:
         else:
             f = 1
         return f
+
+    def terminate_episode(self):
+        '''
+        Function to be called after an episode (iteration of the game) ends. (No purpose in pong but needed for consistency)
+        '''
+        return
 
 
 def main():
