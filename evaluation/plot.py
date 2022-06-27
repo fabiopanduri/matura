@@ -73,6 +73,11 @@ def main():
     plt.legend()
     plt.show()
 
+    plot(agt.time_hist, "time")
+
+    plt.legend()
+    plt.show()
+
 
 if __name__ == '__main__':
     main()

@@ -6,6 +6,7 @@
 import os
 import random
 import sys
+import time
 from collections import deque
 
 import matplotlib.pyplot as plt
@@ -84,6 +85,7 @@ class DQLAgent:
         self.update_target_network()
 
         self.fitness_hist = []
+        self.time_hist = []
 
     def update_target_network(self):
         self.target_q_network = NeuralNetwork(
@@ -177,6 +179,7 @@ class DQLAgent:
 
             step = 0
             # Play until terminal state/frame is reached
+            t_0 = time.perf_counter()
             while not terminated:
                 # Play one frame and observe new state and reward
                 action = self.get_action(phi)
@@ -199,6 +202,9 @@ class DQLAgent:
                 phi = next_phi
                 step += 1
                 self.total_step += 1
+
+            t = time.perf_counter() - t_0
+            self.time_hist.append(t)
 
             fitness = self.env.fitness(step, reward)
             self.fitness_hist.append(fitness)
