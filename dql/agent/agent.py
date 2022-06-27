@@ -107,7 +107,7 @@ class DQLAgent:
         # With probability eps select random movement of possible movements
         if random.random() < self.get_eps(self.total_step):
             movement = random.choice(self.possible_actions)
-            q_values = None
+            q_values = 'random action'
 
         # Else select action which leads to max reward estimated by Q.
         else:
@@ -118,7 +118,6 @@ class DQLAgent:
             print(self.total_step, q_values, "Max: ",
                   self.possible_actions[np.argmax(q_values)])
             self.score_hist.append(self.env.game.score.copy())
-            print(self.score_hist)
             self.plot_score()
 
         return [movement]
@@ -208,9 +207,8 @@ class DQLAgent:
         x = list(range(len(y)))
 
         plt.plot(x, y)
-
-        #plt.plot(x, y)
-        plt.draw()
+        plt.show(block=False)
+        plt.pause(0.001)
 
     def play(self):
         return
