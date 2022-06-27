@@ -5,6 +5,7 @@
 # You should have received a copy of the GNU General Public License along with maturaarbeit_code. If not, see <https://www.gnu.org/licenses/>.
 # Pong game to be played by ML algorithms
 import gym
+import numpy as np
 
 
 class CartpoleEnvDQL:
@@ -12,7 +13,7 @@ class CartpoleEnvDQL:
     Provide the environment for the game CartPole to the DQL Agent
     """
 
-    def __init__(self):
+    def __init__(self, plot=False):
         '''
         Reset the game to initial state and return initial state
         '''
@@ -20,6 +21,20 @@ class CartpoleEnvDQL:
         # Note actions are defined through self.gym_env.action_space == Discrete(2)
         self.possible_actions = [0, 1]
         self.state_size = len(self.make_observation())
+        self.plot = plot
+
+    def fitness(self, t, reward, alpha=1000):
+        """
+        Function to calculate the fitness of an individual based on time and reward he got
+        """
+        # weighted reward depending on when the terminal state is reached
+        if reward > 0:
+            f = 1 + np.exp(-t/alpha)
+        elif reward < 0:
+            f = 1 - np.exp(-t/alpha)
+        else:
+            f = 1
+        return f
 
     def make_observation(self):
         '''
