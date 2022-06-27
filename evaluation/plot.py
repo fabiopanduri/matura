@@ -50,7 +50,7 @@ def main():
     N.simulate_population(10000)
 
     # DQL
-    env = PongEnvDQL()
+    env = CartpoleEnvDQL()
     agt = DQLAgent(env, load_network_path='latest')
 
     agt.learn(20)
