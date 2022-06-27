@@ -11,6 +11,7 @@ from collections import deque
 import numpy as np
 
 from dql.environment.pong_env import PongEnv
+from dql.environment.cartpole_gym_env import CartpoleEnv
 from dql.neural_network.neural_network import NeuralNetwork
 
 
@@ -186,8 +187,8 @@ class DQLAgent:
 
 
 def main():
-    env = PongEnv()
-    agt = DQLAgent(env, load_network_path='latest')
+    env = CartpoleEnv()
+    agt = DQLAgent(env)
 
     agt.learn(100000)
 

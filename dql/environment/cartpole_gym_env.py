@@ -15,50 +15,25 @@ class CartpoleEnv:
         '''
         Reset the game to initial state and return initial state
         '''
-        self.game = gym.make('CartPole-v1')
-        self.possible_actions = ['left', 'stay', 'right']
+        self.gym_env = gym.make('CartPole-v1')
+        self.possible_actions = [0, 1]  # Note actions are defined through self.gym_env.action_space == Discrete(2)
         self.state_size = len(self.make_observation())
 
     def make_observation(self):
         '''
         Return the current game's current internal state (relevant params)
         '''
-        # return (self.game.right_paddle.relative_y_position(), self.game.ball.relative_position()[1])
-        return 
+        # TODO: This is ugly because it may reset when reset is not wanted
+        return self.gym_env.reset()
 
     def step(self, action):
         '''
         Do one game move with given action and return image, reward and wheter or not the game terminates
         '''
-        # Get desired paddle movement from first (and only) entry of action tuple
-        right_movement = action[0]
-
-        # For the time being, make the opponent unmoving
-        left_movement = 'stay'
-
-        # Perform one game tick. Store prev score to calculate reward
-        prev_score = self.game.score.copy()
-        terminated = self.game.tick(
-            left_movement,
-            right_movement,
-        )
-
-        if self.game.score[0] == prev_score[0] + 1:
-            # Negative reward if opponent gets a point
-            reward = -1
-        elif self.game.score[1] == prev_score[1] + 1:
-            # Positive reward if agent gets a point
-            reward = 1
-        else:
-            # Slight negative reward if no point made
-            reward = 0
-
-        return self.make_observation(), reward, terminated
+        observation, reward, done, info = self.gym_env.step(action[0])
+        self.gym_env.render()
+        return observation, reward, done
     
 
 def main():
     env = PongEnv()
-    clock = pygame.time.Clock()
-    while True:
-        # print("Step: ", env.step(['stay']), "Score: ", env.score)
-        clock.tick(FPS_LIMIT)
