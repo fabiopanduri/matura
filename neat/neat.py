@@ -31,6 +31,8 @@ class NEAT:
         delta_t,
         r,
         simulation_time,
+        connection_disable_constant,
+        render=False,
     ):
         self.env = env
         temp_env = env()
@@ -42,6 +44,7 @@ class NEAT:
         self.delta_t = delta_t
         self.r = r
         self.simulation_time = simulation_time
+        self.connection_disable_constant = connection_disable_constant
 
         self.population = []
         self.global_connection_innovation_number = self.nn_base_dimensions[0] * \
@@ -52,6 +55,8 @@ class NEAT:
         self.fitness_hist = []
         self.best_fitness_hist = []
         self.generation_time_hist = []
+
+        self.render = render
 
     def iterate(self, generations, print_frequency=1, save_frequency=10, live_f=False, live_b=False,
                 live_t=False):
@@ -86,9 +91,14 @@ class NEAT:
 
             if i % print_frequency == 0:
                 print(
-                    f'[INFO] Generation {i} done. Took {t:.2f} s. Best = {best:.2f}')
+                    f'[INFO] Generation {i} done. Took {t:.2f} s')
+                print(
+                    f'[INFO] Best = {best:.2f}. Average = {average:.2f}')
                 print(
                     f'[INFO] Species: {len(self.species)}. Population Count: {len(self.population)}')
+                print(
+                    f'[INFO] Innovation Nodes, Connections: {self.global_node_innovation_number}, {self.global_connection_innovation_number}'
+                )
 
             if i % save_frequency == 0:
                 self.save_population()
@@ -111,7 +121,7 @@ class NEAT:
         """
 
         for individual in self.population:
-            env = self.env()
+            env = self.env(render=self.render)
 
             state_0 = env.make_observation()
             action = individual.feed_forward(state_0)
@@ -180,8 +190,8 @@ class NEAT:
         mean_adjusted_fitness = sum(s_fitness)
 
         # float values for offspring numbers
-        base = [(s_f / mean_adjusted_fitness) *
-                self.population_size for s_f in s_fitness]
+        base = [1 + (s_f / mean_adjusted_fitness) *
+                (self.population_size - len(self.species)) for s_f in s_fitness]
 
         # rounded down offspring numbers
         base_int = [math.floor(b) for b in base]
@@ -236,7 +246,8 @@ class NEAT:
                     continue
 
                 p1, p2 = random.sample(mating_s, k=2)
-                child = Genome.crossover(p1, p2)
+                child = Genome.crossover(
+                    p1, p2, self.connection_disable_constant)
 
                 new_generation.append(child)
 
@@ -426,8 +437,8 @@ def main():
     import sys
     sys.setrecursionlimit(2**15)
 
-    N = NEAT(PongEnvNEAT, 20, (1, 1, 0.4), (0.8, 0.9),
-             (0.02, 0.02), 0.1, 0.5, 10000)
+    N = NEAT(PongEnvNEAT, 50, (1, 1, 0.4), (0.8, 0.9),
+             (0.001, 0.001), 0.1, 0.5, 10000, 0.75)
 
     N.make_population_connected()
     #N.population = NEAT.load_population()

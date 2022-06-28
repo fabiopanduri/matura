@@ -15,6 +15,7 @@ from collections import deque
 import matplotlib.pyplot as plt
 import numpy as np
 
+import neat.config as NEAT_cfg
 from dql.agent.agent import DQLAgent
 from dql.agent.agent import ReplayMemory
 from dql.environment.cartpole_gym_env import CartpoleEnvDQL
@@ -24,6 +25,7 @@ from etc.activation_functions import *
 from neat.genetics import *
 from neat.neat import NEAT
 from neat.pong_env import PongEnvNEAT
+
 
 plt.style.use("ggplot")
 
@@ -53,13 +55,13 @@ def args() -> 'argparse':
                             choices=['pong', 'cartpole'], type=str)
     parser_dql.add_argument(
         '-r', '--render', help='Render the game', dest='render', action="store_true")
+    parser_dql.add_argument(
+        '-v', '--verbose', help='Print info', dest='verbose', action="store_true")
 
     # arguments for neat
     parser_neat = subparsers.add_parser('neat', help='Test NEAT')
     parser_neat.add_argument('-i', '--iterations', required=True,
                              help='Number of iterations', type=int)
-    parser_neat.add_argument('-P', '--population-size', dest="pop_size",
-                             help='Number of iterations', type=int, default=20)
     parser_neat.add_argument(
         '-p', '--plot', help="Plot the fitness and time at the end", action="store_true")
     parser_neat.add_argument(
@@ -70,6 +72,12 @@ def args() -> 'argparse':
         '-lt', '--live-time', help="Plot the time live", action="store_true")
     parser_neat.add_argument('-g', '--game', help='Specify the game', required=True, dest='game',
                              choices=['pong'], type=str)
+    parser_neat.add_argument(
+        '-r', '--render', help='Render the game', dest='render', action="store_true")
+    parser_neat.add_argument(
+        '-v', '--verbose', help='Print info', dest='verbose', action="store_true")
+    parser_neat.add_argument(
+        '-c', '--connected', help='Start with a connected graph', dest='connected', action="store_true")
 
     return parser.parse_args()
 
@@ -79,6 +87,9 @@ def main():
 
     arguments = args()
 
+    if not arguments.verbose:
+        sys.stdout = open(os.devnull, "w")
+
     # NEAT
     if arguments.subcommand == 'neat':
         games = {
@@ -86,10 +97,23 @@ def main():
         }
         env = games[arguments.game]
 
-        N = NEAT(env, arguments.pop_size, (1, 1, 0.4), (0.8, 0.9),
-                 (0.02, 0.02), 0.1, 0.5, 10000)
+        N = NEAT(
+            env,
+            NEAT_cfg.POPULATION_SIZE,
+            NEAT_cfg.SPECIATION_CONSTANTS,
+            NEAT_cfg.WEIGHT_MUTATION_CONSTANTS,
+            NEAT_cfg.NODE_CONNECTION_MUTATION_CONSTANTS,
+            NEAT_cfg.DELTA_T,
+            NEAT_cfg.R,
+            NEAT_cfg.SIMULATION_TIME,
+            NEAT_cfg.CONNECTION_DISABLE_CONSTANT,
+            render=arguments.render
+        )
 
-        N.make_population_connected()
+        if arguments.connected:
+            N.make_population_connected()
+        else:
+            N.make_population_empty()
 
         N.iterate(
             arguments.iterations,

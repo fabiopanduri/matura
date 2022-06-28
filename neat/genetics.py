@@ -149,7 +149,7 @@ class Genome:
         return cls(nodes, connections)
 
     @classmethod
-    def crossover(cls, parent1, parent2):
+    def crossover(cls, parent1, parent2, connection_disable_probability):
         # get all nodes from both parents
         nodes = parent1.nodes.copy()
         for node_id, node in parent2.nodes.items():
@@ -160,17 +160,29 @@ class Genome:
         p1_connections = parent1.connection_dict()
         p2_connections = parent2.connection_dict()
 
+        # make sure none of the connections are empty
+        if len(p1_connections) == 0 or len(p2_connections) == 0:
+            connections = parent1.connections + parent2.connections
+            return cls(nodes.values(), connections)
+
         m = max(max(p1_connections.keys()), max(p2_connections.keys()))
         for i in range(m + 1):
             if i in p1_connections and i in p2_connections:
                 if parent1.fitness > parent2.fitness:
-                    connections.append(p1_connections[i])
-                if parent1.fitness < parent2.fitness:
-                    connections.append(p2_connections[i])
+                    new_connection = p1_connections[i]
+                elif parent1.fitness < parent2.fitness:
+                    new_connection = p2_connections[i]
                 else:
-                    connections.append(
-                        random.choice([p1_connections[i], p2_connections[i]])
-                    )
+                    new_connection = random.choice(
+                        [p1_connections[i], p2_connections[i]])
+
+                # chance that the connection is disabled if either parent had it disabled
+                if (not p1_connections[i].enabled or not p2_connections[i].enabled) and random.random() < connection_disable_probability:
+                    new_connection.enabled = False
+                else:
+                    new_connection.enabled = True
+                connections.append(new_connection)
+
             elif i in p1_connections and i not in p2_connections:
                 connections.append(p1_connections[i])
             elif i not in p1_connections and i in p2_connections:
@@ -188,10 +200,12 @@ class Genome:
 
         self_connections = self.connection_dict()
         other_connections = other.connection_dict()
-        self_biggest = max(self_connections.keys())
-        other_biggest = max(other_connections.keys())
+        self_biggest = max(self_connections.keys()) if len(
+            self_connections) > 0 else 0
+        other_biggest = max(other_connections.keys()) if len(
+            other_connections) > 0 else 0
 
-        N = max(len(self_connections), len(other_connections))
+        N = max([len(self_connections), len(other_connections), 1])
         E, D = 0, 0
         weight_difference_sum = 0
         weight_difference_count = 0
@@ -213,8 +227,10 @@ class Genome:
                     E += 1
                 else:
                     D += 1
-
-        W_bar = weight_difference_sum / weight_difference_count
+        if weight_difference_count != 0:
+            W_bar = weight_difference_sum / weight_difference_count
+        else:
+            W_bar = 0
 
         c_1, c_2, c_3 = speciation_constants
 
@@ -392,6 +408,9 @@ class Genome:
         Mutation method that splits a connection between two nodes and inserts a new node in the
         middle
         """
+
+        if len(self.connections) == 0:
+            return
 
         node_id = innovation_number_connections
         new_node = NodeGene(node_id, "hidden", activation_function)
