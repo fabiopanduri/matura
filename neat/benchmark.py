@@ -13,6 +13,7 @@ import numpy as np
 import pygame
 
 from etc.activation_functions import *
+from neat.cartpole_gym_env import CartpoleEnvNEAT
 from neat.genetics import *
 from neat.neat import NEAT
 from neat.pong_env import PongEnvNEAT
@@ -24,11 +25,20 @@ def main():
     print_frequency = 1
     FPS_LIMIT = 60
 
-    N = NEAT(PongEnvNEAT, 20, (1, 1, 0.4), (0.8, 0.9),
-             (0.02, 0.02), 0.1, 0.5, 10000)
+    N = NEAT(env=CartpoleEnvNEAT,
+             population_size=20,
+             speciation_constants=(1, 1, 0.4),
+             weight_mutation_constants=(0.8, 0.9),
+             node_connection_mutation_constants=(0.02, 0.02),
+             delta_t=0.1,
+             r=0.5,
+             simulation_time=10000,
+             connection_disable_constant=0.1,
+             render=True,
+             )
 
-    # N.make_population_connected()
-    N.population = NEAT.load_population()
+    N.make_population_connected()
+    # N.population = NEAT.load_population()
 
     print(f"[INFO] Choosing the best individuals")
     best = []

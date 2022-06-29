@@ -183,7 +183,7 @@ class DQLAgent:
                 # Play one frame and observe new state and reward
                 action = self.get_action(phi)
                 state, reward, terminated = self.execute_action(action)
-                # print(state, reward)
+                print(state, reward)
                 next_phi = self.preprocessor(state)
 
                 transition = (phi, action, reward, next_phi, terminated)

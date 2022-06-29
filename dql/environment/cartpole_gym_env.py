@@ -63,7 +63,3 @@ class CartpoleEnvDQL:
         Function to be called after an episode (iteration of the game) ends
         '''
         self.frames_ellapsed = 0
-
-
-def main():
-    env = PongEnv()
