@@ -62,7 +62,7 @@ class DQLAgent:
         # Output: Estimated reward for each possible action
         self.nn_dimensions = [self.env.state_size,
                               24, 24, len(self.possible_actions)]
-        self.activation_functions = ['ReLU', 'ReLU', 'ReLU', 'linear']
+        self.activation_functions = ['ReLU', 'ReLU', 'ReLU', 'luisian']
 
         # Allows for loading of previously trained q_networks from files
         if load_network_path == None:
@@ -172,6 +172,7 @@ class DQLAgent:
         Perform Q Learning as described by Algorithm 1 in Mnih et al. 2015
         '''
         for episode in range(n_of_episodes):
+            print("Status: ")
             terminated = False
             state = self.env.make_observation()
             phi = self.preprocessor(state)
@@ -183,7 +184,7 @@ class DQLAgent:
                 # Play one frame and observe new state and reward
                 action = self.get_action(phi)
                 state, reward, terminated = self.execute_action(action)
-                print(state, reward)
+                # print(state, reward)
                 next_phi = self.preprocessor(state)
 
                 transition = (phi, action, reward, next_phi, terminated)
@@ -211,7 +212,9 @@ class DQLAgent:
 
             if self.env.plot == True:
                 self.performance_hist.append(self.env.current_performance())
-                self.plot_performance()
+                # if episode % 50 == 0:
+                if 1:
+                    self.plot_performance()
 
             self.env.terminate_episode()
 

@@ -17,7 +17,13 @@ def mean_squared_error_derivative(activation, y):
     Here the derivative of Mean squared error.
     '''
 
-    return activation - y
+    # return activation - y
+    # print(activation, y, activation - y)
+    error = []
+    for activation_value, y_value in activation, y:
+        error.append(min(max((activation_value - y_value), -1), 1))
+
+    return error
 
 
 class NeuralNetwork:
@@ -150,6 +156,7 @@ class NeuralNetwork:
             z_l = np.dot(self.weights[l], activation) + self.biases[l]
             activation = self.activation_functions[l](z_l)
 
+        print(activation)
         return activation
 
     def stochastic_gradient_descent(self, training_batch) -> None:
