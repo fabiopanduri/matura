@@ -27,7 +27,7 @@ class ReplayMemory:
 
     def store(self, transition):
         '''
-        Store a transition to replay memory (with corresponding time t of transition). Transition format: phi, action, reward, next_phi, terminal
+        Store a transition to replay memory (with corresponding time t of transition). Transition format: phi, action, reward, next_phi, done
         If memory is full, delete oldest transition.
         '''
         self.memory.append(transition)
@@ -92,17 +92,17 @@ class DQLAgent:
         self.target_q_network = NeuralNetwork(
             self.nn_dimensions, self.learning_rate, self.activation_functions, self.q_network.weights, self.q_network.biases)
 
-    def get_eps(self, step, terminal_eps=0.1):
+    def get_eps(self, step, done_eps=0.1):
         '''
         Get Epsilon (exploration rate). 
         '''
         # Linear:
-        # eps = - (1.0 - terminal_eps) / 100000 * step + 1.0
+        # eps = - (1.0 - done_eps) / 100000 * step + 1.0
         # Exp decay:
-        #eps = max(terminal_eps, 1.0 * (2 ** (-step / 5000)))
+        #eps = max(done_eps, 1.0 * (2 ** (-step / 5000)))
         # Lin decay:
-        #eps = max(terminal_eps, -0.001 * step + 1)
-        eps = max(terminal_eps, 0.99**step)
+        #eps = max(done_eps, -0.001 * step + 1)
+        eps = max(done_eps, 0.99**step)
         return eps
 
     def get_action(self, state):
@@ -127,10 +127,10 @@ class DQLAgent:
 
     def execute_action(self, action):
         '''
-        Execute action in emulator and observe state and reward, also score for determining if state is terminal
+        Execute action in emulator and observe state and reward, also score for determining if state is done
         '''
-        state, reward, terminated = self.env.step(action)
-        return state, reward, terminated
+        state, reward, done = self.env.step(action)
+        return state, reward, done
 
     def preprocessor(self, state):
         '''
@@ -150,15 +150,15 @@ class DQLAgent:
         minibatch = self.memory.sample(self.minibatch_size)
         training_batch = []
         for transition in minibatch:
-            phi, action, reward, next_phi, terminal = transition
+            phi, action, reward, next_phi, done = transition
 
             # Initially, target = network prediction
             target_rewards = self.q_network.feed_forward(phi)
-            # If episode terminates at next step (terminal=True), reward = current reward for the taken action.
+            # If episode terminates at next step (done=True), reward = current reward for the taken action.
             taken = self.possible_actions.index(action[0])
             target_rewards[taken] = reward
 
-            if not terminal:
+            if not done:
                 # If episode doesn't terminate, add the estimated rewards for each future action
                 target_rewards[taken] += self.discount_factor * np.max(
                     self.target_q_network.feed_forward(next_phi))
@@ -173,21 +173,21 @@ class DQLAgent:
         '''
         for episode in range(n_of_episodes):
             print("Status: ")
-            terminated = False
+            done = False
             state = self.env.make_observation()
             phi = self.preprocessor(state)
 
             step = 0
-            # Play until terminal state/frame is reached
+            # Play until done state/frame is reached
             t_0 = time.perf_counter()
-            while not terminated:
+            while not done:
                 # Play one frame and observe new state and reward
                 action = self.get_action(phi)
-                state, reward, terminated = self.execute_action(action)
+                state, reward, done = self.execute_action(action)
                 # print(state, reward)
                 next_phi = self.preprocessor(state)
 
-                transition = (phi, action, reward, next_phi, terminated)
+                transition = (phi, action, reward, next_phi, done)
                 self.memory.store(transition)
 
                 self.replay()
