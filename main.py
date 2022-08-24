@@ -22,6 +22,7 @@ from dql.environment.cartpole_gym_env import CartpoleEnvDQL
 from dql.environment.pong_env import PongEnvDQL
 from dql.neural_network.neural_network import NeuralNetwork
 from etc.activation_functions import *
+from neat.cartpole_gym_env import CartpoleEnvNEAT
 from neat.genetics import *
 from neat.neat import NEAT
 from neat.pong_env import PongEnvNEAT
@@ -71,7 +72,7 @@ def args() -> 'argparse':
     parser_neat.add_argument(
         '-lt', '--live-time', help="Plot the time live", action="store_true")
     parser_neat.add_argument('-g', '--game', help='Specify the game', required=True, dest='game',
-                             choices=['pong'], type=str)
+                             choices=['pong', 'cartpole'], type=str)
     parser_neat.add_argument(
         '-r', '--render', help='Render the game', dest='render', action="store_true")
     parser_neat.add_argument(
@@ -94,6 +95,7 @@ def main():
     if arguments.subcommand == 'neat':
         games = {
             "pong": PongEnvNEAT,
+            "cartpole": CartpoleEnvNEAT
         }
         env = games[arguments.game]
 

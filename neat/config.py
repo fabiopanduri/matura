@@ -4,7 +4,7 @@
 # maturaarbeit_code is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 # You should have received a copy of the GNU General Public License along with maturaarbeit_code. If not, see <https://www.gnu.org/licenses/>.
 # Number of individuals in the population
-POPULATION_SIZE = 100
+POPULATION_SIZE = 10
 
 # Constants for speciation, i.e., c_1, c_2, c_3
 SPECIATION_CONSTANTS = (1, 1, 3)
@@ -18,7 +18,7 @@ WEIGHT_MUTATION_CONSTANTS = (0.8, 0.9)
 # Constants that determine the probabilities of node and connection mutations
 # First constant is the probability a new connection is added to an individual
 # The second constant is the probability a new node is added to an individual
-NODE_CONNECTION_MUTATION_CONSTANTS = (0.0005, 0.0005)
+NODE_CONNECTION_MUTATION_CONSTANTS = (0.005, 0.005)
 
 # Constant specifying the probability an inherited connection is disabled if either parent had it
 # disabled

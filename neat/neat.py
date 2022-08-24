@@ -126,7 +126,10 @@ class NEAT:
             env = self.env(render=self.render)
 
             state_0 = env.make_observation()
-            action = individual.feed_forward(state_0)
+            prediction = individual.feed_forward(state_0)
+            action_i = np.argmax(np.array(prediction))
+
+            action = env.possible_actions[action_i]
             for t in range(max_t):
                 state, reward, terminated = env.step(action)
 

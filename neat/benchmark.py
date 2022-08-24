@@ -34,6 +34,7 @@ def main():
              r=0.5,
              simulation_time=10000,
              connection_disable_constant=0.1,
+             alpha=100,
              render=True,
              )
 
