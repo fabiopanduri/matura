@@ -32,6 +32,7 @@ class NEAT:
         r,
         simulation_time,
         connection_disable_constant,
+        alpha,
         render=False,
     ):
         self.env = env
@@ -45,6 +46,7 @@ class NEAT:
         self.r = r
         self.simulation_time = simulation_time
         self.connection_disable_constant = connection_disable_constant
+        self.alpha = alpha
 
         self.population = []
         self.global_connection_innovation_number = self.nn_base_dimensions[0] * \
@@ -130,7 +132,8 @@ class NEAT:
 
                 if terminated:
                     # use a weighted reward depending on when the terminal state is reached
-                    individual.fitness = env.fitness(t, reward)
+                    individual.fitness = env.fitness(
+                        t, reward, alpha=self.alpha)
                     break
 
                 prediction = individual.feed_forward(state)

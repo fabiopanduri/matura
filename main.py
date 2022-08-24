@@ -107,6 +107,7 @@ def main():
             NEAT_cfg.R,
             NEAT_cfg.SIMULATION_TIME,
             NEAT_cfg.CONNECTION_DISABLE_CONSTANT,
+            NEAT_cfg.ALPHA,
             render=arguments.render
         )
 
