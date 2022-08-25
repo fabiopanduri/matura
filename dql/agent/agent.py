@@ -3,6 +3,8 @@
 # maturaarbeit_code is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 3.
 # maturaarbeit_code is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 # You should have received a copy of the GNU General Public License along with maturaarbeit_code. If not, see <https://www.gnu.org/licenses/>.
+import datetime
+import json
 import os
 import random
 import sys
@@ -55,6 +57,7 @@ class DQLAgent:
                  live_plot_freq,
                  live_plot,
                  nn_save_freq,
+                 save_data=False,
                  ):
 
         self.env = env
@@ -68,6 +71,7 @@ class DQLAgent:
         self.live_plot = live_plot
         self.live_plot_freq = live_plot_freq
         self.nn_save_freq = nn_save_freq
+        self.save_data = save_data
 
         self.possible_actions = self.env.possible_actions
         self.memory = ReplayMemory(self.memory_size)
@@ -228,12 +232,40 @@ class DQLAgent:
             # self.fitness_hist.append(fitness)
 
             print(f"Episode {episode}: {episode_step}")
-            if self.live_plot == True:
-                self.performance_hist.append(episode_step)
-                if episode % self.live_plot_freq == 0:
-                    self.plot_performance()
+            self.performance_hist.append(episode_step)
+            if self.live_plot and episode % self.live_plot_freq == 0:
+                self.plot_performance()
 
             self.env.terminate_episode()
+
+        if self.save_data:
+            data = {
+                "episodes": n_of_episodes,
+                "performance history": self.performance_hist,
+                "time history": self.time_hist,
+                "hyperparameters": {
+                    "memory size": self.memory_size,
+                    "discount factor": self.discount_factor,
+                    "minibatch size": self.minibatch_size,
+                    "learning rate": self.learning_rate,
+                    "epsilon decay": self.eps_decay,
+                    "final epsilon": self.done_eps,
+                    "target neural network update freq": self.target_nn_update_freq,
+                    "live plot freq": self.live_plot_freq,
+                    "live plot": self.live_plot,
+                    "neural network save freq": self.nn_save_freq,
+                }
+            }
+
+            file_name = (
+                f"DQL-epoch-{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')}.json"
+            )
+
+            with open(f"DQL_epochs_saves/{file_name}", "w") as f:
+                f.write(json.dumps(data, indent=4))
+
+            print(
+                f"[INFO] Saved epoch to DQL_epochs_saves/{file_name}.")
 
     def plot_performance(self):
         """
