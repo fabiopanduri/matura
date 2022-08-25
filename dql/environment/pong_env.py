@@ -51,19 +51,21 @@ class PongEnvDQL:
 
         # Perform one game tick. Store prev score to calculate reward
         prev_score = self.game.score.copy()
-        terminated = self.game.tick(
+        terminated, right_paddle_collision = self.game.tick(
             left_movement,
             right_movement,
         )
 
         if self.game.score[0] == prev_score[0] + 1:
             # Negative reward if opponent gets a point
-            reward = -1
+            reward = -5
         elif self.game.score[1] == prev_score[1] + 1:
             # Positive reward if agent gets a point
-            reward = 1
-        else:
+            reward = 5
+        elif right_paddle_collision:
             # Slight negative / zero reward if no point made
+            reward = 5
+        else:
             reward = 0
 
         return self.make_observation(), reward, terminated

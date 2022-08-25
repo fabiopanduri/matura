@@ -84,7 +84,7 @@ class NeuralNetwork:
         for dim_l in self.dimensions[1:]:
             self.biases.append(np.random.uniform(*value_range, dim_l))
 
-    def save_network(self, file_name):
+    def save_network(self, file_name=None):
         '''
         This method saves the current network to a file.
         It will be a .npz file containing all important data, namely:

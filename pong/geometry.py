@@ -41,6 +41,7 @@ def circle_corner_bounce(
 def rect_circle_collision(
     rectangle: Tuple[int, int, int, int], circle: Tuple[int, int, int], circle_velocity
 ):
+    # TODO: This code is hella DONOTREPEATYOURSELF...
     """
     Collide a moving circle with a rectangle. Parse rectangle as top left and bottom right point, circle as centre and radius.
     """
@@ -53,25 +54,25 @@ def rect_circle_collision(
     if circle[0] < rectangle[0] and rectangle[1] < circle[1] < rectangle[3]:
         # Collision?
         if circle[0] + circle[2] >= rectangle[0]:
-            return np.multiply(circle_velocity, np.array([-1, 1]))
+            return np.multiply(circle_velocity, np.array([-1, 1])), True
 
     # Bottom side
     if circle[1] > rectangle[2] and rectangle[0] < circle[0] < rectangle[2]:
         # Collision?
         if circle[1] - circle[2] <= rectangle[1]:
-            return np.multiply(circle_velocity, np.array([1, -1]))
+            return np.multiply(circle_velocity, np.array([1, -1])), True
 
     # Right side
     if circle[0] > rectangle[2] and rectangle[1] < circle[1] < rectangle[3]:
         # Collision?
         if circle[0] - circle[2] <= rectangle[2]:
-            return np.multiply(circle_velocity, np.array([-1, 1]))
+            return np.multiply(circle_velocity, np.array([-1, 1])), True
 
     # Top side
     if circle[1] < rectangle[1] and rectangle[0] < circle[0] < rectangle[2]:
         # Collision?
         if circle[1] + circle[2] >= rectangle[1]:
-            return np.multiply(circle_velocity, np.array([1, -1]))
+            return np.multiply(circle_velocity, np.array([1, -1])), True
 
     # If the ball is not facing any sides, check if it makes contact with any corner
     # Top left corner
@@ -80,7 +81,7 @@ def rect_circle_collision(
     ] ** 2:
         return circle_corner_bounce(
             (rectangle[0], rectangle[1]), circle, circle_velocity
-        )
+        ), True
 
     # Bottom left corner
     if (rectangle[0] - circle[0]) ** 2 + (rectangle[3] - circle[1]) ** 2 <= circle[
@@ -88,7 +89,7 @@ def rect_circle_collision(
     ] ** 2:
         return circle_corner_bounce(
             (rectangle[0], rectangle[3]), circle, circle_velocity
-        )
+        ), True
 
     # Bottom right corner
     if (rectangle[2] - circle[0]) ** 2 + (rectangle[3] - circle[1]) ** 2 <= circle[
@@ -96,7 +97,7 @@ def rect_circle_collision(
     ] ** 2:
         return circle_corner_bounce(
             (rectangle[2], rectangle[3]), circle, circle_velocity
-        )
+        ), True
 
     # Top right corner
     if (rectangle[2] - circle[0]) ** 2 + (rectangle[1] - circle[1]) ** 2 <= circle[
@@ -104,8 +105,8 @@ def rect_circle_collision(
     ] ** 2:
         return circle_corner_bounce(
             (rectangle[2], rectangle[1]), circle, circle_velocity
-        )
+        ), True
 
     # If none of the above options are applicable, the circle didn't collide, so just return
     # the input velocity
-    return circle_velocity
+    return circle_velocity, False

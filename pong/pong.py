@@ -106,7 +106,7 @@ class Ball:
 
     def paddle_collision(self, left_paddle, right_paddle):
         # Apply rectangle-circle collision function to ball with both paddles
-        self.velocity = rect_circle_collision(
+        self.velocity, left_paddle_collision = rect_circle_collision(
             (
                 left_paddle.position[0],
                 left_paddle.position[1],
@@ -116,7 +116,7 @@ class Ball:
             (self.position[0], self.position[1], BALL_RADIUS),
             self.velocity,
         )
-        self.velocity = rect_circle_collision(
+        self.velocity, right_paddle_collision = rect_circle_collision(
             (
                 right_paddle.position[0],
                 right_paddle.position[1],
@@ -126,6 +126,7 @@ class Ball:
             (self.position[0], self.position[1], BALL_RADIUS),
             self.velocity,
         )
+        return left_paddle_collision, right_paddle_collision
 
     def update(self, left_paddle, right_paddle):
         '''
@@ -134,10 +135,10 @@ class Ball:
         Side collisions are returned to calculate the score
         '''
         side_collision = self.border_collision()
-        self.paddle_collision(left_paddle, right_paddle)
+        left_paddle_collision, right_paddle_collision = self.paddle_collision(left_paddle, right_paddle)
 
         self.position += self.velocity
-        return side_collision
+        return side_collision, right_paddle_collision
 
     def relative_position(self):
         """
@@ -281,7 +282,7 @@ class PongGame:
 
         self.left_paddle.move(left_movement)
         self.right_paddle.move(right_movement)
-        side_collision = self.ball.update(self.left_paddle, self.right_paddle)
+        side_collision, right_paddle_collision = self.ball.update(self.left_paddle, self.right_paddle)
 
         # Calculate new score
         terminated = True
@@ -297,7 +298,7 @@ class PongGame:
         if self.graphics_enabled:
             self.update_screen()
 
-        return terminated
+        return terminated, right_paddle_collision
 
     def update_screen(self):
         '''

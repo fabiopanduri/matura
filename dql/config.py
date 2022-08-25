@@ -7,7 +7,7 @@
 MEMORY_SIZE = 2000
 
 # Discount factor (gamma) for the Q-function
-DISCOUNT_FACTOR = 0.99
+DISCOUNT_FACTOR = 0.95
 
 # Size of the minibatches that are parsed to SGD
 MINIBATCH_SIZE = 32
@@ -22,7 +22,7 @@ EPS_DECAY = 0.99
 DONE_EPS = 0.1
 
 # After how many steps the target Q-Network should be updated
-TARGET_NN_UPDATE_FREQ = 1000
+TARGET_NN_UPDATE_FREQ = 100
 
 # File path of NN file to be used instead of randomly initialized NN
 LOAD_NETWORK_PATH = None
