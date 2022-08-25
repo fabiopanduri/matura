@@ -15,7 +15,7 @@ class CartpoleEnvDQL:
     Provide the environment for the game CartPole to the DQL Agent
     """
 
-    def __init__(self, plot=False, render=True):
+    def __init__(self, alpha=1000, plot=False, render=True):
         '''
         Reset the game to initial state and return initial state
         '''
@@ -26,6 +26,7 @@ class CartpoleEnvDQL:
         self.plot = plot
         self.frames_ellapsed = 0
         self.render = render
+        self.alpha = alpha
 
     def current_performance(self):
         '''
@@ -33,12 +34,12 @@ class CartpoleEnvDQL:
         '''
         return self.frames_ellapsed
 
-    def fitness(self, t, reward, alpha=1000):
+    def fitness(self, t, reward):
         """
         Function to calculate the fitness of an individual based on time and reward he got
         """
         # weighted reward depending on when the terminal state is reached
-        f = 1 + np.exp(-t/alpha)
+        f = 1 + np.exp(-t/self.alpha)
         return f
 
     def make_observation(self):

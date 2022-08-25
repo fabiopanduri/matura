@@ -42,20 +42,27 @@ class ReplayMemory:
 
 
 class DQLAgent:
-    def __init__(self, env, load_network_path=None):
+    def __init__(self,
+                 env,
+                 memory_size,
+                 discount_factor,
+                 minibatch_size,
+                 learning_rate,
+                 load_network_path=None
+                 ):
         '''
         Adjust these parameters as you wish
         '''
         self.env = env
         self.possible_actions = env.possible_actions
-        self.memory_size = 2000
+        self.memory_size = memory_size
         self.memory = ReplayMemory(self.memory_size)
         self.update_frequency = 100
         self.save_frequency = 10000
-        self.discount_factor = 0.99
-        self.minibatch_size = 32
+        self.discount_factor = discount_factor
+        self.minibatch_size = minibatch_size
         self.total_step = 0
-        self.learning_rate = 0.001
+        self.learning_rate = learning_rate
 
         # Neural Network.
         # Input: Current state

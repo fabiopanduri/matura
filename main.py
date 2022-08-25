@@ -15,6 +15,7 @@ from collections import deque
 import matplotlib.pyplot as plt
 import numpy as np
 
+import dql.config as DQL_cfg
 import neat.config as NEAT_cfg
 from dql.agent.agent import DQLAgent
 from dql.agent.agent import ReplayMemory
@@ -150,7 +151,14 @@ def main():
         }
         env = games[arguments.game]
 
-        agt = DQLAgent(env(plot=arguments.live_plot, render=arguments.render))
+        agt = DQLAgent(
+            env(alpha=DQL_cfg.ALPHA, plot=arguments.live_plot,
+                render=arguments.render),
+            DQL_cfg.MEMORY_SIZE,
+            DQL_cfg.DISCOUNT_FACTOR,
+            DQL_cfg.MINIBATCH_SIZE,
+            DQL_cfg.LEARNING_RATE
+        )
 
         agt.learn(arguments.episodes)
 

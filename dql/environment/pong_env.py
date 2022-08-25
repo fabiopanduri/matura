@@ -15,7 +15,7 @@ class PongEnvDQL:
     Provide the environment for the game Pong to the DQL Agent
     """
 
-    def __init__(self, plot=False, render=True):
+    def __init__(self, alpha=1000, plot=False, render=True):
         '''
         Reset the game to initial state and return initial state
         '''
@@ -23,6 +23,7 @@ class PongEnvDQL:
         self.possible_actions = ['up', 'stay', 'down']
         self.state_size = len(self.make_observation())
         self.plot = plot
+        self.alpha = alpha
 
     def current_performance(self):
         '''
@@ -67,15 +68,15 @@ class PongEnvDQL:
 
         return self.make_observation(), reward, terminated
 
-    def fitness(self, t, reward, alpha=1000):
+    def fitness(self, t, reward):
         """
         Function to calculate the fitness of an individual based on time and reward he got
         """
         # weighted reward depending on when the terminal state is reached
         if reward > 0:
-            f = 1 + np.exp(-t/alpha)
+            f = 1 + np.exp(-t/self.alpha)
         elif reward < 0:
-            f = 1 - np.exp(-t/alpha)
+            f = 1 - np.exp(-t/self.alpha)
         else:
             f = 1
         return f
