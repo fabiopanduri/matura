@@ -35,6 +35,7 @@ class NEAT:
         alpha,
         optimization="max",
         render=False,
+        vary_delta_t=False
     ):
         self.env = env
         temp_env = env(simulation_time)
@@ -43,7 +44,8 @@ class NEAT:
         self.speciation_constants = speciation_constants
         self.weight_mutation_constants = weight_mutation_constants
         self.node_connection_mutation_constants = node_connection_mutation_constants
-        self.delta_t = delta_t
+        self.base_delta_t = delta_t
+        self.vary_delta_t = vary_delta_t
         self.r = r
         self.simulation_time = simulation_time
         self.connection_disable_constant = connection_disable_constant
@@ -55,6 +57,7 @@ class NEAT:
             self.nn_base_dimensions[1]
         self.global_node_innovation_number = sum(self.nn_base_dimensions)
         self.species = []
+        self.species_size_last_gen = 1
 
         self.fitness_hist = []
         self.best_fitness_hist = []
@@ -101,7 +104,10 @@ class NEAT:
                 print(
                     f'[INFO] Species: {len(self.species)}. Population Count: {len(self.population)}')
                 print(
-                    f'[INFO] Innovation Nodes, Connections: {self.global_node_innovation_number}, {self.global_connection_innovation_number}\n'
+                    f'[INFO] Innovation Nodes, Connections: {self.global_node_innovation_number}, {self.global_connection_innovation_number}'
+                )
+                print(
+                    f'[INFO] Delta t: {self.delta_t(i/generations)}\n'
                 )
 
             if i % save_frequency == 0:
@@ -109,7 +115,8 @@ class NEAT:
 
             t_0 = time.perf_counter()
 
-            self.speciation()
+            # self.speciation(i/generations)
+            self.speciation_old_free(i/generations)
 
             self.adjust_population_fitness()
 
@@ -149,7 +156,14 @@ class NEAT:
             else:
                 individual.fitness = env.done_fitness
 
-    def speciation_old_free(self):
+    def delta_t(self, p_t):
+        if self.vary_delta_t and p_t > 0.1:
+            p = (self.species_size_last_gen / self.population_size)
+            return self.base_delta_t * p
+        else:
+            return self.base_delta_t
+
+    def speciation_old_free(self, i):
         """
         This method will create species for the current generation 
         If an individual does not fit into any species a new species is created
@@ -160,7 +174,7 @@ class NEAT:
         for individual in self.population:
             for i, s in enumerate(species.copy()):
                 # individual fits into a species
-                if random.choice(s).delta(individual) < self.delta_t:
+                if random.choice(s).delta(individual) < self.delta_t(i):
                     species[i].append(individual)
                     break
 
@@ -169,8 +183,9 @@ class NEAT:
                 species.append([individual])
 
         self.species = [s for s in species if s]
+        self.species_size_last_gen = len(self.species)
 
-    def speciation(self):
+    def speciation(self, i):
         """
         This method will create species for the current generation based of the species of the last
         generation
@@ -181,8 +196,9 @@ class NEAT:
         representatives = [random.choice(s) for s in self.species]
         for individual in self.population:
             for i, r in enumerate(representatives):
+                # print(r.delta(individual))
                 # individual fits into a species
-                if r.delta(individual) < self.delta_t:
+                if r.delta(individual) < self.delta_t(i):
                     species[i].append(individual)
                     break
 
@@ -191,6 +207,7 @@ class NEAT:
                 species.append([individual])
 
         self.species = [s for s in species if s]
+        self.species_size_last_gen = len(self.species)
 
     def adjust_population_fitness(self):
         """

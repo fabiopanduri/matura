@@ -80,6 +80,8 @@ def args() -> 'argparse':
         '-v', '--verbose', help='Print info', dest='verbose', action="store_true")
     parser_neat.add_argument(
         '-c', '--connected', help='Start with a connected graph', dest='connected', action="store_true")
+    parser_neat.add_argument(
+        '-vd', '--vary-delta-t', help='Vary the delta-t value', dest='vary_delta_t', action="store_true")
 
     return parser.parse_args()
 
@@ -111,7 +113,8 @@ def main():
             NEAT_cfg.SIMULATION_TIME,
             NEAT_cfg.CONNECTION_DISABLE_CONSTANT,
             NEAT_cfg.ALPHA,
-            render=arguments.render
+            render=arguments.render,
+            vary_delta_t=arguments.vary_delta_t
         )
 
         if arguments.connected:
