@@ -17,13 +17,13 @@ def mean_squared_error_derivative(activation, y):
     Here the derivative of Mean squared error.
     '''
 
-    # return activation - y
+    return activation - y
     # print(activation, y, activation - y)
-    error = []
-    for activation_value, y_value in activation, y:
-        error.append(min(max((activation_value - y_value), -1), 1))
+    # error = []
+    # for activation_value, y_value in activation, y:
+        # error.append(min(max((activation_value - y_value), -1), 1))
 
-    return error
+    # return error
 
 
 class NeuralNetwork:

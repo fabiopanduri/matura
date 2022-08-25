@@ -147,7 +147,7 @@ class DQLAgent:
 
     def execute_action(self, action):
         '''
-        Execute action in emulator and observe state and reward, also score for determining if state is done
+        Execute action in emulator and observe state and reward, also score for determining if state is terminal (done=True)
         '''
         state, reward, done = self.env.step(action)
         return state, reward, done

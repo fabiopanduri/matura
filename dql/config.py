@@ -22,13 +22,13 @@ EPS_DECAY = 0.99
 DONE_EPS = 0.1
 
 # After how many steps the target Q-Network should be updated
-TARGET_NN_UPDATE_FREQ = 100
+TARGET_NN_UPDATE_FREQ = 1000
 
 # File path of NN file to be used instead of randomly initialized NN
 LOAD_NETWORK_PATH = None
 
 # How often (in episodes) the live plot should be updated
-LIVE_PLOT_FREQ = 10
+LIVE_PLOT_FREQ = 1
 
 # How often (steps) to save the NN
 NN_SAVE_FREQ = 100000
