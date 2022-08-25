@@ -14,13 +14,15 @@ class PongEnvNEAT:
     Provides the environment for the game Pong to the NEAT Agent
     """
 
-    def __init__(self, render=False):
+    def __init__(self, max_t=0, render=False):
         '''
         Reset the game to initial state and return initial state
         '''
         self.game = PongGame(graphics_enabled=render)
         self.possible_actions = ['up', 'stay', 'down']
         self.state_size = len(self.make_observation())
+
+        self.done_fitness = 1
 
     def nn_base_dimensions(self):
         return [self.state_size, len(self.possible_actions)]

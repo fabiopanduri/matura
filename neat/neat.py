@@ -33,10 +33,11 @@ class NEAT:
         simulation_time,
         connection_disable_constant,
         alpha,
+        optimization="max",
         render=False,
     ):
         self.env = env
-        temp_env = env()
+        temp_env = env(simulation_time)
         self.nn_base_dimensions = temp_env.nn_base_dimensions()
         self.population_size = population_size
         self.speciation_constants = speciation_constants
@@ -47,6 +48,7 @@ class NEAT:
         self.simulation_time = simulation_time
         self.connection_disable_constant = connection_disable_constant
         self.alpha = alpha
+        self.optimization = optimization
 
         self.population = []
         self.global_connection_innovation_number = self.nn_base_dimensions[0] * \
@@ -99,7 +101,7 @@ class NEAT:
                 print(
                     f'[INFO] Species: {len(self.species)}. Population Count: {len(self.population)}')
                 print(
-                    f'[INFO] Innovation Nodes, Connections: {self.global_node_innovation_number}, {self.global_connection_innovation_number}'
+                    f'[INFO] Innovation Nodes, Connections: {self.global_node_innovation_number}, {self.global_connection_innovation_number}\n'
                 )
 
             if i % save_frequency == 0:
@@ -123,7 +125,7 @@ class NEAT:
         """
 
         for individual in self.population:
-            env = self.env(render=self.render)
+            env = self.env(max_t=max_t, render=self.render)
 
             state_0 = env.make_observation()
             prediction = individual.feed_forward(state_0)
@@ -134,7 +136,6 @@ class NEAT:
                 state, reward, terminated = env.step(action)
 
                 if terminated:
-                    # use a weighted reward depending on when the terminal state is reached
                     individual.fitness = env.fitness(
                         t, reward, alpha=self.alpha)
                     break
@@ -146,7 +147,28 @@ class NEAT:
                 t += 1
 
             else:
-                individual.fitness = 2
+                individual.fitness = env.done_fitness
+
+    def speciation_old_free(self):
+        """
+        This method will create species for the current generation 
+        If an individual does not fit into any species a new species is created
+        Else it is placed into the species it fits in to
+        """
+
+        species = []
+        for individual in self.population:
+            for i, s in enumerate(species.copy()):
+                # individual fits into a species
+                if random.choice(s).delta(individual) < self.delta_t:
+                    species[i].append(individual)
+                    break
+
+            # individual does not fit into a species
+            else:
+                species.append([individual])
+
+        self.species = [s for s in species if s]
 
     def speciation(self):
         """
@@ -222,7 +244,7 @@ class NEAT:
 
         return base_int
 
-    def mate(self, new_N):
+    def mate(self, new_N, optimization="max"):
         """
         This method performs the mating step and generates a new generation
         """
@@ -242,13 +264,15 @@ class NEAT:
             N = new_N[s_index]
 
             for i in range(N):
-                if len(mating_s) == 1:
-                    new_generation.append(mating_s[0])
+                # the best performing individual is always passed on to the new generation
+                if i == 0:
+                    best.append(mating_s[0])
                     continue
 
-                # the best performing individual is always passed on to the new generation
-                elif i == 1:
-                    best.append(mating_s[0])
+                elif len(mating_s) == 1:
+                    c = Genome.load_network_from_raw_data(
+                        mating_s[0].save_network_raw_data())
+                    new_generation.append(c)
                     continue
 
                 p1, p2 = random.sample(mating_s, k=2)
