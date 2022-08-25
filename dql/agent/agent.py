@@ -69,7 +69,7 @@ class DQLAgent:
         self.live_plot_freq = live_plot_freq
         self.nn_save_freq = nn_save_freq
 
-        self.possible_actions = env.possible_actions
+        self.possible_actions = self.env.possible_actions
         self.memory = ReplayMemory(self.memory_size)
 
         # Neural Network.
@@ -146,7 +146,6 @@ class DQLAgent:
         Execute action in emulator and observe state and reward, also score for determining if state is done
         '''
         state, reward, done = self.env.step(action)
-        print(reward)
         return state, reward, done
 
     def preprocessor(self, state):
@@ -210,7 +209,7 @@ class DQLAgent:
 
                 self.replay()
 
-                if episode_step % self.target_nn_update_freq == 0:
+                if self.total_step % self.target_nn_update_freq == 0:
                     self.update_target_network()
 
                 # The +1 is that it doesn't always save on start -> less clutter
