@@ -18,7 +18,7 @@ WEIGHT_MUTATION_CONSTANTS = (0.8, 0.9)
 # Constants that determine the probabilities of node and connection mutations
 # First constant is the probability a new connection is added to an individual
 # The second constant is the probability a new node is added to an individual
-NODE_CONNECTION_MUTATION_CONSTANTS = (0.005, 0.005)
+NODE_CONNECTION_MUTATION_CONSTANTS = (0.01, 0.01)
 
 # Constant specifying the probability an inherited connection is disabled if either parent had it
 # disabled

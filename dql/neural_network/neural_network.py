@@ -65,7 +65,7 @@ class NeuralNetwork:
 
         self.eta = eta
 
-    def initialize_network(self, value_range=(0, 1)) -> None:
+    def initialize_network(self, value_range=(0, 1)):
         '''
         This method randomly initializes the weights and the biases.
         '''
@@ -84,7 +84,7 @@ class NeuralNetwork:
         for dim_l in self.dimensions[1:]:
             self.biases.append(np.random.uniform(*value_range, dim_l))
 
-    def save_network(self, file_name: str = None) -> None:
+    def save_network(self, file_name):
         '''
         This method saves the current network to a file.
         It will be a .npz file containing all important data, namely:
@@ -146,7 +146,7 @@ class NeuralNetwork:
 
         return new_instance
 
-    def feed_forward(self, input_vector: 'numpy_array') -> 'numpy_array':
+    def feed_forward(self, input_vector):
         '''
         This method feeds the input_vector through the network.
         '''
@@ -158,7 +158,7 @@ class NeuralNetwork:
 
         return activation
 
-    def stochastic_gradient_descent(self, training_batch) -> None:
+    def stochastic_gradient_descent(self, training_batch):
         '''
         This method implements the stochastic gradient descent algorithm.
 Input: Training batch of form [(in, target_out), (in, target_out), ...]
