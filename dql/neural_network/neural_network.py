@@ -156,7 +156,6 @@ class NeuralNetwork:
             z_l = np.dot(self.weights[l], activation) + self.biases[l]
             activation = self.activation_functions[l](z_l)
 
-        print(activation)
         return activation
 
     def stochastic_gradient_descent(self, training_batch) -> None:

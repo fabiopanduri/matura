@@ -152,12 +152,19 @@ def main():
         env = games[arguments.game]
 
         agt = DQLAgent(
-            env(alpha=DQL_cfg.ALPHA, plot=arguments.live_plot,
+            env(alpha=DQL_cfg.ALPHA,
                 render=arguments.render),
             DQL_cfg.MEMORY_SIZE,
             DQL_cfg.DISCOUNT_FACTOR,
             DQL_cfg.MINIBATCH_SIZE,
-            DQL_cfg.LEARNING_RATE
+            DQL_cfg.LEARNING_RATE,
+            DQL_cfg.EPS_DECAY,
+            DQL_cfg.DONE_EPS,
+            DQL_cfg.TARGET_NN_UPDATE_FREQ,
+            DQL_cfg.LOAD_NETWORK_PATH,
+            arguments.live_plot,
+            DQL_cfg.LIVE_PLOT_FREQ,
+            DQL_cfg.NN_SAVE_FREQ,
         )
 
         agt.learn(arguments.episodes)

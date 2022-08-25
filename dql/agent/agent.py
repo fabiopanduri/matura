@@ -48,28 +48,36 @@ class DQLAgent:
                  discount_factor,
                  minibatch_size,
                  learning_rate,
-                 load_network_path=None
+                 eps_decay,
+                 done_eps,
+                 target_nn_update_freq,
+                 load_network_path,
+                 live_plot_freq,
+                 live_plot,
+                 nn_save_freq,
                  ):
-        '''
-        Adjust these parameters as you wish
-        '''
+
         self.env = env
-        self.possible_actions = env.possible_actions
         self.memory_size = memory_size
-        self.memory = ReplayMemory(self.memory_size)
-        self.update_frequency = 100
-        self.save_frequency = 10000
         self.discount_factor = discount_factor
         self.minibatch_size = minibatch_size
-        self.total_step = 0
         self.learning_rate = learning_rate
+        self.eps_decay = eps_decay
+        self.done_eps = done_eps
+        self.target_nn_update_freq = target_nn_update_freq
+        self.live_plot = live_plot
+        self.live_plot_freq = live_plot_freq
+        self.nn_save_freq = nn_save_freq
+
+        self.possible_actions = env.possible_actions
+        self.memory = ReplayMemory(self.memory_size)
 
         # Neural Network.
         # Input: Current state
         # Output: Estimated reward for each possible action
         self.nn_dimensions = [self.env.state_size,
                               24, 24, len(self.possible_actions)]
-        self.activation_functions = ['ReLU', 'ReLU', 'ReLU', 'luisian']
+        self.activation_functions = ['ReLU', 'ReLU', 'ReLU', 'linear']
 
         # Allows for loading of previously trained q_networks from files
         if load_network_path == None:
@@ -91,6 +99,7 @@ class DQLAgent:
 
         self.update_target_network()
 
+        self.total_step = 0
         self.fitness_hist = []
         self.performance_hist = []
         self.time_hist = []
@@ -99,17 +108,17 @@ class DQLAgent:
         self.target_q_network = NeuralNetwork(
             self.nn_dimensions, self.learning_rate, self.activation_functions, self.q_network.weights, self.q_network.biases)
 
-    def get_eps(self, step, done_eps=0.1):
+    def get_eps(self, episode_step):
         '''
         Get Epsilon (exploration rate). 
         '''
         # Linear:
-        # eps = - (1.0 - done_eps) / 100000 * step + 1.0
+        # eps = - (1.0 - self.done_eps) / 100000 * episode_step + 1.0
         # Exp decay:
-        #eps = max(done_eps, 1.0 * (2 ** (-step / 5000)))
+        #eps = max(done_eps, 1.0 * (2 ** (-episode_step / 5000)))
         # Lin decay:
-        #eps = max(done_eps, -0.001 * step + 1)
-        eps = max(done_eps, 0.99**step)
+        #eps = max(done_eps, -0.001 * episode_step + 1)
+        eps = max(self.done_eps, self.eps_decay**episode_step)
         return eps
 
     def get_action(self, state):
@@ -126,7 +135,7 @@ class DQLAgent:
             q_values = self.q_network.feed_forward(state)
             movement = self.possible_actions[np.argmax(q_values)]
 
-        if self.total_step % self.update_frequency == 0:
+        if self.total_step % self.target_nn_update_freq == 0:
             print(self.total_step, q_values, "Max: ",
                   self.possible_actions[np.argmax(q_values)])
 
@@ -142,8 +151,9 @@ class DQLAgent:
     def preprocessor(self, state):
         '''
         Preprocesses a state s returning a (typically smaller in size) preprocessed state phi.
+        Placeholder function in case the implementation should be expanded to work on images
         '''
-        # Because for the moment no actual images are used, phi equals state and no preprocessing needs be done
+        # Because no actual images are used, phi equals state and no preprocessing needs be done
         return state
 
     def replay(self):
@@ -179,12 +189,12 @@ class DQLAgent:
         Perform Q Learning as described by Algorithm 1 in Mnih et al. 2015
         '''
         for episode in range(n_of_episodes):
-            print("Status: ")
+            # print("Status: ")
             done = False
             state = self.env.make_observation()
             phi = self.preprocessor(state)
 
-            step = 0
+            episode_step = 0
             # Play until done state/frame is reached
             t_0 = time.perf_counter()
             while not done:
@@ -199,28 +209,28 @@ class DQLAgent:
 
                 self.replay()
 
-                if step % self.update_frequency == 0:
+                if episode_step % self.target_nn_update_freq == 0:
                     self.update_target_network()
 
                 # The +1 is that it doesn't always save on start -> less clutter
-                if (self.total_step + 1) % self.save_frequency == 0:
+                if (self.total_step + 1) % self.nn_save_freq == 0:
                     self.q_network.save_network()
 
                 # Roll over all variables
                 phi = next_phi
-                step += 1
+                episode_step += 1
                 self.total_step += 1
 
             t = time.perf_counter() - t_0
             self.time_hist.append(t)
 
-            fitness = self.env.fitness(step, reward)
-            self.fitness_hist.append(fitness)
+            # fitness = self.env.fitness(episode_step, reward)
+            # self.fitness_hist.append(fitness)
 
-            if self.env.plot == True:
-                self.performance_hist.append(self.env.current_performance())
-                # if episode % 50 == 0:
-                if 1:
+            print(f"Episode {episode}: {episode_step}")
+            if self.live_plot == True:
+                self.performance_hist.append(episode_step)
+                if episode % self.live_plot_freq == 0:
                     self.plot_performance()
 
             self.env.terminate_episode()
@@ -242,7 +252,7 @@ class DQLAgent:
 
 
 def main():
-    env = PongEnvDQL(plot=True)
+    env = PongEnvDQL()
     agt = DQLAgent(env)
 
     agt.learn(100000)
