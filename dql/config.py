@@ -28,7 +28,7 @@ TARGET_NN_UPDATE_FREQ = 100
 LOAD_NETWORK_PATH = None
 
 # How often (in episodes) the live plot should be updated
-LIVE_PLOT_FREQ = 50
+LIVE_PLOT_FREQ = 1
 
 # How often (steps) to save the NN
 NN_SAVE_FREQ = 100000

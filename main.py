@@ -53,6 +53,9 @@ def args() -> 'argparse':
         '-p', '--plot', help="Plot the fitness and time at the end", action="store_true")
     parser_dql.add_argument(
         '-l', '--live-plot', help="Plot the fitness live", action="store_true")
+    parser_dql.add_argument(
+        '-s', '--save-data', help='Save all the information concerning the epoch',
+        dest='save_data', action="store_true")
     parser_dql.add_argument('-g', '--game', help='Specify the game', required=True, dest='game',
                             choices=['pong', 'cartpole'], type=str)
     parser_dql.add_argument(
@@ -169,15 +172,16 @@ def main():
             DQL_cfg.DONE_EPS,
             DQL_cfg.TARGET_NN_UPDATE_FREQ,
             DQL_cfg.LOAD_NETWORK_PATH,
-            arguments.live_plot,
             DQL_cfg.LIVE_PLOT_FREQ,
+            arguments.live_plot,
             DQL_cfg.NN_SAVE_FREQ,
+            save_data=arguments.save_data,
         )
 
         agt.learn(arguments.episodes)
 
         if arguments.plot:
-            plot(agt.fitness_hist, "fitness")
+            plot(agt.performance_hist, "fitness")
 
             plt.legend()
             plt.show()
