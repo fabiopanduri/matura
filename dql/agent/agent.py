@@ -146,6 +146,7 @@ class DQLAgent:
         Execute action in emulator and observe state and reward, also score for determining if state is done
         '''
         state, reward, done = self.env.step(action)
+        print(reward)
         return state, reward, done
 
     def preprocessor(self, state):
