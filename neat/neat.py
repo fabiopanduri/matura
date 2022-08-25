@@ -35,7 +35,7 @@ class NEAT:
         alpha,
         optimization="max",
         render=False,
-        vary_delta_t=False
+        vary_delta_t=False,
     ):
         self.env = env
         temp_env = env(simulation_time)
@@ -57,8 +57,8 @@ class NEAT:
             self.nn_base_dimensions[1]
         self.global_node_innovation_number = sum(self.nn_base_dimensions)
         self.species = []
-        self.species_size_last_gen = 1
 
+        self.species_size_hist = [0]
         self.fitness_hist = []
         self.best_fitness_hist = []
         self.generation_time_hist = []
@@ -66,7 +66,7 @@ class NEAT:
         self.render = render
 
     def iterate(self, generations, print_frequency=1, save_frequency=10, live_f=False, live_b=False,
-                live_t=False):
+                live_t=False, save_data=False):
         """
         Function that runs iterations of NEAT
         """
@@ -124,6 +124,43 @@ class NEAT:
 
             self.mate(new_N)
 
+        if save_data:
+            data = {
+                "generations": generations,
+                "fitness history": self.fitness_hist,
+                "best fitness history": self.best_fitness_hist,
+                "generation time history": self.generation_time_hist,
+                "species size history": self.species_size_hist,
+                "innovation numbers (nodes/connection)":
+                    (self.global_node_innovation_number,
+                     self.global_connection_innovation_number),
+                "hyperparameters": {
+                    "neural network base dimensions": self.nn_base_dimensions,
+                    "population size": self.population_size,
+                    "speciation constants (c_1, c_2, c_3)": self.speciation_constants,
+                    "weight mutation constants": self.weight_mutation_constants,
+                    "node connection mutation constants": self.node_connection_mutation_constants,
+                    "connection disable constant": self.connection_disable_constant,
+                    "base delta t": self.base_delta_t,
+                    "vary delta t": self.vary_delta_t,
+                    "r": self.r,
+                    "simulation time": self.simulation_time,
+                    "alpha": self.alpha,
+                    "optimization": self.optimization,
+                    "render": self.render
+                        }
+            }
+
+            file_name = (
+                f"NEAT-iteration-{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')}.json"
+            )
+
+            with open(f"NEAT_iterations_saves/{file_name}", "w") as f:
+                f.write(json.dumps(data, indent=4))
+
+            print(
+                f"[INFO] Saved iteration to NEAT_iterations_saves/{file_name}.")
+
     def simulate_population(self, max_t):
         """
         Method to simulate the interaction of the agent with the environment for every individual in the 
@@ -158,7 +195,8 @@ class NEAT:
 
     def delta_t(self, p_t):
         if self.vary_delta_t and p_t > 0.1:
-            p = (self.species_size_last_gen / self.population_size)
+            species_size_last_gen = self.species_size_hist[-1]
+            p = (species_size_last_gen / self.population_size)
             return self.base_delta_t * p
         else:
             return self.base_delta_t
@@ -183,7 +221,7 @@ class NEAT:
                 species.append([individual])
 
         self.species = [s for s in species if s]
-        self.species_size_last_gen = len(self.species)
+        self.species_size_hist.append(len(self.species))
 
     def speciation(self, i):
         """
@@ -207,7 +245,7 @@ class NEAT:
                 species.append([individual])
 
         self.species = [s for s in species if s]
-        self.species_size_last_gen = len(self.species)
+        self.species_size_hist.append(len(self.species))
 
     def adjust_population_fitness(self):
         """

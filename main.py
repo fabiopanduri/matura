@@ -72,6 +72,9 @@ def args() -> 'argparse':
         '-lb', '--live-best', help="Plot the best fitness live", action="store_true")
     parser_neat.add_argument(
         '-lt', '--live-time', help="Plot the time live", action="store_true")
+    parser_neat.add_argument(
+        '-s', '--save-data', help='Save all the information concerning the iteration',
+        dest='save_data', action="store_true")
     parser_neat.add_argument('-g', '--game', help='Specify the game', required=True, dest='game',
                              choices=['pong', 'cartpole'], type=str)
     parser_neat.add_argument(
@@ -128,6 +131,7 @@ def main():
             live_f=arguments.live_average,
             live_b=arguments.live_best,
             live_t=arguments.live_time,
+            save_data=arguments.save_data,
         )
 
         N.save_population()
