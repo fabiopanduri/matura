@@ -10,7 +10,7 @@ POPULATION_SIZE = 100
 SPECIATION_CONSTANTS = (1, 1, 0.4)
 
 # Threshold determining the distance allowed for an individual to be part of a species
-DELTA_T = 2
+DELTA_T = 2.2
 
 # Constants that determine the probability of weight mutation
 WEIGHT_MUTATION_CONSTANTS = (0.8, 0.9)

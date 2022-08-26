@@ -88,6 +88,9 @@ def args() -> 'argparse':
         '-c', '--connected', help='Start with a connected graph', dest='connected', action="store_true")
     parser_neat.add_argument(
         '-vd', '--vary-delta-t', help='Vary the delta-t value', dest='vary_delta_t', action="store_true")
+    parser_neat.add_argument(
+        '-ps', '--protect-species', help='Allow each species to have at least one offspring',
+        dest='protect_species', action="store_true")
 
     return parser.parse_args()
 
@@ -120,7 +123,8 @@ def main():
             NEAT_cfg.CONNECTION_DISABLE_CONSTANT,
             NEAT_cfg.ALPHA,
             render=arguments.render,
-            vary_delta_t=arguments.vary_delta_t
+            vary_delta_t=arguments.vary_delta_t,
+            protect_species=arguments.protect_species
         )
 
         if arguments.connected:

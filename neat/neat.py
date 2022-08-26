@@ -36,6 +36,7 @@ class NEAT:
         optimization="max",
         render=False,
         vary_delta_t=False,
+        protect_species=True
     ):
         self.env = env
         temp_env = env(simulation_time)
@@ -51,6 +52,7 @@ class NEAT:
         self.connection_disable_constant = connection_disable_constant
         self.alpha = alpha
         self.optimization = optimization
+        self.protect_species = protect_species
 
         self.population = []
         self.global_connection_innovation_number = self.nn_base_dimensions[0] * \
@@ -120,7 +122,7 @@ class NEAT:
 
             self.adjust_population_fitness()
 
-            new_N = self.get_species_sizes()
+            new_N = self.get_species_sizes(protect=self.protect_species)
 
             self.mate(new_N)
 
@@ -148,7 +150,7 @@ class NEAT:
                     "alpha": self.alpha,
                     "optimization": self.optimization,
                     "render": self.render
-                        }
+                    }
             }
 
             file_name = (
@@ -256,7 +258,7 @@ class NEAT:
             for individual in s:
                 individual.adjust_fitness(s)
 
-    def get_species_sizes(self):
+    def get_species_sizes(self, protect=True):
         """
         Calculate the number of offspring each species can produce 
         """
@@ -273,8 +275,13 @@ class NEAT:
         mean_adjusted_fitness = sum(s_fitness)
 
         # float values for offspring numbers
-        base = [1 + (s_f / mean_adjusted_fitness) *
-                (self.population_size - len(self.species)) for s_f in s_fitness]
+        if protect:
+            # every species is allowed to have at least one offspring
+            base = [1 + (s_f / mean_adjusted_fitness) *
+                    (self.population_size - len(self.species)) for s_f in s_fitness]
+        else:
+            base = [(s_f / mean_adjusted_fitness) *
+                    self.population_size for s_f in s_fitness]
 
         # rounded down offspring numbers
         base_int = [math.floor(b) for b in base]
