@@ -191,6 +191,7 @@ class DQLAgent:
     def learn(self, n_of_episodes):
         '''
         Perform Q Learning as described by Algorithm 1 in Mnih et al. 2015
+        and implemented in Keon 2017
         '''
         for episode in range(n_of_episodes):
             # print("Status: ")
