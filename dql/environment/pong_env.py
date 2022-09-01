@@ -56,6 +56,7 @@ class PongEnvDQL:
             right_movement,
         )
 
+        # Give out rewards
         if self.game.score[0] == prev_score[0] + 1:
             # Negative reward if opponent gets a point
             reward = -5
@@ -63,9 +64,9 @@ class PongEnvDQL:
             # Positive reward if agent gets a point
             reward = 5
         elif right_paddle_collision:
-            # Slight negative / zero reward if no point made
             reward = 5
         else:
+            # Slight negative / zero reward if no point made
             reward = 0
 
         return self.make_observation(), reward, terminated
