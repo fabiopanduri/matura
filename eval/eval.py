@@ -64,12 +64,7 @@ def main():
         date_0 = datetime.datetime.strptime(dates[0], "%Y-%m-%d-%H-%M-%S")
         date_1 = datetime.datetime.strptime(dates[1], "%Y-%m-%d-%H-%M-%S")
 
-        blank = sorted(list(os.listdir(arguments.path)))[0]
-        blank_data = read_data_file(f"{arguments.path}/{blank}")
-
-        for l in ["performance history", "time history", "generation time history", "best fitness history", "average fitness history"]:
-            if l in blank_data.keys():
-                blank_data[l] = [[] for _ in range(len(blank_data[l]))]
+        blank_data = None
 
         count = 0
         for filename in sorted(list(os.listdir(arguments.path)))[1:]:
@@ -78,6 +73,13 @@ def main():
                 file_data["time"], "%Y-%m-%d-%H-%M-%S")
 
             if date_0 <= date and date <= date_1:
+                if not blank_data:
+                    blank_data = file_data.copy()
+                    for l in ["performance history", "time history", "generation time history", "best fitness history", "average fitness history"]:
+                        if l in blank_data.keys():
+                            blank_data[l] = [[]
+                                             for _ in range(len(blank_data[l]))]
+
                 count += 1
 
                 # summarize the data for plotting
@@ -135,7 +137,7 @@ def main():
                 plot(["generation time history"],
                      blank_data["generation time history"])
 
-        if arguments.plot_time:
+        if arguments.plot_time_std:
             if "time history" in blank_data.keys():
                 plot(["time history std"], blank_data["time history std"])
             else:

@@ -18,13 +18,12 @@ def f(x) -> float:
 
 
 def main():
-    '''
     NN = NeuralNetwork([1, 4, 1], 0.1,
-                    activation_functions = ['ReLU', 'ReLU', 'sigmoid'],
-                    )
-    '''
+                       activation_functions=['ReLU', 'ReLU', 'sigmoid'],
+                       )
+    NN.initialize_network()
 
-    NN = NeuralNetwork.load_network('sgd_test.npz')
+    #NN = NeuralNetwork.load_network('dql/neural_network/sgd_test.npz')
 
     START = 0
     STOP = np.pi
