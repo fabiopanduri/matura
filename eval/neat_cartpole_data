@@ -1,0 +1,5 @@
+#!/usr/bin/bash
+
+for ((i = 0 ; i < 100; i++)); do
+    python3 main.py neat -g cartpole -i 1000 -s
+done

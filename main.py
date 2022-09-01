@@ -32,9 +32,15 @@ from neat.pong_env import PongEnvNEAT
 plt.style.use("ggplot")
 
 
-def plot(fitness_hist, label):
-    x = list(range(0, len(fitness_hist)))
-    y = fitness_hist
+def trace(frame, event, arg):
+    print("%s, %s:%d" % (event, frame.f_code.co_filename, frame.f_lineno))
+    return trace
+# sys.settrace(trace)
+
+
+def plot(hist, label):
+    x = list(range(0, len(hist)))
+    y = hist
 
     plt.plot(x, y, label=label)
 
@@ -124,7 +130,8 @@ def main():
             NEAT_cfg.ALPHA,
             render=arguments.render,
             vary_delta_t=arguments.vary_delta_t,
-            protect_species=arguments.protect_species
+            protect_species=arguments.protect_species,
+            game=arguments.game,
         )
 
         if arguments.connected:
@@ -180,6 +187,7 @@ def main():
             arguments.live_plot,
             DQL_cfg.NN_SAVE_FREQ,
             save_data=arguments.save_data,
+            game=arguments.game,
         )
 
         agt.learn(arguments.episodes)
