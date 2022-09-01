@@ -36,7 +36,8 @@ class NEAT:
         optimization="max",
         render=False,
         vary_delta_t=False,
-        protect_species=True
+        protect_species=True,
+        game='',
     ):
         self.env = env
         temp_env = env(simulation_time)
@@ -53,6 +54,7 @@ class NEAT:
         self.alpha = alpha
         self.optimization = optimization
         self.protect_species = protect_species
+        self.game = game
 
         self.population = []
         self.global_connection_innovation_number = self.nn_base_dimensions[0] * \
@@ -128,6 +130,7 @@ class NEAT:
 
         if save_data:
             data = {
+                "time": datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S'),
                 "generations": generations,
                 "fitness history": self.fitness_hist,
                 "best fitness history": self.best_fitness_hist,
@@ -150,7 +153,8 @@ class NEAT:
                     "alpha": self.alpha,
                     "optimization": self.optimization,
                     "render": self.render
-                    }
+                },
+                "game": sel.game
             }
 
             file_name = (

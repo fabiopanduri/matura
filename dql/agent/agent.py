@@ -58,6 +58,7 @@ class DQLAgent:
                  live_plot,
                  nn_save_freq,
                  save_data=False,
+                 game="",
                  ):
 
         self.env = env
@@ -72,6 +73,7 @@ class DQLAgent:
         self.live_plot_freq = live_plot_freq
         self.nn_save_freq = nn_save_freq
         self.save_data = save_data
+        self.game = game
 
         self.possible_actions = self.env.possible_actions
         self.memory = ReplayMemory(self.memory_size)
@@ -241,6 +243,7 @@ class DQLAgent:
 
         if self.save_data:
             data = {
+                "time": datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S'),
                 "episodes": n_of_episodes,
                 "performance history": self.performance_hist,
                 "time history": self.time_hist,
@@ -255,7 +258,8 @@ class DQLAgent:
                     "live plot freq": self.live_plot_freq,
                     "live plot": self.live_plot,
                     "neural network save freq": self.nn_save_freq,
-                }
+                },
+                "game": self.game
             }
 
             file_name = (
