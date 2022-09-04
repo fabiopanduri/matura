@@ -4,6 +4,7 @@
 # maturaarbeit_code is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 # You should have received a copy of the GNU General Public License along with maturaarbeit_code. If not, see <https://www.gnu.org/licenses/>.
 import argparse
+import faulthandler
 import json
 import math
 import os
@@ -28,13 +29,16 @@ from neat.genetics import *
 from neat.neat import NEAT
 from neat.pong_env import PongEnvNEAT
 
-
 plt.style.use("ggplot")
+
+#sys.stdout = open("traceback.txt", "w")
 
 
 def trace(frame, event, arg):
-    print("%s, %s:%d" % (event, frame.f_code.co_filename, frame.f_lineno))
+    with open("traceback.txt", "a") as f:
+        f.write("%s, %s:%d" % (event, frame.f_code.co_filename, frame.f_lineno))
     return trace
+
 # sys.settrace(trace)
 
 
@@ -206,5 +210,12 @@ def main():
 
 if __name__ == '__main__':
     main()
+    """
+    with open("traceback.txt", "w") as f:
+        faulthandler.enable(file=f)
+        main()
 
+    if faulthandler.is_enabled():
+        faulthandler.diable()
+    """
 # Example use: py -m eval.plot dql -g cartpole -e 1000 -l

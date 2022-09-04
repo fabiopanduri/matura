@@ -4,6 +4,8 @@ NEAT_saves/*.json
 DQL_epochs_saves/*.json
 NEAT_iterations_saves/*.json
 
+traceback*
+
 # Stupid jetbrains stuff
 .idea/
 # .swp files created by vim

@@ -97,7 +97,7 @@ class Genome:
             try:
                 act_func = activation_functions_hidden[i]
             except IndexError:
-                act_func = "linear"
+                act_func = "sigmoid"
 
             nodes.append(NodeGene(node_id, "hidden", act_func))
             node_id += 1
@@ -106,7 +106,7 @@ class Genome:
             try:
                 act_func = activation_functions_output[i]
             except IndexError:
-                act_func = "linear"
+                act_func = "sigmoid"
 
             nodes.append(NodeGene(node_id, "output", act_func))
             node_id += 1
@@ -130,7 +130,7 @@ class Genome:
             try:
                 act_func = activation_functions_output[i]
             except IndexError:
-                act_func = "linear"
+                act_func = "sigmoid"
 
             nodes.append(NodeGene(node_id, "output", act_func))
             node_id += 1
@@ -464,7 +464,8 @@ class Genome:
             if connection.in_node_id == node_id and connection.enabled:
                 inputs.append(
                     self.calculate_node(
-                        connection.out_node_id) * connection.weight
+                        connection.out_node_id
+                    ) * connection.weight
                 )
 
         activation = self.nodes[node_id].activation_function(sum(inputs))

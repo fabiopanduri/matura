@@ -45,14 +45,17 @@ def PReLU(x, alpha):
 def PReLU_derivative(x, alpha):
     return alpha if x < 0 else 1
 
+
 def luisian(x):
     return max(min(x, 10**8), -10**8)
 
+
 def luisian_derivative(x):
-    if x < -10**8 or x > 10**8: 
+    if x < -10**8 or x > 10**8:
         return 0
     else:
         return 1
+
 
 activation_functions = {
     "sigmoid": sigmoid,

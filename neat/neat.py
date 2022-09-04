@@ -8,11 +8,8 @@ import math
 import os
 import time
 
-import numpy as np
-
 from etc.activation_functions import *
 from neat.genetics import *
-from neat.pong_env import PongEnvNEAT
 
 
 class NEAT:
@@ -174,12 +171,23 @@ class NEAT:
         This is done until a terminal state is reached or we have more than max_t steps
         """
 
+        def argmax(l):
+            i = 0
+            current_best = l[0]
+            for j, element in enumerate(l):
+                if element > current_best:
+                    i = j
+                    current_best = element
+
+            return i
+
         for individual in self.population:
             env = self.env(max_t=max_t, render=self.render)
 
             state_0 = env.make_observation()
             prediction = individual.feed_forward(state_0)
-            action_i = np.argmax(np.array(prediction))
+            #action_i = np.argmax(np.array(prediction))
+            action_i = argmax(prediction)
 
             action = env.possible_actions[action_i]
             for t in range(max_t):
@@ -191,7 +199,8 @@ class NEAT:
                     break
 
                 prediction = individual.feed_forward(state)
-                action_i = np.argmax(np.array(prediction))
+                #action_i = np.argmax(np.array(prediction))
+                action_i = argmax(prediction)
 
                 action = env.possible_actions[action_i]
                 t += 1
@@ -498,6 +507,7 @@ class NEAT:
         """
 
         self.population = []
+        self.global_connection_innovation_number = 0
 
         for i in range(self.population_size):
             self.population.append(
