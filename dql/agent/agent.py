@@ -234,7 +234,6 @@ class DQLAgent:
             # fitness = self.env.fitness(episode_step, reward)
             # self.fitness_hist.append(fitness)
 
-            print(f"Episode {episode}: {episode_step}")
             self.performance_hist.append(episode_step)
             if self.live_plot and episode % self.live_plot_freq == 0:
                 self.plot_performance()

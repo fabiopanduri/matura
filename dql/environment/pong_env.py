@@ -38,6 +38,7 @@ class PongEnvDQL:
         Return the current game's current internal state (relevant params)
         '''
         return (self.game.right_paddle.relative_y_position(), self.game.ball.relative_position()[1])
+        # return (self.game.ball.position[0], self.game.ball.position[1], self.game.right_paddle.position[1])
 
     def step(self, action):
         '''
@@ -63,11 +64,10 @@ class PongEnvDQL:
         elif self.game.score[1] == prev_score[1] + 1:
             # Positive reward if agent gets a point
             reward = 5
-        elif right_paddle_collision:
-            reward = 5
+        # elif right_paddle_collision:
+        #    reward = 5
         else:
-            # Slight negative / zero reward if no point made
-            reward = 0
+            reward = 1
 
         return self.make_observation(), reward, terminated
 
