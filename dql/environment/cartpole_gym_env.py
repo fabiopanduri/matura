@@ -37,9 +37,7 @@ class CartpoleEnvDQL:
         """
         Function to calculate the fitness of an individual based on time and reward he got
         """
-        # weighted reward depending on when the terminal state is reached
-        f = 1 + np.exp(-t/self.alpha)
-        return f
+        return t
 
     def make_observation(self):
         '''
