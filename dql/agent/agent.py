@@ -207,9 +207,7 @@ class DQLAgent:
                 # Play one frame and observe new state and reward
                 action = self.get_action(phi)
                 state, reward, done = self.execute_action(action)
-                print(reward)
-                print(self.env.game.right_paddle.relative_y_position())
-                print(self.env.game.ball.relative_position())
+                # print(reward)
                 next_phi = self.preprocessor(state)
 
                 transition = (phi, action, reward, next_phi, done)
@@ -235,6 +233,7 @@ class DQLAgent:
             # fitness = self.env.fitness(episode_step, reward)
             # self.fitness_hist.append(fitness)
 
+            print(self.env.game.score[1] / (self.env.game.score[0] + 1))
             self.performance_hist.append(
                 self.env.fitness(episode_step, reward))
             if self.live_plot and episode % self.live_plot_freq == 0:
@@ -287,14 +286,3 @@ class DQLAgent:
 
     def play(self):
         return
-
-
-def main():
-    env = PongEnvDQL()
-    agt = DQLAgent(env)
-
-    agt.learn(100000)
-
-
-if __name__ == '__main__':
-    main()

@@ -116,10 +116,3 @@ class PongEnvDQL:
         '''
         return
 
-
-def main():
-    env = PongEnv()
-    clock = pygame.time.Clock()
-    while True:
-        # print("Step: ", env.step(['stay']), "Score: ", env.score)
-        clock.tick(FPS_LIMIT)
