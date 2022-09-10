@@ -12,7 +12,11 @@ from etc.activation_functions import *
 from neat.genetics import *
 
 
+INX = 0
+
+
 class NEAT:
+    INX = 0
     """
     This class contains the genetic algorithm part of NEAT
     It is only used for training
@@ -182,6 +186,12 @@ class NEAT:
             return i
 
         for individual in self.population:
+            global INX
+            INX += 1
+            print(INX)
+            if INX > 1000:
+                INX = INX
+                print(INX)
             env = self.env(max_t=max_t, render=self.render)
 
             state_0 = env.make_observation()

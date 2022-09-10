@@ -103,6 +103,8 @@ def args() -> 'argparse':
     parser_neat.add_argument(
         '-ps', '--protect-species', help='Allow each species to have at least one offspring',
         dest='protect_species', action="store_true")
+    parser_neat.add_argument(
+        '--reward-system', help='How the (pong) enviroment should give out rewards', choices=['v0', 'v1', 'v2', 'v3'], type=str)
 
     return parser.parse_args()
 
@@ -114,6 +116,46 @@ def main():
 
     if not arguments.verbose:
         sys.stdout = open(os.devnull, "w")
+
+    # DQL
+    if arguments.subcommand == 'dql':
+        games = {
+            "pong": PongEnvDQL,
+            "cartpole": CartpoleEnvDQL
+        }
+        env = games[arguments.game]
+
+        agt = DQLAgent(
+            env(alpha=DQL_cfg.ALPHA,
+                render=arguments.render,
+                reward_system=arguments.reward_system),
+            DQL_cfg.MEMORY_SIZE,
+            DQL_cfg.DISCOUNT_FACTOR,
+            DQL_cfg.MINIBATCH_SIZE,
+            DQL_cfg.LEARNING_RATE,
+            DQL_cfg.EPS_DECAY,
+            DQL_cfg.DONE_EPS,
+            DQL_cfg.TARGET_NN_UPDATE_FREQ,
+            DQL_cfg.LOAD_NETWORK_PATH,
+            DQL_cfg.LIVE_PLOT_FREQ,
+            arguments.live_plot,
+            DQL_cfg.NN_SAVE_FREQ,
+            save_data=arguments.save_data,
+            game=arguments.game,
+        )
+
+        agt.learn(arguments.episodes)
+
+        if arguments.plot:
+            plot(agt.performance_hist, "fitness")
+
+            plt.legend()
+            plt.show()
+
+            plot(agt.time_hist, "time")
+
+            plt.legend()
+            plt.show()
 
     # NEAT
     if arguments.subcommand == 'neat':
@@ -170,46 +212,6 @@ def main():
             plt.legend()
             plt.show()
 
-    # DQL
-    if arguments.subcommand == 'dql':
-        games = {
-            "pong": PongEnvDQL,
-            "cartpole": CartpoleEnvDQL
-        }
-        env = games[arguments.game]
-
-        agt = DQLAgent(
-            env(alpha=DQL_cfg.ALPHA,
-                render=arguments.render,
-                reward_system=arguments.reward_system),
-            DQL_cfg.MEMORY_SIZE,
-            DQL_cfg.DISCOUNT_FACTOR,
-            DQL_cfg.MINIBATCH_SIZE,
-            DQL_cfg.LEARNING_RATE,
-            DQL_cfg.EPS_DECAY,
-            DQL_cfg.DONE_EPS,
-            DQL_cfg.TARGET_NN_UPDATE_FREQ,
-            DQL_cfg.LOAD_NETWORK_PATH,
-            DQL_cfg.LIVE_PLOT_FREQ,
-            arguments.live_plot,
-            DQL_cfg.NN_SAVE_FREQ,
-            save_data=arguments.save_data,
-            game=arguments.game,
-        )
-
-        agt.learn(arguments.episodes)
-
-        if arguments.plot:
-            plot(agt.performance_hist, "fitness")
-
-            plt.legend()
-            plt.show()
-
-            plot(agt.time_hist, "time")
-
-            plt.legend()
-            plt.show()
-
 
 if __name__ == '__main__':
     main()
@@ -221,4 +223,4 @@ if __name__ == '__main__':
     if faulthandler.is_enabled():
         faulthandler.diable()
     """
-# Example use: py -m eval.plot dql -g cartpole -e 1000 -l
+# Example use: python3 main.py dql -g cartpole -e 1000
