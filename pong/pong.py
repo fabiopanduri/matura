@@ -323,10 +323,3 @@ class PongGame:
         self.scoreboard.render_score(self.screen, self.score)
         pygame.display.flip()
 
-
-def main():
-    env = PongEnv()
-    clock = pygame.time.Clock()
-    while True:
-        # print("Step: ", env.step(['stay']), "Score: ", env.score)
-        clock.tick(FPS_LIMIT)

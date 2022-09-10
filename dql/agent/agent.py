@@ -196,7 +196,6 @@ class DQLAgent:
         and implemented in Keon 2017
         '''
         for episode in range(n_of_episodes):
-            # print("Status: ")
             done = False
             state = self.env.make_observation()
             phi = self.preprocessor(state)
@@ -208,7 +207,9 @@ class DQLAgent:
                 # Play one frame and observe new state and reward
                 action = self.get_action(phi)
                 state, reward, done = self.execute_action(action)
-                # print(state, reward)
+                print(reward)
+                print(self.env.game.right_paddle.relative_y_position())
+                print(self.env.game.ball.relative_position())
                 next_phi = self.preprocessor(state)
 
                 transition = (phi, action, reward, next_phi, done)

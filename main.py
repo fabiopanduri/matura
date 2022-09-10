@@ -72,6 +72,8 @@ def args() -> 'argparse':
         '-r', '--render', help='Render the game', dest='render', action="store_true")
     parser_dql.add_argument(
         '-v', '--verbose', help='Print info', dest='verbose', action="store_true")
+    parser_dql.add_argument(
+        '--reward-system', help='How the (pong) enviroment should give out rewards', choices=['v0', 'v1', 'v2', 'v3'], type=str)
 
     # arguments for neat
     parser_neat = subparsers.add_parser('neat', help='Test NEAT')
@@ -178,7 +180,8 @@ def main():
 
         agt = DQLAgent(
             env(alpha=DQL_cfg.ALPHA,
-                render=arguments.render),
+                render=arguments.render,
+                reward_system=arguments.reward_system),
             DQL_cfg.MEMORY_SIZE,
             DQL_cfg.DISCOUNT_FACTOR,
             DQL_cfg.MINIBATCH_SIZE,
