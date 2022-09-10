@@ -141,7 +141,7 @@ class DQLAgent:
             q_values = self.q_network.feed_forward(state)
             movement = self.possible_actions[np.argmax(q_values)]
 
-        if self.total_step % self.target_nn_update_freq == 0:
+        if self.total_step % self.target_nn_update_freq == 0 and False:
             print(self.total_step, q_values, "Max: ",
                   self.possible_actions[np.argmax(q_values)])
 
@@ -233,7 +233,7 @@ class DQLAgent:
             # fitness = self.env.fitness(episode_step, reward)
             # self.fitness_hist.append(fitness)
 
-            print(self.env.game.score[1] / (self.env.game.score[0] + 1))
+            print(self.env.game.score[1] / (self.env.game.score[0] + 1), self.get_eps(self.total_step))
             self.performance_hist.append(
                 self.env.fitness(episode_step, reward))
             if self.live_plot and episode % self.live_plot_freq == 0:

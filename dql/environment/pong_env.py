@@ -42,7 +42,7 @@ class PongEnvDQL:
         Return the current game's current internal state (relevant params)
         '''
         return (self.game.right_paddle.relative_y_position(), self.game.ball.relative_position()[1])
-        # return (self.game.ball.position[0], self.game.ball.position[1], self.game.right_paddle.position[1])
+        return (self.game.ball.position[0], self.game.ball.position[1], self.game.left_paddle_position[1], self.game.right_paddle.position[1])
 
     def step(self, action):
         '''
