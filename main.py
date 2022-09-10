@@ -110,7 +110,7 @@ def args() -> 'argparse':
 
 
 def main():
-    sys.setrecursionlimit(2**15)
+    sys.setrecursionlimit(2**12)
 
     arguments = args()
 
