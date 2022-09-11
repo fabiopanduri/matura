@@ -12,7 +12,11 @@ from etc.activation_functions import *
 from neat.genetics import *
 
 
+INX = 0
+
+
 class NEAT:
+    INX = 0
     """
     This class contains the genetic algorithm part of NEAT
     It is only used for training
@@ -182,6 +186,12 @@ class NEAT:
             return i
 
         for individual in self.population:
+            global INX
+            INX += 1
+            # print(INX)
+            if INX > 1000:
+                INX = INX
+                # print(INX)
             env = self.env(max_t=max_t, render=self.render)
 
             state_0 = env.make_observation()
@@ -370,7 +380,7 @@ class NEAT:
             individual.mutate_weights(
                 weight_mutation_constants=self.weight_mutation_constants)
 
-            # add a connection
+            # add a node
             if random.random() < self.node_connection_mutation_constants[0]:
                 individual.add_node(
                     self.global_node_innovation_number,
@@ -380,7 +390,7 @@ class NEAT:
                 self.global_node_innovation_number += 1
                 self.global_connection_innovation_number += 1
 
-            # add a node
+            # add a connection
             if random.random() < self.node_connection_mutation_constants[1]:
                 individual.add_connection(
                     self.global_connection_innovation_number
@@ -586,5 +596,9 @@ def main():
     """
 
 
+def main2():
+    return
+
+
 if __name__ == "__main__":
-    main()
+    main2()
