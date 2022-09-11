@@ -17,12 +17,14 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 import dql.config as DQL_cfg
+import dql.neural_network.sgd_config as SGD_cfg
 import neat.config as NEAT_cfg
 from dql.agent.agent import DQLAgent
 from dql.agent.agent import ReplayMemory
 from dql.environment.cartpole_gym_env import CartpoleEnvDQL
 from dql.environment.pong_env import PongEnvDQL
 from dql.neural_network.neural_network import NeuralNetwork
+from dql.neural_network.sgd_test import sgd_main 
 from etc.activation_functions import *
 from neat.cartpole_gym_env import CartpoleEnvNEAT
 from neat.genetics import *
@@ -41,6 +43,7 @@ def trace(frame, event, arg):
 
 # sys.settrace(trace)
 
+
 def plot(hist, label):
     x = list(range(0, len(hist)))
     y = hist
@@ -52,10 +55,10 @@ def args() -> 'argparse':
     parser = argparse.ArgumentParser()
 
     subparsers = parser.add_subparsers(dest="subcommand", required=True,
-                                       help='Specify whether NEAT or DQL should be tested ')
+                                       help='Specify whether NEAT, DQL or SGD should be run')
 
     # arguments for dql
-    parser_dql = subparsers.add_parser('dql', help='Test DQL')
+    parser_dql = subparsers.add_parser('dql', help='Run DQL')
     parser_dql.add_argument('-e', '--episodes', dest='episodes', required=True,
                             help='Number of episodes', type=int)
     parser_dql.add_argument(
@@ -75,7 +78,7 @@ def args() -> 'argparse':
         '--reward-system', help='How the (pong) enviroment should give out rewards', choices=['v0', 'v1', 'v2', 'v3'], type=str)
 
     # arguments for neat
-    parser_neat = subparsers.add_parser('neat', help='Test NEAT')
+    parser_neat = subparsers.add_parser('neat', help='Run NEAT')
     parser_neat.add_argument('-i', '--iterations', required=True,
                              help='Number of iterations', type=int)
     parser_neat.add_argument(
@@ -104,6 +107,21 @@ def args() -> 'argparse':
         dest='protect_species', action="store_true")
     parser_neat.add_argument(
         '--reward-system', help='How the (pong) enviroment should give out rewards', choices=['v0', 'v1', 'v2', 'v3'], type=str)
+
+    # arguments for sgd 
+    parser_sgd = subparsers.add_parser('sgd', help='Run SGD')
+    parser_sgd.add_argument(
+        '-v', '--verbose', help='Print info', dest='verbose', action="store_true")
+    parser_sgd.add_argument('-e', '--epochs', required=True, 
+                            help="Specify the number of epochs SGD should run", type=int)
+    parser_sgd.add_argument('-b', '--batch-size', required=True, 
+                            help="Specify the batch size of SGD", type=int)
+    parser_sgd.add_argument('-p', '--plot', action="store_true",
+                            help="Show a plot of the approximation at the end")
+    parser_sgd.add_argument('-s', '--save', action="store_true",
+                            help="Save the data")
+    parser_sgd.add_argument('--save-network', action="store_true",
+                            help="Save the Neural Network")
 
     return parser.parse_args()
 
@@ -157,7 +175,7 @@ def main():
             plt.show()
 
     # NEAT
-    if arguments.subcommand == 'neat':
+    elif arguments.subcommand == 'neat':
         games = {
             "pong": PongEnvNEAT,
             "cartpole": CartpoleEnvNEAT
@@ -210,6 +228,21 @@ def main():
 
             plt.legend()
             plt.show()
+
+    elif arguments.subcommand == "sgd":
+        sgd_main(
+            SGD_cfg.DIMENSIONS,
+            SGD_cfg.ETA,
+            SGD_cfg.ACTIVATION_FUNCTIONS,
+            SGD_cfg.START,
+            SGD_cfg.STOP,
+            SGD_cfg.f,
+            arguments.epochs,
+            arguments.batch_size,
+            arguments.save, 
+            arguments.save_network, 
+            arguments.plot, 
+        ) 
 
 
 if __name__ == '__main__':

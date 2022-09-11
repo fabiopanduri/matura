@@ -121,7 +121,7 @@ class NeuralNetwork:
                             eta=self.eta
                             )
 
-        print(f'[INFO] Saved data to \'{file_name}\'')
+        print(f'[INFO] Saved Neural Network to \'{file_name}\'')
 
     @classmethod
     def load_network(cls, file_name: str) -> None:

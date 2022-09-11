@@ -13,22 +13,34 @@ import matplotlib.pyplot as plt
 
 from dql.neural_network.neural_network import *
 
-def sgd_main(dimensions, 
-        eta, 
-        activation_functions, 
-        START, 
-        STOP, 
-        f,
-        epochs=100,
-        batch_size=1000,
-        save=False,
-        save_net=False,
-        plot=False,
-    ):
+
+def f(x) -> float:
+    return (np.cos(x) + 1) / 2
+
+
+def main():
+    dimensions = [1, 4, 1]
+    eta = 0.1
+    activation_functions = ['ReLU', 'ReLU', 'sigmoid']
     NN = NeuralNetwork(dimensions, eta,
                        activation_functions=activation_functions
                        )
     NN.initialize_network()
+
+    #NN = NeuralNetwork.load_network('dql/neural_network/sgd_test.npz')
+
+    START = 0
+    STOP = np.pi
+
+    try:
+        epochs = int(sys.argv[1])
+    except IndexError:
+        epochs = 100
+
+    try:
+        batch_size = int(sys.argv[2])
+    except IndexError:
+        batch_size = 1000
 
     print(
         f'[INFO] Starting SGD training with {epochs} epochs and a batch size of {batch_size}')
@@ -62,6 +74,9 @@ def sgd_main(dimensions,
 
     print(f'[INFO] Epoch: {epochs}/{epochs}.')
 
+    # save the neural network to
+    # NN.save_network('sgd_test.npz')
+
     # make a plot depicting the approximations of the neural network
     predict = []
     for x in np.arange(START, STOP, 0.01):
@@ -70,37 +85,33 @@ def sgd_main(dimensions,
     # get the data of the actual function
     actual = [f(x) for x in np.arange(START, STOP, 0.01)]
 
-    if plot:
-        plt.figure()
-        plt.plot(np.arange(START, STOP, 0.01), predict, label="NN prediction")
-        plt.plot(np.arange(START, STOP, 0.01), actual, label="Target function")
-        plt.figure()
-        plt.plot(list(range(0, len(error))), error)
-        plt.xlabel("Epochs")
-        plt.ylabel("Loss")
-        plt.show()
-    
+    plt.figure()
+    plt.plot(np.arange(START, STOP, 0.01), predict, label="NN prediction")
+    plt.plot(np.arange(START, STOP, 0.01), actual, label="Target function")
+    plt.figure()
+    plt.plot(list(range(0, len(error))), error)
+    plt.xlabel("Epochs")
+    plt.ylabel("Loss")
+    plt.show()
+
     time_stamp = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") 
 
-    # save the neural network to
-    if save_net:
-        path = f'SGD_nets_saves/SGD_net_{time_stamp}.npz'
-        NN.save_network(path)
-
-    if save:
-        data = {
-            "time": time_stamp,
-            "prediction": list(map(float, predict)),
-            "loss": list(map(float, error)),
-            "hyperparameters": {
-                "epochs": epochs,
-                "batch size": batch_size,
-                "dimensions": dimensions,
-                "learnig rate eta": eta, 
-                "activation function names": activation_functions, 
-            }
+    data = {
+        "time": time_stamp,
+        "prediction": list(map(float, predict)),
+        "loss": list(map(float, error)),
+        "hyperparameters": {
+            "epochs": epochs,
+            "batch size": batch_size,
+            "dimensions": dimensions,
+            "learnig rate eta": eta, 
+            "activation function names": activation_functions, 
         }
+    }
 
-        with open(f"SGD_saves/SGD_{time_stamp}.json", "w") as file:
-            file.write(json.dumps(data, indent = 4))
+    with open(f"SGD_saves/SGD_{time_stamp}.json", "w") as file:
+        file.write(json.dumps(data, indent = 4))
 
+
+if __name__ == '__main__':
+    main()
