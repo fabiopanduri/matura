@@ -10,7 +10,7 @@ POPULATION_SIZE = 150
 SPECIATION_CONSTANTS = (1, 1, 0.4)
 
 # Threshold determining the distance allowed for an individual to be part of a species
-DELTA_T = 100
+DELTA_T = 2 
 
 # Constants that determine the probability of weight mutation
 WEIGHT_MUTATION_CONSTANTS = (0.8, 0.9)
@@ -18,7 +18,7 @@ WEIGHT_MUTATION_CONSTANTS = (0.8, 0.9)
 # Constants that determine the probabilities of node and connection mutations
 # First constant is the probability a new connection is added to an individual
 # The second constant is the probability a new node is added to an individual
-NODE_CONNECTION_MUTATION_CONSTANTS = (1, 1)
+NODE_CONNECTION_MUTATION_CONSTANTS = (0.001, 0.001)
 
 # Constant specifying the probability an inherited connection is disabled if either parent had it
 # disabled
