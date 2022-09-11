@@ -16,7 +16,7 @@ MINIBATCH_SIZE = 32
 LEARNING_RATE = 0.001
 
 # Epsilon (exploration rate) exponential decay rate
-EPS_DECAY = 0.99
+EPS_DECAY = 0.995
 
 # Terminal epsilon
 DONE_EPS = 0.1
