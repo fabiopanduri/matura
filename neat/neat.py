@@ -155,7 +155,7 @@ class NEAT:
                     "optimization": self.optimization,
                     "render": self.render
                 },
-                "game": sel.game
+                "game": self.game
             }
 
             file_name = (
