@@ -12,7 +12,11 @@ from etc.activation_functions import *
 from neat.genetics import *
 
 
+INX = 0
+
+
 class NEAT:
+    INX = 0
     """
     This class contains the genetic algorithm part of NEAT
     It is only used for training
@@ -182,6 +186,12 @@ class NEAT:
             return i
 
         for individual in self.population:
+            global INX
+            INX += 1
+            # print(INX)
+            if INX > 1000:
+                INX = INX
+                # print(INX)
             env = self.env(max_t=max_t, render=self.render)
 
             state_0 = env.make_observation()
@@ -319,6 +329,21 @@ class NEAT:
 
         return base_int
 
+    def has_cycle(self, genome, node):
+        if node in self.finished:
+            return False
+        if node in self.visited:
+            return True
+
+        self.visited.add(node)
+
+        for connection in genome.connections:
+            if connection.out_node_id == node: 
+                if self.has_cycle(genome, connection.in_node_id):
+                    return True
+
+        self.finished.add(node)
+
     def mate(self, new_N, optimization="max"):
         """
         This method performs the mating step and generates a new generation
@@ -337,24 +362,42 @@ class NEAT:
             mating_s = sorted_s[0:l]
 
             N = new_N[s_index]
-
-            for i in range(N):
+    
+            i = 0
+            while i < N:
                 # the best performing individual is always passed on to the new generation
                 if i == 0:
                     best.append(mating_s[0])
+                    i += 1
                     continue
 
                 elif len(mating_s) == 1:
                     c = Genome.load_network_from_raw_data(
                         mating_s[0].save_network_raw_data())
                     new_generation.append(c)
+                    i += 1
                     continue
 
                 p1, p2 = random.sample(mating_s, k=2)
                 child = Genome.crossover(
                     p1, p2, self.connection_disable_constant)
 
-                new_generation.append(child)
+                # checking for a cycle that could have been created in
+                # crossover 
+                cycle = False
+                if child.connections:
+                    for node in child.nodes.keys():
+                        self.visited = set() 
+                        self.finished = set() 
+                        if self.has_cycle(child, node):
+                            cycle = True
+                            break
+                    if not cycle:
+                        new_generation.append(child)
+                        i += 1
+                else:
+                    new_generation.append(child)
+                    i += 1
 
         # all children are mutated, the best per species are not
         new_generation = self.mutate_offspring(new_generation)
@@ -370,7 +413,7 @@ class NEAT:
             individual.mutate_weights(
                 weight_mutation_constants=self.weight_mutation_constants)
 
-            # add a connection
+            # add a node
             if random.random() < self.node_connection_mutation_constants[0]:
                 individual.add_node(
                     self.global_node_innovation_number,
@@ -380,7 +423,7 @@ class NEAT:
                 self.global_node_innovation_number += 1
                 self.global_connection_innovation_number += 1
 
-            # add a node
+            # add a connection
             if random.random() < self.node_connection_mutation_constants[1]:
                 individual.add_connection(
                     self.global_connection_innovation_number
@@ -586,5 +629,9 @@ def main():
     """
 
 
+def main2():
+    return
+
+
 if __name__ == "__main__":
-    main()
+    main2()

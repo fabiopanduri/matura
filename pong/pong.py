@@ -20,7 +20,7 @@ from pong.geometry import *
 WINDOW_SIZE = (800, 500)
 BALL_RADIUS = 12
 BALL_SPEED = 4
-PADDLE_SPEED = 3
+PADDLE_SPEED = 10
 PADDLE_WIDTH = 20
 PADDLE_HEIGHT = 100
 COLOR_BACKGROUND = (0, 0, 0)
@@ -323,10 +323,3 @@ class PongGame:
         self.scoreboard.render_score(self.screen, self.score)
         pygame.display.flip()
 
-
-def main():
-    env = PongEnv()
-    clock = pygame.time.Clock()
-    while True:
-        # print("Step: ", env.step(['stay']), "Score: ", env.score)
-        clock.tick(FPS_LIMIT)

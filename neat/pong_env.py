@@ -14,7 +14,7 @@ class PongEnvNEAT:
     Provides the environment for the game Pong to the NEAT Agent
     """
 
-    def __init__(self, max_t=0, render=False):
+    def __init__(self, max_t=0, render=False, reward_system='v0'):
         '''
         Reset the game to initial state and return initial state
         '''
@@ -23,6 +23,7 @@ class PongEnvNEAT:
         self.state_size = len(self.make_observation())
 
         self.done_fitness = 1
+        self.reward_system = reward_system
 
     def nn_base_dimensions(self):
         return [self.state_size, len(self.possible_actions)]
@@ -45,20 +46,45 @@ class PongEnvNEAT:
 
         # Perform one game tick. Store prev score to calculate reward
         prev_score = self.game.score.copy()
-        terminated = self.game.tick(
+
+        # Note to self: bug was here (only terminated was collected and was thus list)
+        terminated, right_paddle_collision = self.game.tick(
             left_movement,
             right_movement,
         )
 
-        if self.game.score[0] == prev_score[0] + 1:
-            # Negative reward if opponent gets a point
-            reward = -1
-        elif self.game.score[1] == prev_score[1] + 1:
-            # Positive reward if agent gets a point
-            reward = 1
-        else:
-            # Slight negative reward if no point made
-            reward = 0
+        # Give out rewards according to reward system
+        if self.reward_system == "v0":
+            # Positive reward in winning, negative reward in losing frames
+            if self.game.score[0] == prev_score[0] + 1:
+                reward = -1
+            elif self.game.score[1] == prev_score[1] + 1:
+                reward = 1
+            else:
+                reward = 0
+
+        elif self.reward_system == "v1":
+            # Positive reward if agent hit the paddle
+            if right_paddle_collision:
+                reward = 1
+            else:
+                reward = 0
+
+        elif self.reward_system == "v2":
+            # Always give out positive rewards, except for winning/losing frames
+            if self.game.score[0] == prev_score[0] + 1:
+                reward = -1
+            elif self.game.score[1] == prev_score[1] + 1:
+                reward = 1
+            else:
+                reward = 0
+
+        elif self.reward_system == "v3":
+            # +1 if paddle height corresponds with ball height, -0.1 else
+            if self.game.right_paddle.position[1] <= self.game.ball.position[1] <= self.game.right_paddle.position[1] + pong.pong.PADDLE_HEIGHT:
+                reward = 1
+            else:
+                reward = -0.1
 
         return self.make_observation(), reward, terminated
 
@@ -74,11 +100,3 @@ class PongEnvNEAT:
         else:
             f = 1
         return f
-
-
-def main():
-    env = PongEnv()
-    clock = pygame.time.Clock()
-    while True:
-        # print("Step: ", env.step(['stay']), "Score: ", env.score)
-        clock.tick(FPS_LIMIT)

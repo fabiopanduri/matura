@@ -141,7 +141,7 @@ class DQLAgent:
             q_values = self.q_network.feed_forward(state)
             movement = self.possible_actions[np.argmax(q_values)]
 
-        if self.total_step % self.target_nn_update_freq == 0:
+        if self.total_step % self.target_nn_update_freq == 0 and False:
             print(self.total_step, q_values, "Max: ",
                   self.possible_actions[np.argmax(q_values)])
 
@@ -196,7 +196,6 @@ class DQLAgent:
         and implemented in Keon 2017
         '''
         for episode in range(n_of_episodes):
-            # print("Status: ")
             done = False
             state = self.env.make_observation()
             phi = self.preprocessor(state)
@@ -208,7 +207,7 @@ class DQLAgent:
                 # Play one frame and observe new state and reward
                 action = self.get_action(phi)
                 state, reward, done = self.execute_action(action)
-                # print(state, reward)
+                # print(reward)
                 next_phi = self.preprocessor(state)
 
                 transition = (phi, action, reward, next_phi, done)
@@ -234,6 +233,7 @@ class DQLAgent:
             # fitness = self.env.fitness(episode_step, reward)
             # self.fitness_hist.append(fitness)
 
+            print(self.env.game.score[1] / (self.env.game.score[0] + 1), self.get_eps(self.total_step))
             self.performance_hist.append(
                 self.env.fitness(episode_step, reward))
             if self.live_plot and episode % self.live_plot_freq == 0:
@@ -286,14 +286,3 @@ class DQLAgent:
 
     def play(self):
         return
-
-
-def main():
-    env = PongEnvDQL()
-    agt = DQLAgent(env)
-
-    agt.learn(100000)
-
-
-if __name__ == '__main__':
-    main()
