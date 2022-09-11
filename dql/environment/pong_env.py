@@ -81,11 +81,11 @@ class PongEnvDQL:
         elif self.reward_system == "v2":
             # Always give out positive rewards, except for winning/losing frames
             if self.game.score[0] == prev_score[0] + 1:
-                reward = -1
+                reward = -5
             elif self.game.score[1] == prev_score[1] + 1:
-                reward = 1
+                reward = 5
             else:
-                reward = 0
+                reward = 1
 
         elif self.reward_system == "v3":
             # +1 if paddle height corresponds with ball height, -0.1 else
@@ -93,7 +93,6 @@ class PongEnvDQL:
                 reward = 1
             else:
                 reward = -0.1
-
 
         return self.make_observation(), reward, terminated
 
@@ -115,4 +114,3 @@ class PongEnvDQL:
         Function to be called after an episode (iteration of the game) ends. (No purpose in pong but needed for consistency)
         '''
         return
-
