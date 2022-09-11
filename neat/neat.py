@@ -329,6 +329,21 @@ class NEAT:
 
         return base_int
 
+    def has_cycle(self, genome, node):
+        if node in self.finished:
+            return False
+        if node in self.visited:
+            return True
+
+        self.visited.add(node)
+
+        for connection in genome.connections:
+            if connection.out_node_id == node: 
+                if self.has_cycle(genome, connection.in_node_id):
+                    return True
+
+        self.finished.add(node)
+
     def mate(self, new_N, optimization="max"):
         """
         This method performs the mating step and generates a new generation
@@ -347,24 +362,42 @@ class NEAT:
             mating_s = sorted_s[0:l]
 
             N = new_N[s_index]
-
-            for i in range(N):
+    
+            i = 0
+            while i < N:
                 # the best performing individual is always passed on to the new generation
                 if i == 0:
                     best.append(mating_s[0])
+                    i += 1
                     continue
 
                 elif len(mating_s) == 1:
                     c = Genome.load_network_from_raw_data(
                         mating_s[0].save_network_raw_data())
                     new_generation.append(c)
+                    i += 1
                     continue
 
                 p1, p2 = random.sample(mating_s, k=2)
                 child = Genome.crossover(
                     p1, p2, self.connection_disable_constant)
 
-                new_generation.append(child)
+                # checking for a cycle that could have been created in
+                # crossover 
+                cycle = False
+                if child.connections:
+                    for node in child.nodes.keys():
+                        self.visited = set() 
+                        self.finished = set() 
+                        if self.has_cycle(child, node):
+                            cycle = True
+                            break
+                    if not cycle:
+                        new_generation.append(child)
+                        i += 1
+                else:
+                    new_generation.append(child)
+                    i += 1
 
         # all children are mutated, the best per species are not
         new_generation = self.mutate_offspring(new_generation)

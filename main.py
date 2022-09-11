@@ -41,7 +41,6 @@ def trace(frame, event, arg):
 
 # sys.settrace(trace)
 
-
 def plot(hist, label):
     x = list(range(0, len(hist)))
     y = hist
