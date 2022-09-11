@@ -73,6 +73,8 @@ class Genome:
 
         self.fitness = 0
 
+        self.total_rec_depth = 0
+
     def connection_dict(self):
         return {c.innovation_number: c for c in self.connections}
 
@@ -462,6 +464,9 @@ class Genome:
         # to the node
         for connection in self.connections:
             if connection.in_node_id == node_id and connection.enabled:
+                self.total_rec_depth += 1
+                if self.total_rec_depth > 2**11:
+                    print("alarm")
                 inputs.append(
                     self.calculate_node(
                         connection.out_node_id
@@ -488,6 +493,7 @@ class Genome:
         for node_id, node in self.nodes.items():
             if node.type == "output":
                 self.calculate_node(node_id)
+                self.total_rec_depth = 0
 
         return [self.table[i] for i in sorted(list(self.output_nodes.keys()))]
 
