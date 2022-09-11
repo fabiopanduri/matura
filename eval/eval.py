@@ -11,6 +11,7 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 
+plt.style.use('ggplot')
 
 def args() -> 'argparse':
     parser = argparse.ArgumentParser()
@@ -42,14 +43,20 @@ def read_data_file(filename):
     return data
 
 
-def plot(label, *data):
+def plot(label, x_label, y_label, *data):
     for i, data_set in enumerate(data):
         x = list(range(0, len(data_set)))
         y = data_set
-
-        plt.plot(x, y, label=label[i])
-
-    plt.legend()
+        
+        if label:
+            plt.plot(x, y, label=label[i])
+        else:
+            plt.plot(x, y)
+    
+    plt.xlabel(x_label)
+    plt.ylabel(y_label)
+    if label:
+        plt.legend()
     plt.show()
 
 
@@ -117,31 +124,32 @@ def main():
 
         if arguments.plot_fitness:
             if "performance history" in blank_data.keys():
-                plot(["performance history"], blank_data["performance history"])
+                plot(None, "Episodes", "Fitness", blank_data["performance history"])
             else:
                 plot(["best fitness history", "average fitness history"],
-                     blank_data["best fitness history"], blank_data["fitness history"])
+                     "Generations", "Fitness", blank_data["best fitness history"], blank_data["fitness history"])
 
         if arguments.plot_fitness_std:
             if "performance history" in blank_data.keys():
-                plot(["performance history std"],
+                plot(None, "Episodes", "Fitness std.",
                      blank_data["performance history std"])
             else:
-                plot(["best fitness history std", "average fitness history std"],
+                plot(["best fitness history std", "average fitness history std"], 
+                    "Generations", "Fitness std.", 
                      blank_data["best fitness history std"], blank_data["fitness history std"])
 
         if arguments.plot_time:
             if "time history" in blank_data.keys():
-                plot(["time history"], blank_data["time history"])
+                plot(None, "Episodes", "Time in s", blank_data["time history"])
             else:
-                plot(["generation time history"],
+                plot(None, "Generations", "Time in s",
                      blank_data["generation time history"])
 
         if arguments.plot_time_std:
             if "time history" in blank_data.keys():
-                plot(["time history std"], blank_data["time history std"])
+                plot(None, "Episodes", "Time in s", blank_data["time history std"])
             else:
-                plot(["generation time history std"],
+                plot(None, "Generations", "Time in s",
                      blank_data["generation time history std"])
 
 
