@@ -17,6 +17,7 @@ from pong.geometry import *
 
 # Adjust as needed
 # (0|0) is on the top left. x-Axis is right, y-Axis down
+# TODO: these variables should not be here
 WINDOW_SIZE = (800, 500)
 BALL_RADIUS = 12
 BALL_SPEED = 4
@@ -135,7 +136,8 @@ class Ball:
         Side collisions are returned to calculate the score
         '''
         side_collision = self.border_collision()
-        left_paddle_collision, right_paddle_collision = self.paddle_collision(left_paddle, right_paddle)
+        left_paddle_collision, right_paddle_collision = self.paddle_collision(
+            left_paddle, right_paddle)
 
         self.position += self.velocity
         return side_collision, right_paddle_collision
@@ -246,6 +248,7 @@ class PongGame:
     '''
     Put everything together to make the game Pong.
     '''
+    # TODO: ensure functionality of multiplayer. where should it go?
 
     def __init__(self, graphics_enabled=True):
         '''
@@ -282,7 +285,8 @@ class PongGame:
 
         self.left_paddle.move(left_movement)
         self.right_paddle.move(right_movement)
-        side_collision, right_paddle_collision = self.ball.update(self.left_paddle, self.right_paddle)
+        side_collision, right_paddle_collision = self.ball.update(
+            self.left_paddle, self.right_paddle)
 
         # Calculate new score
         terminated = True
@@ -322,4 +326,3 @@ class PongGame:
         # Update Scoreboard
         self.scoreboard.render_score(self.screen, self.score)
         pygame.display.flip()
-

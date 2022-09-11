@@ -12,7 +12,8 @@ from pong.pong import PongGame
 
 
 class PongEnvDQL:
-    """
+    # TODO: make the environment unaware of which player it is
+    """the environment unaware of which player it is
     Provide the environment for the game Pong to the DQL Agent.
     The Environment is always the right player.
     TODO: Write an abstraction which enables playing the left player.
@@ -94,7 +95,6 @@ class PongEnvDQL:
             else:
                 reward = -0.1
 
-
         return self.make_observation(), reward, terminated
 
     def fitness(self, t, reward):
@@ -115,4 +115,3 @@ class PongEnvDQL:
         Function to be called after an episode (iteration of the game) ends. (No purpose in pong but needed for consistency)
         '''
         return
-
