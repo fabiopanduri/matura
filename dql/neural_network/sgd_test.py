@@ -4,6 +4,7 @@
 # maturaarbeit_code is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 # You should have received a copy of the GNU General Public License along with maturaarbeit_code. If not, see <https://www.gnu.org/licenses/>.
 import datetime
+import json
 import os
 import sys
 import time
@@ -18,8 +19,11 @@ def f(x) -> float:
 
 
 def main():
-    NN = NeuralNetwork([1, 4, 1], 0.1,
-                       activation_functions=['ReLU', 'ReLU', 'sigmoid'],
+    dimensions = [1, 4, 1]
+    eta = 0.1
+    activation_functions = ['ReLU', 'ReLU', 'sigmoid']
+    NN = NeuralNetwork(dimensions, eta,
+                       activation_functions=activation_functions
                        )
     NN.initialize_network()
 
@@ -71,7 +75,7 @@ def main():
     print(f'[INFO] Epoch: {epochs}/{epochs}.')
 
     # save the neural network to
-    NN.save_network('sgd_test.npz')
+    # NN.save_network('sgd_test.npz')
 
     # make a plot depicting the approximations of the neural network
     predict = []
@@ -82,11 +86,31 @@ def main():
     actual = [f(x) for x in np.arange(START, STOP, 0.01)]
 
     plt.figure()
-    plt.plot(np.arange(START, STOP, 0.01), predict)
-    plt.plot(np.arange(START, STOP, 0.01), actual)
+    plt.plot(np.arange(START, STOP, 0.01), predict, label="NN prediction")
+    plt.plot(np.arange(START, STOP, 0.01), actual, label="Target function")
     plt.figure()
     plt.plot(list(range(0, len(error))), error)
+    plt.xlabel("Epochs")
+    plt.ylabel("Loss")
     plt.show()
+
+    time_stamp = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") 
+
+    data = {
+        "time": time_stamp,
+        "prediction": list(map(float, predict)),
+        "loss": list(map(float, error)),
+        "hyperparameters": {
+            "epochs": epochs,
+            "batch size": batch_size,
+            "dimensions": dimensions,
+            "learnig rate eta": eta, 
+            "activation function names": activation_functions, 
+        }
+    }
+
+    with open(f"SGD_saves/SGD_{time_stamp}.json", "w") as file:
+        file.write(json.dumps(data, indent = 4))
 
 
 if __name__ == '__main__':
