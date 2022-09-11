@@ -75,7 +75,7 @@ def main():
             if date_0 <= date and date <= date_1:
                 if not blank_data:
                     blank_data = file_data.copy()
-                    for l in ["performance history", "time history", "generation time history", "best fitness history", "average fitness history"]:
+                    for l in ["performance history", "time history", "generation time history", "best fitness history", "fitness history"]:
                         if l in blank_data.keys():
                             blank_data[l] = [[]
                                              for _ in range(len(blank_data[l]))]
@@ -90,8 +90,8 @@ def main():
                     else:
                         for i, x in enumerate(file_data["best fitness history"]):
                             blank_data["best fitness history"][i].append(x)
-                        for i, x in enumerate(file_data["average fitness history"]):
-                            blank_data["average fitness history"][i].append(x)
+                        for i, x in enumerate(file_data["fitness history"]):
+                            blank_data["fitness history"][i].append(x)
 
                 if arguments.plot_time:
                     if "time history" in file_data.keys():
@@ -101,7 +101,7 @@ def main():
                         for i, x in enumerate(file_data["generation time history"]):
                             blank_data["generation time history"][i].append(x)
 
-        for l in ["performance history", "time history", "generation time history", "best fitness history", "average fitness history"]:
+        for l in ["performance history", "time history", "generation time history", "best fitness history", "fitness history"]:
             if l in blank_data.keys():
                 summed_data = []
                 for d in blank_data[l]:
@@ -120,7 +120,7 @@ def main():
                 plot(["performance history"], blank_data["performance history"])
             else:
                 plot(["best fitness history", "average fitness history"],
-                     blank_data["best fitness history"], blank_data["average fitness history"])
+                     blank_data["best fitness history"], blank_data["fitness history"])
 
         if arguments.plot_fitness_std:
             if "performance history" in blank_data.keys():
@@ -128,7 +128,7 @@ def main():
                      blank_data["performance history std"])
             else:
                 plot(["best fitness history std", "average fitness history std"],
-                     blank_data["best fitness history std"], blank_data["average fitness history std"])
+                     blank_data["best fitness history std"], blank_data["fitness history std"])
 
         if arguments.plot_time:
             if "time history" in blank_data.keys():
