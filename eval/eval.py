@@ -7,6 +7,7 @@ import argparse
 import datetime
 import json
 import os
+import sys
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -24,6 +25,11 @@ def args() -> 'argparse':
         '-t', '--plot-time', help="Plot the time", action="store_true")
     parser.add_argument(
         '-ts', '--plot-time-std', help="Plot the standard deviation of the time", action="store_true")
+    parser.add_argument(
+        '-pr', '--plot-prediction', help="Plot the prediction (only for sgd)", action="store_true")
+    parser.add_argument(
+        '-ps', '--plot-prediction-std', 
+        help="Plot the standard deviation of the prediction (only for sgd)", action="store_true")
     parser.add_argument(
         '-p', '--path', help="Specify the folder", type=str, required=True)
 
@@ -61,6 +67,16 @@ def plot(label, x_label, y_label, *data):
 
 
 def main():
+    relevant_data = [
+                "performance history", 
+                "time history",
+                "generation time history", 
+                "best fitness history", 
+                "fitness history", 
+                "loss",
+                "prediction"
+    ]
+
     arguments = args()
 
     if arguments.single_file:
@@ -74,15 +90,15 @@ def main():
         blank_data = None
 
         count = 0
-        for filename in sorted(list(os.listdir(arguments.path)))[1:]:
+        for filename in sorted(list(os.listdir(arguments.path))):
             file_data = read_data_file(f"{arguments.path}/{filename}")
             date = datetime.datetime.strptime(
                 file_data["time"], "%Y-%m-%d-%H-%M-%S")
-
+            
             if date_0 <= date and date <= date_1:
                 if not blank_data:
                     blank_data = file_data.copy()
-                    for l in ["performance history", "time history", "generation time history", "best fitness history", "fitness history"]:
+                    for l in relevant_data:
                         if l in blank_data.keys():
                             blank_data[l] = [[]
                                              for _ in range(len(blank_data[l]))]
@@ -94,6 +110,9 @@ def main():
                     if "performance history" in file_data.keys():
                         for i, x in enumerate(file_data["performance history"]):
                             blank_data["performance history"][i].append(x)
+                    elif "loss" in file_data.keys():
+                        for i, x in enumerate(file_data["loss"]):
+                            blank_data["loss"][i].append(x)
                     else:
                         for i, x in enumerate(file_data["best fitness history"]):
                             blank_data["best fitness history"][i].append(x)
@@ -108,7 +127,15 @@ def main():
                         for i, x in enumerate(file_data["generation time history"]):
                             blank_data["generation time history"][i].append(x)
 
-        for l in ["performance history", "time history", "generation time history", "best fitness history", "fitness history"]:
+                if arguments.plot_prediction:
+                    for i, x in enumerate(file_data["prediction"]):
+                        blank_data["prediction"][i].append(x)
+
+        if not blank_data:
+            print("[ERROR] No files found")
+            sys.exit()            
+
+        for l in relevant_data:
             if l in blank_data.keys():
                 summed_data = []
                 for d in blank_data[l]:
@@ -125,6 +152,8 @@ def main():
         if arguments.plot_fitness:
             if "performance history" in blank_data.keys():
                 plot(None, "Episodes", "Fitness", blank_data["performance history"])
+            elif "loss" in blank_data.keys():
+                plot(None, "Epochs", "Loss function", blank_data["loss"])
             else:
                 plot(["best fitness history", "average fitness history"],
                      "Generations", "Fitness", blank_data["best fitness history"], blank_data["fitness history"])
@@ -133,6 +162,9 @@ def main():
             if "performance history" in blank_data.keys():
                 plot(None, "Episodes", "Fitness std.",
                      blank_data["performance history std"])
+            elif "loss" in blank_data.keys():
+                plot(None, "Epochs", "Loss std.",
+                     blank_data["loss std"])
             else:
                 plot(["best fitness history std", "average fitness history std"], 
                     "Generations", "Fitness std.", 
@@ -140,17 +172,25 @@ def main():
 
         if arguments.plot_time:
             if "time history" in blank_data.keys():
-                plot(None, "Episodes", "Time in s", blank_data["time history"])
+                x_label = "Epochs" if "loss" in blank_data.keys() else "Episodes"
+                plot(None, x_label, "Time in s", blank_data["time history"])
             else:
                 plot(None, "Generations", "Time in s",
                      blank_data["generation time history"])
 
         if arguments.plot_time_std:
             if "time history" in blank_data.keys():
-                plot(None, "Episodes", "Time in s", blank_data["time history std"])
+                x_label = "Epochs" if "loss" in blank_data.keys() else "Episodes"
+                plot(None, x_label, "Time in s", blank_data["time history std"])
             else:
                 plot(None, "Generations", "Time in s",
                      blank_data["generation time history std"])
+
+        if arguments.plot_prediction:
+            plot(None, "x", "f(x)", blank_data["prediction"])
+        if arguments.plot_prediction_std:
+            plot(None, "x", "f(x) std", blank_data["prediction std"])
+            
 
 
 if __name__ == "__main__":

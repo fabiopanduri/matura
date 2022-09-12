@@ -40,12 +40,16 @@ def sgd_main(dimensions,
         train.append((np.array([x]), np.array([f(x)])))
 
     error = []
+    time_history = []
     for i in range(epochs):
         if i % int(epochs / 10) == 0:
             print(f'[INFO] Epoch: {i}/{epochs}', end='\r')
 
         # perform the gradient descent step
+        t_0 = time.perf_counter()
         NN.stochastic_gradient_descent(train)
+        t = time.perf_counter() - t_0
+        time_history.append(t)
 
         # test the neural network on some newly generated data
         test = []
@@ -78,6 +82,10 @@ def sgd_main(dimensions,
         plt.plot(list(range(0, len(error))), error)
         plt.xlabel("Epochs")
         plt.ylabel("Loss")
+        plt.figure()
+        plt.plot(list(range(0, len(time_history))), time_history)
+        plt.xlabel("Epochs")
+        plt.ylabel("Time in s")
         plt.show()
     
     time_stamp = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") 
@@ -92,6 +100,7 @@ def sgd_main(dimensions,
             "time": time_stamp,
             "prediction": list(map(float, predict)),
             "loss": list(map(float, error)),
+            "time history": time_history,
             "hyperparameters": {
                 "epochs": epochs,
                 "batch size": batch_size,
