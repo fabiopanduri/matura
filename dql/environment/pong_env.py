@@ -7,9 +7,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-import pong.pong
-from pong.pong import PongGame
-
+from pong.pong import PongGame, PADDLE_HEIGHT
 
 class PongEnvDQL:
     """
@@ -89,7 +87,7 @@ class PongEnvDQL:
 
         elif self.reward_system == "v3":
             # +1 if paddle height corresponds with ball height, -0.1 else
-            if self.game.right_paddle.position[1] <= self.game.ball.position[1] <= self.game.right_paddle.position[1] + pong.pong.PADDLE_HEIGHT:
+            if self.game.right_paddle.position[1] <= self.game.ball.position[1] <= self.game.right_paddle.position[1] + PADDLE_HEIGHT:
                 reward = 1
             else:
                 reward = -0.1
