@@ -53,6 +53,7 @@ class DQLAgent:
                  eps_decay,
                  done_eps,
                  target_nn_update_freq,
+                 max_simulation_time,
                  load_network_path,
                  live_plot_freq,
                  live_plot,
@@ -69,6 +70,7 @@ class DQLAgent:
         self.eps_decay = eps_decay
         self.done_eps = done_eps
         self.target_nn_update_freq = target_nn_update_freq
+        self.max_simulation_time = max_simulation_time
         self.live_plot = live_plot
         self.live_plot_freq = live_plot_freq
         self.nn_save_freq = nn_save_freq
@@ -203,7 +205,7 @@ class DQLAgent:
             episode_step = 0
             # Play until done state/frame is reached
             t_0 = time.perf_counter()
-            while not done:
+            while not done and episode_step < self.max_simulation_time:
                 # Play one frame and observe new state and reward
                 action = self.get_action(phi)
                 state, reward, done = self.execute_action(action)

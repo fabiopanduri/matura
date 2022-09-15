@@ -273,6 +273,9 @@ class PongGame:
             self.scoreboard = Scoreboard()
             self.screen = pygame.display.set_mode(WINDOW_SIZE)
 
+    def reset(self):
+        self.ball.reset()
+
     def tick(self, left_movement, right_movement):
         '''
         Perform one game tick.
