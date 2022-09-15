@@ -1,7 +1,7 @@
 # Neural network saves 
 NN_saves/*.npz
 NEAT_saves/*.json
-DQL_epochs_saves/*.json
+DQL_epochs_saves/*
 NEAT_iterations_saves/*.json
 
 traceback*
