@@ -15,7 +15,7 @@ class CartpoleEnvDQL:
     Provide the environment for the game CartPole to the DQL Agent
     """
 
-    def __init__(self, alpha=1000, render=True):
+    def __init__(self, reward_system, alpha=1000, render=True):
         '''
         Reset the game to initial state and return initial state
         '''
