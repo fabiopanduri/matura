@@ -39,6 +39,8 @@ class NEAT:
         vary_delta_t=False,
         protect_species=True,
         game='',
+        old_speciation=False,
+        reward_system="v0",
     ):
         self.env = env
         temp_env = env(simulation_time)
@@ -56,6 +58,8 @@ class NEAT:
         self.optimization = optimization
         self.protect_species = protect_species
         self.game = game
+        self.old_speciation = old_speciation
+        self.reward_system = reward_system
 
         self.population = []
         self.global_connection_innovation_number = self.nn_base_dimensions[0] * \
@@ -78,7 +82,7 @@ class NEAT:
 
         t_0 = time.perf_counter()
         for i in range(generations):
-            self.simulate_population(self.simulation_time)
+            self.simulate_population(self.simulation_time) 
 
             t = time.perf_counter() - t_0
 
@@ -122,8 +126,10 @@ class NEAT:
 
             t_0 = time.perf_counter()
 
-            # self.speciation(i/generations)
-            self.speciation_old_free(i/generations)
+            if self.old_speciation:
+                self.speciation(i/generations)
+            else:
+                self.speciation_old_free(i/generations)
 
             self.adjust_population_fitness()
 
@@ -177,33 +183,16 @@ class NEAT:
         This is done until a terminal state is reached or we have more than max_t steps
         """
 
-        def argmax(l):
-            i = 0
-            current_best = l[0]
-            for j, element in enumerate(l):
-                if element > current_best:
-                    i = j
-                    current_best = element
-
-            return i
-
         for individual in self.population:
-            global INX
-            INX += 1
-            # print(INX)
-            if INX > 1000:
-                INX = INX
-                # print(INX)
-            env = self.env(max_t=max_t, render=self.render)
+            env = self.env(max_t=max_t, render=self.render, reward_system=self.reward_system)
 
             state_0 = env.make_observation()
             prediction = individual.feed_forward(state_0)
-            #action_i = np.argmax(np.array(prediction))
-            action_i = argmax(prediction)
+            action_i = np.argmax(np.array(prediction))
 
             action = env.possible_actions[action_i]
             for t in range(max_t):
-                state, reward, terminated = env.step(action)
+                state, reward, terminated = env.step(action, t)
 
                 if terminated:
                     individual.fitness = env.fitness(
@@ -211,8 +200,7 @@ class NEAT:
                     break
 
                 prediction = individual.feed_forward(state)
-                #action_i = np.argmax(np.array(prediction))
-                action_i = argmax(prediction)
+                action_i = np.argmax(np.array(prediction))
 
                 action = env.possible_actions[action_i]
                 t += 1

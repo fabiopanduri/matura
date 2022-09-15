@@ -103,6 +103,8 @@ def args() -> 'argparse':
     parser_neat.add_argument(
         '-vd', '--vary-delta-t', help='Vary the delta-t value', dest='vary_delta_t', action="store_true")
     parser_neat.add_argument(
+        '-o', '--old-species', help='Use the old species as representative for the new species', action="store_true")
+    parser_neat.add_argument(
         '-ps', '--protect-species', help='Allow each species to have at least one offspring',
         dest='protect_species', action="store_true")
     parser_neat.add_argument(
@@ -197,6 +199,8 @@ def main():
             vary_delta_t=arguments.vary_delta_t,
             protect_species=arguments.protect_species,
             game=arguments.game,
+            old_speciation=arguments.old_species,
+            reward_system=arguments.reward_system
         )
 
         if arguments.connected:

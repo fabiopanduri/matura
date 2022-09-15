@@ -6,7 +6,7 @@
 # Pong game to be played by ML algorithms
 import numpy as np
 
-from pong.pong import PongGame
+from pong.pong import PongGame, PADDLE_HEIGHT
 
 
 class PongEnvNEAT:
@@ -21,6 +21,7 @@ class PongEnvNEAT:
         self.game = PongGame(graphics_enabled=render)
         self.possible_actions = ['up', 'stay', 'down']
         self.state_size = len(self.make_observation())
+        self.max_t = max_t
 
         self.done_fitness = 1
         self.reward_system = reward_system
@@ -34,7 +35,7 @@ class PongEnvNEAT:
         '''
         return (self.game.right_paddle.relative_y_position(), self.game.ball.relative_position()[1])
 
-    def step(self, action):
+    def step(self, action, t):
         '''
         Do one game move with given action and return image, reward and wheter or not the game terminates
         '''
@@ -81,12 +82,20 @@ class PongEnvNEAT:
 
         elif self.reward_system == "v3":
             # +1 if paddle height corresponds with ball height, -0.1 else
-            if self.game.right_paddle.position[1] <= self.game.ball.position[1] <= self.game.right_paddle.position[1] + pong.pong.PADDLE_HEIGHT:
+            if self.game.right_paddle.position[1] <= self.game.ball.position[1] <= self.game.right_paddle.position[1] + PADDLE_HEIGHT:
                 reward = 1
             else:
                 reward = -0.1
 
-        return self.make_observation(), reward, terminated
+        # for this reward system we do not want the simulation to stop if a
+        # point is gained
+        if self.reward_system == "v3":
+            if t == self.max_t - 1:
+                terminated = True 
+            else:
+                terminated = False
+            
+        return self.make_observation(), reward, terminated 
 
     def fitness(self, t, reward, alpha=1000):
         """

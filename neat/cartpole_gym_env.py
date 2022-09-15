@@ -15,7 +15,7 @@ class CartpoleEnvNEAT:
     Provide the environment for the game CartPole to NEAT 
     """
 
-    def __init__(self, max_t, plot=False, render=True):
+    def __init__(self, max_t, plot=False, render=True, *_):
         '''
         Reset the game to initial state and return initial state
         '''
@@ -54,7 +54,7 @@ class CartpoleEnvNEAT:
         # TODO: This is ugly because it may reset when reset is not wanted
         return self.gym_env.reset()
 
-    def step(self, action):
+    def step(self, action, *_):
         '''
         Do one game move with given action and return image, reward and wheter or not the game terminates
         '''
