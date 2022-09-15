@@ -18,7 +18,7 @@ class PongEnvDQL:
     TODO: Write an abstraction which enables playing the left player.
     """
 
-    def __init__(self, alpha=1000, plot=False, render=True, reward_system="v0"):
+    def __init__(self, reward_system, alpha=1000, plot=False, render=True):
         '''
         Reset the game to initial state and return initial state
         '''
@@ -111,6 +111,6 @@ class PongEnvDQL:
 
     def terminate_episode(self):
         '''
-        Function to be called after an episode (iteration of the game) ends. (No purpose in pong but needed for consistency)
+        Function to be called after an episode (iteration of the game) ends. 
         '''
-        return
+        self.game.reset()

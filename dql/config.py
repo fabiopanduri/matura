@@ -35,3 +35,6 @@ NN_SAVE_FREQ = 100000
 
 # Fitness parameter
 ALPHA = 100
+
+# After how many steps an episode terminates at the latest
+MAX_SIMULATION_TIME = 10000
