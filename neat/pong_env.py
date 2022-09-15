@@ -4,9 +4,13 @@
 # maturaarbeit_code is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 # You should have received a copy of the GNU General Public License along with maturaarbeit_code. If not, see <https://www.gnu.org/licenses/>.
 # Pong game to be played by ML algorithms
+import time
+
 import numpy as np
 
-from pong.pong import PongGame, PADDLE_HEIGHT
+from pong.pong import PADDLE_HEIGHT
+from pong.pong import PongGame
+from pong.pong import WINDOW_SIZE
 
 
 class PongEnvNEAT:
@@ -86,16 +90,24 @@ class PongEnvNEAT:
                 reward = 1
             else:
                 reward = -0.1
-
-        # for this reward system we do not want the simulation to stop if a
-        # point is gained
-        if self.reward_system == "v3":
+            # for this reward system we do not want the simulation to stop if a
+            # point is gained
             if t == self.max_t - 1:
-                terminated = True 
+                terminated = True
             else:
                 terminated = False
-            
-        return self.make_observation(), reward, terminated 
+
+        elif self.reward_system == "v4":
+            # +1 if ball is directly above paddle vertically,
+            # -1 if it is as far away as the window is high,
+            # exponential decay in between
+            # reward = 1 - abs(self.game.ball.position[1] - (self.game.right_paddle.position[1] + PADDLE_HEIGHT / 2)) / WINDOW_SIZE[1]
+            reward = 2**(-abs(self.game.ball.position[1] - (
+                self.game.right_paddle.position[1] + PADDLE_HEIGHT / 2)) / 100)
+            print(reward)
+            time.sleep(0.1)
+
+        return self.make_observation(), reward, terminated
 
     def fitness(self, t, reward, alpha=1000):
         """

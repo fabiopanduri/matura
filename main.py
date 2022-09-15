@@ -24,7 +24,7 @@ from dql.agent.agent import ReplayMemory
 from dql.environment.cartpole_gym_env import CartpoleEnvDQL
 from dql.environment.pong_env import PongEnvDQL
 from dql.neural_network.neural_network import NeuralNetwork
-from dql.neural_network.sgd_test import sgd_main 
+from dql.neural_network.sgd_test import sgd_main
 from etc.activation_functions import *
 from neat.cartpole_gym_env import CartpoleEnvNEAT
 from neat.genetics import *
@@ -108,15 +108,15 @@ def args() -> 'argparse':
         '-ps', '--protect-species', help='Allow each species to have at least one offspring',
         dest='protect_species', action="store_true")
     parser_neat.add_argument(
-        '--reward-system', help='How the (pong) enviroment should give out rewards', choices=['v0', 'v1', 'v2', 'v3'], type=str)
+        '--reward-system', help='How the (pong) enviroment should give out rewards', choices=['v0', 'v1', 'v2', 'v3', 'v4'], type=str, default='v0')
 
-    # arguments for sgd 
+    # arguments for sgd
     parser_sgd = subparsers.add_parser('sgd', help='Run SGD')
     parser_sgd.add_argument(
         '-v', '--verbose', help='Print info', dest='verbose', action="store_true")
-    parser_sgd.add_argument('-e', '--epochs', required=True, 
+    parser_sgd.add_argument('-e', '--epochs', required=True,
                             help="Specify the number of epochs SGD should run", type=int)
-    parser_sgd.add_argument('-b', '--batch-size', required=True, 
+    parser_sgd.add_argument('-b', '--batch-size', required=True,
                             help="Specify the batch size of SGD", type=int)
     parser_sgd.add_argument('-p', '--plot', action="store_true",
                             help="Show a plot of the approximation at the end")
@@ -245,10 +245,10 @@ def main():
             SGD_cfg.f,
             arguments.epochs,
             arguments.batch_size,
-            arguments.save, 
-            arguments.save_network, 
-            arguments.plot, 
-        ) 
+            arguments.save,
+            arguments.save_network,
+            arguments.plot,
+        )
 
 
 if __name__ == '__main__':
