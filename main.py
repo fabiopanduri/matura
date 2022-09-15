@@ -75,7 +75,7 @@ def args() -> 'argparse':
     parser_dql.add_argument(
         '-v', '--verbose', help='Print info', dest='verbose', action="store_true")
     parser_dql.add_argument(
-        '--reward-system', help='How the (pong) enviroment should give out rewards', choices=['v0', 'v1', 'v2', 'v3'], type=str)
+        '--reward-system', help='How the (pong) enviroment should give out rewards', choices=['v0', 'v1', 'v2', 'v3'], type=str, default="v0")
 
     # arguments for neat
     parser_neat = subparsers.add_parser('neat', help='Run NEAT')
@@ -153,6 +153,7 @@ def main():
             DQL_cfg.EPS_DECAY,
             DQL_cfg.DONE_EPS,
             DQL_cfg.TARGET_NN_UPDATE_FREQ,
+            DQL_cfg.MAX_SIMULATION_TIME,
             DQL_cfg.LOAD_NETWORK_PATH,
             DQL_cfg.LIVE_PLOT_FREQ,
             arguments.live_plot,
