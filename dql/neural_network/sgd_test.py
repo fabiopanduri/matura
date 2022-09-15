@@ -78,10 +78,15 @@ def sgd_main(dimensions,
         plt.figure()
         plt.plot(np.arange(START, STOP, 0.01), predict, label="NN prediction")
         plt.plot(np.arange(START, STOP, 0.01), actual, label="Target function")
+        plt.legend()
+        plt.xlabel("x")
+        plt.ylabel("f(x)")
+
         plt.figure()
         plt.plot(list(range(0, len(error))), error)
         plt.xlabel("Epochs")
         plt.ylabel("Loss")
+
         plt.figure()
         plt.plot(list(range(0, len(time_history))), time_history)
         plt.xlabel("Epochs")

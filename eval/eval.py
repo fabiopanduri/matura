@@ -18,6 +18,8 @@ def args() -> 'argparse':
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
+        '-v', '--verbose', help="Print information about the sample", action="store_true")
+    parser.add_argument(
         '-f', '--plot-fitness', help="Plot the fitness ", action="store_true")
     parser.add_argument(
         '-fs', '--plot-fitness-std', help="Plot the standard deviation the fitness values", action="store_true")
@@ -149,6 +151,9 @@ def main():
                 blank_data[l] = average_data
                 blank_data[f"{l} std"] = standard_deviation
 
+        if arguments.verbose:
+            print(f"[INFO] Sample size: {count}")
+
         if arguments.plot_fitness:
             if "performance history" in blank_data.keys():
                 plot(None, "Episodes", "Fitness", blank_data["performance history"])
@@ -181,9 +186,9 @@ def main():
         if arguments.plot_time_std:
             if "time history" in blank_data.keys():
                 x_label = "Epochs" if "loss" in blank_data.keys() else "Episodes"
-                plot(None, x_label, "Time in s", blank_data["time history std"])
+                plot(None, x_label, "Time std. in s", blank_data["time history std"])
             else:
-                plot(None, "Generations", "Time in s",
+                plot(None, "Generations", "Time std. in s",
                      blank_data["generation time history std"])
 
         if arguments.plot_prediction:

@@ -92,6 +92,8 @@ class NEAT:
             self.fitness_hist.append(average)
             self.best_fitness_hist.append(best)
 
+            #sorted_pop[-1].draw()
+
             if live_f:
                 self.plot_fitness_live()
 

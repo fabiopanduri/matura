@@ -414,7 +414,7 @@ class Genome:
         if len(self.connections) == 0:
             return
 
-        node_id = innovation_number_connections
+        node_id = innovation_number_nodes 
         new_node = NodeGene(node_id, "hidden", activation_function)
         self.nodes[node_id] = new_node
 
@@ -466,7 +466,8 @@ class Genome:
             if connection.in_node_id == node_id and connection.enabled:
                 self.total_rec_depth += 1
                 if self.total_rec_depth > 2**11:
-                    print("alarm")
+                    #print("alarm")
+                    pass
                 inputs.append(
                     self.calculate_node(
                         connection.out_node_id
@@ -490,10 +491,9 @@ class Genome:
             self.table[index] = input_activation
 
         # iterate over all output nodes and calculate their activation recursively
-        for node_id, node in self.nodes.items():
-            if node.type == "output":
-                self.calculate_node(node_id)
-                self.total_rec_depth = 0
+        for node_id in self.output_nodes.keys():
+            self.calculate_node(node_id)
+            self.total_rec_depth = 0
 
         return [self.table[i] for i in sorted(list(self.output_nodes.keys()))]
 
