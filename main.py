@@ -143,9 +143,10 @@ def main():
         env = games[arguments.game]
 
         agt = DQLAgent(
-            env(alpha=DQL_cfg.ALPHA,
-                render=arguments.render,
-                reward_system=arguments.reward_system),
+            env(arguments.reward_system,
+                alpha=DQL_cfg.ALPHA,
+                render=arguments.render
+                ),
             DQL_cfg.MEMORY_SIZE,
             DQL_cfg.DISCOUNT_FACTOR,
             DQL_cfg.MINIBATCH_SIZE,
