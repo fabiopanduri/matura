@@ -1,8 +1,10 @@
 # Neural network saves 
-NN_saves/*.npz
-NEAT_saves/*.json
+NN_saves/*
+NEAT_saves/*
 DQL_epochs_saves/*
-NEAT_iterations_saves/*.json
+NEAT_iterations_saves/*
+SGD_saves/*
+SGD_nets_saves/*
 
 traceback*
 
