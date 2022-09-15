@@ -104,6 +104,13 @@ class PongEnvNEAT:
             # reward = 1 - abs(self.game.ball.position[1] - (self.game.right_paddle.position[1] + PADDLE_HEIGHT / 2)) / WINDOW_SIZE[1]
             reward = 2**(-abs(self.game.ball.position[1] - (
                 self.game.right_paddle.position[1] + PADDLE_HEIGHT / 2)) / 100)
+            print(reward)
+            # for this reward system we do not want the simulation to stop if a
+            # point is gained
+            if t == self.max_t - 1:
+                terminated = True
+            else:
+                terminated = False
 
         return self.make_observation(), reward, terminated
 
