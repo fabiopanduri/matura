@@ -28,6 +28,8 @@ def args() -> 'argparse':
     parser.add_argument(
         '-ts', '--plot-time-std', help="Plot the standard deviation of the time", action="store_true")
     parser.add_argument(
+        '-ti', '--plot-time-int', help="Plot the accumulated time", action="store_true")
+    parser.add_argument(
         '-pr', '--plot-prediction', help="Plot the prediction (only for sgd)", action="store_true")
     parser.add_argument(
         '-ps', '--plot-prediction-std', 
@@ -66,6 +68,13 @@ def plot(label, x_label, y_label, *data):
     if label:
         plt.legend()
     plt.show()
+
+def prefix_sum(arr):
+    prefix_sum_arr = [arr[0]]
+    for element in arr[1:]:
+        prefix_sum_arr.append(element + prefix_sum_arr[-1])
+
+    return prefix_sum_arr
 
 
 def main():
@@ -195,7 +204,16 @@ def main():
             plot(None, "x", "f(x)", blank_data["prediction"])
         if arguments.plot_prediction_std:
             plot(None, "x", "f(x) std", blank_data["prediction std"])
-            
+
+        if arguments.plot_time_int:
+            if "performance history" in blank_data.keys():
+                time_int = prefix_sum(blank_data["time history"])
+                x_label = "Epochs"
+            else:
+                time_int = prefix_sum(blank_data["generation time history"])
+                x_label = "Generations"
+
+            plot(None, x_label, "Accumulated time", blank_data["prediction"])
 
 
 if __name__ == "__main__":
