@@ -28,7 +28,7 @@ CONNECTION_DISABLE_CONSTANT = 0.75
 R = 0.5
 
 # Maximal number of frames a game is simulated
-SIMULATION_TIME = 10000
+SIMULATION_TIME = 1000
 
 #
 ALPHA = 2000
