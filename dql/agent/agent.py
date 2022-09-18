@@ -20,6 +20,10 @@ from dql.neural_network.neural_network import NeuralNetwork
 
 
 class ReplayMemory:
+    '''
+    Implement replay memory as a tuple with a fixed size
+    '''
+
     def __init__(self, max_size):
         self.max_size = max_size
         self.memory = deque()
@@ -79,6 +83,7 @@ class DQLAgent:
 
         self.possible_actions = self.env.possible_actions
         self.memory = ReplayMemory(self.memory_size)
+        self.total_step = 0
 
         # Neural Network.
         # Input: Current state
@@ -105,9 +110,9 @@ class DQLAgent:
         else:
             self.q_network = NeuralNetwork.load_network(load_network_path)
 
+        # Initalize target network
         self.update_target_network()
 
-        self.total_step = 0
         self.fitness_hist = []
         self.performance_hist = []
         self.time_hist = []
@@ -120,12 +125,7 @@ class DQLAgent:
         '''
         Get Epsilon (exploration rate). 
         '''
-        # Linear:
-        # eps = - (1.0 - self.done_eps) / 100000 * episode_step + 1.0
-        # Exp decay:
-        #eps = max(done_eps, 1.0 * (2 ** (-episode_step / 5000)))
-        # Lin decay:
-        #eps = max(done_eps, -0.001 * episode_step + 1)
+        # Exponential decay:
         eps = max(self.done_eps, self.eps_decay**episode_step)
         return eps
 
@@ -135,23 +135,26 @@ class DQLAgent:
         '''
         # With probability eps select random movement of possible movements
         if random.random() < self.get_eps(self.total_step):
-            movement = random.choice(self.possible_actions)
             q_values = 'random action'
+            movement = random.choice(self.possible_actions)
 
         # Else select action which leads to max reward estimated by Q.
         else:
             q_values = self.q_network.feed_forward(state)
             movement = self.possible_actions[np.argmax(q_values)]
 
+        # Print information about current state
         if self.total_step % self.target_nn_update_freq == 0 and False:
             print(self.total_step, q_values, "Max: ",
                   self.possible_actions[np.argmax(q_values)])
 
+        # Movement is a list because an action might include multiple values for
+        # different envs
         return [movement]
 
     def execute_action(self, action):
         '''
-        Execute action in emulator and observe state and reward, also score for determining if state is terminal (done=True)
+        Execute action in emulator and observe state and reward and "done" indicating if a step is terminal
         '''
         state, reward, done = self.env.step(action)
         return state, reward, done
@@ -161,7 +164,7 @@ class DQLAgent:
         Preprocesses a state s returning a (typically smaller in size) preprocessed state phi.
         Placeholder function in case the implementation should be expanded to work on images
         '''
-        # Because no actual images are used, phi equals state and no preprocessing needs be done
+        # Because no images are used, phi = state and no preprocessing needs to be done
         return state
 
     def replay(self):
@@ -173,13 +176,14 @@ class DQLAgent:
             return
 
         minibatch = self.memory.sample(self.minibatch_size)
-        training_batch = []
+        training_batch = []  # To perform SGD on
         for transition in minibatch:
             phi, action, reward, next_phi, done = transition
 
             # Initially, target = network prediction
             target_rewards = self.q_network.feed_forward(phi)
-            # If episode terminates at next step (done=True), reward = current reward for the taken action.
+            # If episode terminates at next step (done=True),
+            # reward = current reward for the taken action.
             taken = self.possible_actions.index(action[0])
             target_rewards[taken] = reward
 
@@ -203,46 +207,42 @@ class DQLAgent:
             phi = self.preprocessor(state)
 
             episode_step = 0
-            # Play until done state/frame is reached
             t_0 = time.perf_counter()
+            # Play until episode is done or max simulation time exceeded
             while not done and episode_step < self.max_simulation_time:
                 # Play one frame and observe new state and reward
                 action = self.get_action(phi)
                 state, reward, done = self.execute_action(action)
-                # print(reward)
                 next_phi = self.preprocessor(state)
 
+                # Perform experience replay
                 transition = (phi, action, reward, next_phi, done)
                 self.memory.store(transition)
-
                 self.replay()
 
+                # Update target network every C steps
                 if self.total_step % self.target_nn_update_freq == 0:
                     self.update_target_network()
 
-                # The +1 is that it doesn't always save on start -> less clutter
+                # Save network to disk
                 if (self.total_step + 1) % self.nn_save_freq == 0:
                     self.q_network.save_network()
 
-                # Roll over all variables
                 phi = next_phi
                 episode_step += 1
                 self.total_step += 1
 
+            # Plot performance
             t = time.perf_counter() - t_0
             self.time_hist.append(t)
-
-            # fitness = self.env.fitness(episode_step, reward)
-            # self.fitness_hist.append(fitness)
-
-            # print(self.env.game.score[1] / (self.env.game.score[0] + 1), self.get_eps(self.total_step))
             self.performance_hist.append(
                 self.env.fitness(episode_step, reward))
-            if self.live_plot and episode % self.live_plot_freq == 0:
+            if self.live_plot:
                 self.plot_performance()
 
             self.env.terminate_episode()
 
+        # Save training data
         if self.save_data:
             data = {
                 "time": datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S'),
