@@ -104,7 +104,7 @@ class PongEnvNEAT:
             # reward = 1 - abs(self.game.ball.position[1] - (self.game.right_paddle.position[1] + PADDLE_HEIGHT / 2)) / WINDOW_SIZE[1]
             reward = 2**(-abs(self.game.ball.position[1] - (
                 self.game.right_paddle.position[1] + PADDLE_HEIGHT / 2)) / 100)
-            print(reward)
+            # print(reward)
             # for this reward system we do not want the simulation to stop if a
             # point is gained
             if t == self.max_t - 1:
@@ -118,7 +118,11 @@ class PongEnvNEAT:
         """
         Function to calculate the fitness of an individual based on time and reward he got
         """
-        # weighted reward depending on when the terminal state is reached
+        # v3-v4 uses reward directly as fitness
+        if self.reward_system == 'v4' or self.reward_system == 'v3':
+            return reward
+
+        # v0-v2 use weighted reward depending on when the terminal state is reached
         if reward > 0:
             f = 1 + np.exp(-t/alpha)
         elif reward < 0:
