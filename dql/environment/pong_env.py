@@ -7,7 +7,9 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-from pong.pong import PongGame, PADDLE_HEIGHT
+from pong.pong import PADDLE_HEIGHT
+from pong.pong import PongGame
+
 
 class PongEnvDQL:
     """
@@ -49,7 +51,7 @@ class PongEnvDQL:
         # Get desired paddle movement from first (and only) entry of action tuple
         right_movement = action[0]
 
-        # For the time being, make the opponent unmoving
+        # Opponent is unmoving
         left_movement = 'stay'
 
         # Perform one game tick. Store prev score to calculate reward
