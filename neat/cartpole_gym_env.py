@@ -15,7 +15,7 @@ class CartpoleEnvNEAT:
     Provide the environment for the game CartPole to NEAT 
     """
 
-    def __init__(self, max_t, plot=False, render=True, *_):
+    def __init__(self, max_t, plot=False, render=True, reward_system=None):
         '''
         Reset the game to initial state and return initial state
         '''

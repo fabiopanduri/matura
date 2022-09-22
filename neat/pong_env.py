@@ -27,7 +27,7 @@ class PongEnvNEAT:
         self.state_size = len(self.make_observation())
         self.max_t = max_t
 
-        self.done_fitness = 1
+        #self.done_fitness = 1
         self.reward_system = reward_system
 
     def nn_base_dimensions(self):
@@ -113,6 +113,14 @@ class PongEnvNEAT:
                 terminated = False
 
         return self.make_observation(), reward, terminated
+
+    @property
+    def done_fitness(self):
+        if self.reward_system == 'v4' or self.reward_system == 'v3':
+            return 2**(-abs(self.game.ball.position[1] - (
+                self.game.right_paddle.position[1] + PADDLE_HEIGHT / 2)) / 100)
+        else:
+            return 1
 
     def fitness(self, t, reward, alpha=1000):
         """

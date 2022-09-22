@@ -171,7 +171,7 @@ class DQLAgent:
         '''
         Perform experience replay on minibatch of transitions from memory. Update network with stochastic gradient descent.
         '''
-        # Dont perform replay if memory is too small
+        # Don't perform replay if memory is too small
         if self.minibatch_size > self.memory.size():
             return
 

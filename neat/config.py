@@ -4,7 +4,7 @@
 # maturaarbeit_code is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 # You should have received a copy of the GNU General Public License along with maturaarbeit_code. If not, see <https://www.gnu.org/licenses/>.
 # Number of individuals in the population
-POPULATION_SIZE = 150
+POPULATION_SIZE = 100
 
 # Constants for speciation, i.e., c_1, c_2, c_3
 SPECIATION_CONSTANTS = (2, 2, 0.4)
@@ -28,7 +28,7 @@ CONNECTION_DISABLE_CONSTANT = 0.75
 R = 0.5
 
 # Maximal number of frames a game is simulated
-SIMULATION_TIME = 1000
+SIMULATION_TIME = 500
 
 #
 ALPHA = 2000
