@@ -96,8 +96,7 @@ class NEAT:
             self.fitness_hist.append(average)
             self.best_fitness_hist.append(best)
 
-            #sorted_pop[-1].draw()
-
+            # for live plots
             if live_f:
                 self.plot_fitness_live()
 
@@ -203,7 +202,6 @@ class NEAT:
                 action_i = np.argmax(np.array(prediction))
 
                 action = env.possible_actions[action_i]
-                t += 1
 
             else:
                 individual.fitness = env.done_fitness
@@ -240,7 +238,7 @@ class NEAT:
 
     def speciation(self, i):
         """
-        This method will create species for the current generation based of the species of the last
+        This method will create species for the current generation based on the species of the last
         generation
         If an individual does not fit into any species a new species is created
         """
@@ -265,6 +263,7 @@ class NEAT:
     def adjust_population_fitness(self):
         """
         Adjust the fitness of all individuals in the population
+        by dividing by the total number of individuals in the species
         """
 
         for s in self.species:
@@ -320,6 +319,9 @@ class NEAT:
         return base_int
 
     def has_cycle(self, genome, node):
+        """
+        DFS algorithm to detect possible cycles after crossover
+        """
         if node in self.finished:
             return False
         if node in self.visited:
@@ -570,58 +572,3 @@ class NEAT:
                     activation_functions
                 )
             )
-
-
-def main():
-    import sys
-    sys.setrecursionlimit(2**15)
-
-    N = NEAT(PongEnvNEAT, 50, (1, 1, 0.4), (0.8, 0.9),
-             (0.001, 0.001), 0.1, 0.5, 10000, 0.75)
-
-    N.make_population_connected()
-    #N.population = NEAT.load_population()
-
-    N.iterate(20, print_frequency=1)
-
-    N.save_population()
-
-    N.simulate_population(10000)
-
-    """
-    for individual in N.population:
-        print(individual.fitness)
-    """
-
-    for individual in random.sample(N.population, k=5):
-        individual.draw()
-
-    """
-    s1 = N.speciation()
-    s2 = N.speciation()
-    N.adjust_population_fitness()
-
-    print("")
-    for individual in N.population:
-        print(individual.fitness)
-        """
-
-    """
-    s1 = N.speciation({})
-    print(s1)
-    s2 = N.speciation(s1)
-    print(s2)
-    """
-
-    """
-    for p in N.population:
-        p.draw()
-    """
-
-
-def main2():
-    return
-
-
-if __name__ == "__main__":
-    main2()

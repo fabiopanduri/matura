@@ -213,7 +213,7 @@ def main():
                 time_int = prefix_sum(blank_data["generation time history"])
                 x_label = "Generations"
 
-            plot(None, x_label, "Accumulated time", blank_data["prediction"])
+            plot(None, x_label, "Accumulated time in s", time_int)
 
 
 if __name__ == "__main__":
