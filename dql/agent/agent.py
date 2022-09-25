@@ -54,7 +54,7 @@ class DQLAgent:
                  discount_factor,
                  minibatch_size,
                  learning_rate,
-                 eps_decay,
+                 eps_annealing_rate,
                  done_eps,
                  target_nn_update_freq,
                  max_simulation_time,
@@ -71,7 +71,7 @@ class DQLAgent:
         self.discount_factor = discount_factor
         self.minibatch_size = minibatch_size
         self.learning_rate = learning_rate
-        self.eps_decay = eps_decay
+        self.eps_annealing_rate = eps_annealing_rate
         self.done_eps = done_eps
         self.target_nn_update_freq = target_nn_update_freq
         self.max_simulation_time = max_simulation_time
@@ -126,7 +126,7 @@ class DQLAgent:
         Get Epsilon (exploration rate). 
         '''
         # Exponential decay:
-        eps = max(self.done_eps, self.eps_decay**episode_step)
+        eps = max(self.done_eps, self.eps_annealing_rate**episode_step)
         return eps
 
     def get_action(self, state):
@@ -254,7 +254,7 @@ class DQLAgent:
                     "discount factor": self.discount_factor,
                     "minibatch size": self.minibatch_size,
                     "learning rate": self.learning_rate,
-                    "epsilon decay": self.eps_decay,
+                    "epsilon decay": self.eps_annealing_rate,
                     "final epsilon": self.done_eps,
                     "target neural network update freq": self.target_nn_update_freq,
                     "live plot freq": self.live_plot_freq,

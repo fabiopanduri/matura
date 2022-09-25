@@ -153,7 +153,7 @@ def main():
             DQL_cfg.DISCOUNT_FACTOR,
             DQL_cfg.MINIBATCH_SIZE,
             DQL_cfg.LEARNING_RATE,
-            DQL_cfg.EPS_DECAY,
+            DQL_cfg.EPS_ANNEALING_RATE,
             DQL_cfg.DONE_EPS,
             DQL_cfg.TARGET_NN_UPDATE_FREQ,
             DQL_cfg.MAX_SIMULATION_TIME,
