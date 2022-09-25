@@ -121,12 +121,12 @@ class DQLAgent:
         self.target_q_network = NeuralNetwork(
             self.nn_dimensions, self.learning_rate, self.activation_functions, self.q_network.weights, self.q_network.biases)
 
-    def get_eps(self, episode_step):
+    def get_eps(self, t):
         '''
         Get Epsilon (exploration rate). 
         '''
         # Exponential decay:
-        eps = max(self.done_eps, self.eps_annealing_rate**episode_step)
+        eps = max(self.done_eps, self.eps_annealing_rate**t)
         return eps
 
     def get_action(self, state):
