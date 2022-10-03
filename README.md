@@ -22,7 +22,12 @@ Other versions of modules may not work.
 Python version known to work is 3.9.2. Other versions should
 not cause many issues.
 
-## How to run
+## Examples
+``python3 main.py dql -g cartpole -e 100`` 
+runs 100 episodes of dql on cartpole.
+``python3 main.py neat -g pong -i 200 --reward-system v2``
+runs 200 iterations of NEAT on pong using reward system v2.
+
 
 ## Bibliography (BibTeX)
 ```
