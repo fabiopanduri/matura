@@ -88,11 +88,11 @@ class PongEnvDQL:
                 reward = 1
 
         elif self.reward_system == "v3":
-            # +1 if paddle height corresponds with ball height, -0.1 else
+            # +1 if paddle height corresponds with ball height, 0 else
             if self.game.right_paddle.position[1] <= self.game.ball.position[1] <= self.game.right_paddle.position[1] + PADDLE_HEIGHT:
                 reward = 1
             else:
-                reward = -0.1
+                reward = 0
 
         return self.make_observation(), reward, terminated
 
@@ -100,7 +100,11 @@ class PongEnvDQL:
         """
         Function to calculate the fitness of an individual based on time and reward he got
         """
-        # weighted reward depending on when the terminal state is reached
+        # v3 uses reward directly as fitness
+        if self.reward_system == 'v3':
+            return reward
+
+        # v0-v2 use weighted reward depending on when the terminal state is reached
         if reward > 0:
             f = 1 + np.exp(-t/self.alpha)
         elif reward < 0:
