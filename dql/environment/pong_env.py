@@ -4,6 +4,9 @@
 # maturaarbeit_code is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 # You should have received a copy of the GNU General Public License along with maturaarbeit_code. If not, see <https://www.gnu.org/licenses/>.
 # Pong game to be played by ML algorithms
+"""
+Environment for the game pong to be used by DQL
+"""
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -42,7 +45,6 @@ class PongEnvDQL:
         Return the current game's current internal state (relevant params)
         '''
         return (self.game.right_paddle.relative_y_position(), self.game.ball.relative_position()[1])
-        return (self.game.ball.position[0], self.game.ball.position[1], self.game.left_paddle_position[1], self.game.right_paddle.position[1])
 
     def step(self, action):
         '''

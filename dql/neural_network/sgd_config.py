@@ -4,6 +4,9 @@
 # maturaarbeit_code is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 # You should have received a copy of the GNU General Public License along with maturaarbeit_code. If not, see <https://www.gnu.org/licenses/>.
 # Number of individuals in the population
+"""
+SGD Config
+"""
 import numpy as np
 
 # dimensions of the Neural Network
@@ -21,6 +24,8 @@ START = 0
 # end point of the function
 STOP = np.pi
 
-# functino to be approximated
+# function to be approximated
+
+
 def f(x):
     return (1 + np.cos(x)) / 2

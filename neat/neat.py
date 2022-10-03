@@ -3,6 +3,9 @@
 # maturaarbeit_code is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 3.
 # maturaarbeit_code is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 # You should have received a copy of the GNU General Public License along with maturaarbeit_code. If not, see <https://www.gnu.org/licenses/>.
+"""
+Genetic algorithm NEAT
+"""
 import json
 import math
 import os
@@ -12,11 +15,7 @@ from etc.activation_functions import *
 from neat.genetics import *
 
 
-INX = 0
-
-
 class NEAT:
-    INX = 0
     """
     This class contains the genetic algorithm part of NEAT
     It is only used for training
@@ -82,7 +81,7 @@ class NEAT:
 
         t_0 = time.perf_counter()
         for i in range(generations):
-            self.simulate_population(self.simulation_time) 
+            self.simulate_population(self.simulation_time)
 
             t = time.perf_counter() - t_0
 
@@ -183,7 +182,8 @@ class NEAT:
         """
 
         for individual in self.population:
-            env = self.env(max_t=max_t, render=self.render, reward_system=self.reward_system)
+            env = self.env(max_t=max_t, render=self.render,
+                           reward_system=self.reward_system)
 
             state_0 = env.make_observation()
             prediction = individual.feed_forward(state_0)
@@ -207,6 +207,9 @@ class NEAT:
                 individual.fitness = env.done_fitness
 
     def delta_t(self, p_t):
+        """
+        Calculates delta t and allows for it to be varied
+        """
         if self.vary_delta_t and p_t > 0.1:
             species_size_last_gen = self.species_size_hist[-1]
             p = (species_size_last_gen / self.population_size)
@@ -330,7 +333,7 @@ class NEAT:
         self.visited.add(node)
 
         for connection in genome.connections:
-            if connection.out_node_id == node: 
+            if connection.out_node_id == node:
                 if self.has_cycle(genome, connection.in_node_id):
                     return True
 
@@ -354,7 +357,7 @@ class NEAT:
             mating_s = sorted_s[0:l]
 
             N = new_N[s_index]
-    
+
             i = 0
             while i < N:
                 # the best performing individual is always passed on to the new generation
@@ -375,12 +378,12 @@ class NEAT:
                     p1, p2, self.connection_disable_constant)
 
                 # checking for a cycle that could have been created in
-                # crossover 
+                # crossover
                 cycle = False
                 if child.connections:
                     for node in child.nodes.keys():
-                        self.visited = set() 
-                        self.finished = set() 
+                        self.visited = set()
+                        self.finished = set()
                         if self.has_cycle(child, node):
                             cycle = True
                             break

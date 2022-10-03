@@ -3,6 +3,9 @@
 # maturaarbeit_code is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 3.
 # maturaarbeit_code is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 # You should have received a copy of the GNU General Public License along with maturaarbeit_code. If not, see <https://www.gnu.org/licenses/>.
+"""
+Genetics for NEAT
+"""
 import datetime
 import json
 import os
@@ -414,7 +417,7 @@ class Genome:
         if len(self.connections) == 0:
             return
 
-        node_id = innovation_number_nodes 
+        node_id = innovation_number_nodes
         new_node = NodeGene(node_id, "hidden", activation_function)
         self.nodes[node_id] = new_node
 
@@ -466,7 +469,7 @@ class Genome:
             if connection.in_node_id == node_id and connection.enabled:
                 self.total_rec_depth += 1
                 if self.total_rec_depth > 2**11:
-                    #print("alarm")
+                    # print("alarm")
                     pass
                 inputs.append(
                     self.calculate_node(
