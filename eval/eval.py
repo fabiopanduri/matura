@@ -215,7 +215,7 @@ def main():
         if arguments.plot_time_int:
             if "performance history" in blank_data.keys():
                 time_int = prefix_sum(blank_data["time history"])
-                x_label = "Epochs"
+                x_label = "Episodes"
             else:
                 time_int = prefix_sum(blank_data["generation time history"])
                 x_label = "Generations"
