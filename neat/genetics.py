@@ -507,9 +507,9 @@ class Genome:
         for node in self.nodes.values():
             if node.type == "input":
                 Graph.add_node(node.id, pos=(
-                    0, len(self.nodes) // 2 + node.id))
+                    0, 4 * node.id))
             elif node.type == "output":
-                Graph.add_node(node.id, pos=(10, node.id))
+                Graph.add_node(node.id, pos=(10, 2 * node.id))
             else:
                 Graph.add_node(node.id, pos=(random.randint(3, 7), next(c)))
 
@@ -518,13 +518,13 @@ class Genome:
                 connection.out_node_id,
                 connection.in_node_id,
                 weight=connection.weight,
-                color="tab:blue" if connection.enabled else "tab:red",
+                color="black" if connection.enabled else "tab:red",
             )
 
         pos = nx.get_node_attributes(Graph, "pos")
         edge_color = nx.get_edge_attributes(Graph, "color").values()
-        nx.draw_networkx(Graph, pos=pos, with_labels=True, edge_color=edge_color, arrowstyle="->",
-                         arrowsize=10, arrows=True)
+        nx.draw_networkx(Graph, pos=pos, with_labels=False, edge_color=edge_color, arrowstyle="->",
+                         arrowsize=10, arrows=True, width=1.2, node_size=400)
 
         if weight:
             labels = nx.get_edge_attributes(Graph, "weight")
@@ -532,4 +532,5 @@ class Genome:
             labels = {e: "" for e in Graph.edges}
         nx.draw_networkx_edge_labels(Graph, pos=pos, edge_labels=labels)
 
+        plt.style.use("ggplot")
         plt.show()

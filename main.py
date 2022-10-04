@@ -221,6 +221,9 @@ def main():
 
         N.save_population()
 
+        for c in random.sample(N.population, k=10):
+            c.draw()
+
         N.simulate_population(10000)
 
         if arguments.plot:
