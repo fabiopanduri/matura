@@ -4,6 +4,9 @@
 # maturaarbeit_code is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 # You should have received a copy of the GNU General Public License along with maturaarbeit_code. If not, see <https://www.gnu.org/licenses/>.
 # Pong game to be played by ML algorithms
+"""
+Environment for the game pong to be used by NEAT
+"""
 import time
 
 import numpy as np
@@ -78,41 +81,24 @@ class PongEnvNEAT:
         elif self.reward_system == "v2":
             # Always give out positive rewards, except for winning/losing frames
             if self.game.score[0] == prev_score[0] + 1:
-                reward = -1
+                reward = -5
             elif self.game.score[1] == prev_score[1] + 1:
-                reward = 1
+                reward = 5
             else:
-                reward = 0
+                reward = 1
 
         elif self.reward_system == "v3":
-            # +1 if paddle height corresponds with ball height, -0.1 else
+            # +1 if paddle height corresponds with ball height, 0 else
             if self.game.right_paddle.position[1] <= self.game.ball.position[1] <= self.game.right_paddle.position[1] + PADDLE_HEIGHT:
                 reward = 1
             else:
-                reward = -0.1
+                reward = 0
             # for this reward system we do not want the simulation to stop if a
             # point is gained
             if t == self.max_t - 1:
                 terminated = True
             else:
                 terminated = False
-
-        elif self.reward_system == "v4":
-            # +1 if ball is directly above paddle vertically,
-            # -1 if it is as far away as the window is high,
-            # exponential decay in between
-            # reward = 1 - abs(self.game.ball.position[1] - (self.game.right_paddle.position[1] + PADDLE_HEIGHT / 2)) / WINDOW_SIZE[1]
-            reward = 2**(-abs(self.game.ball.position[1] - (
-                self.game.right_paddle.position[1] + PADDLE_HEIGHT / 2)) / 100)
-            # print(reward)
-            # for this reward system we do not want the simulation to stop if a
-            # point is gained
-            if t == self.max_t - 1:
-                terminated = True
-            else:
-                terminated = False
-
-        return self.make_observation(), reward, terminated
 
     @property
     def done_fitness(self):
@@ -126,8 +112,8 @@ class PongEnvNEAT:
         """
         Function to calculate the fitness of an individual based on time and reward he got
         """
-        # v3-v4 uses reward directly as fitness
-        if self.reward_system == 'v4' or self.reward_system == 'v3':
+        # v3 uses reward directly as fitness
+        if self.reward_system == 'v3':
             return reward
 
         # v0-v2 use weighted reward depending on when the terminal state is reached

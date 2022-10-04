@@ -3,6 +3,10 @@
 # maturaarbeit_code is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 3.
 # maturaarbeit_code is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 # You should have received a copy of the GNU General Public License along with maturaarbeit_code. If not, see <https://www.gnu.org/licenses/>.
+"""
+Implements Neural Networks and
+Stochastic Gradient Descent
+"""
 import datetime
 import os
 
@@ -21,7 +25,7 @@ def mean_squared_error_derivative(activation, y):
     # print(activation, y, activation - y)
     # error = []
     # for activation_value, y_value in activation, y:
-        # error.append(min(max((activation_value - y_value), -1), 1))
+    # error.append(min(max((activation_value - y_value), -1), 1))
 
     # return error
 

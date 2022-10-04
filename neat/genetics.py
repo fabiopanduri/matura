@@ -3,6 +3,9 @@
 # maturaarbeit_code is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 3.
 # maturaarbeit_code is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 # You should have received a copy of the GNU General Public License along with maturaarbeit_code. If not, see <https://www.gnu.org/licenses/>.
+"""
+Genetics for NEAT
+"""
 import datetime
 import json
 import os
@@ -414,7 +417,7 @@ class Genome:
         if len(self.connections) == 0:
             return
 
-        node_id = innovation_number_nodes 
+        node_id = innovation_number_nodes
         new_node = NodeGene(node_id, "hidden", activation_function)
         self.nodes[node_id] = new_node
 
@@ -466,7 +469,7 @@ class Genome:
             if connection.in_node_id == node_id and connection.enabled:
                 self.total_rec_depth += 1
                 if self.total_rec_depth > 2**11:
-                    #print("alarm")
+                    # print("alarm")
                     pass
                 inputs.append(
                     self.calculate_node(
@@ -504,9 +507,9 @@ class Genome:
         for node in self.nodes.values():
             if node.type == "input":
                 Graph.add_node(node.id, pos=(
-                    0, len(self.nodes) // 2 + node.id))
+                    0, 4 * node.id))
             elif node.type == "output":
-                Graph.add_node(node.id, pos=(10, node.id))
+                Graph.add_node(node.id, pos=(10, 2 * node.id))
             else:
                 Graph.add_node(node.id, pos=(random.randint(3, 7), next(c)))
 
@@ -515,13 +518,13 @@ class Genome:
                 connection.out_node_id,
                 connection.in_node_id,
                 weight=connection.weight,
-                color="tab:blue" if connection.enabled else "tab:red",
+                color="black" if connection.enabled else "tab:red",
             )
 
         pos = nx.get_node_attributes(Graph, "pos")
         edge_color = nx.get_edge_attributes(Graph, "color").values()
-        nx.draw_networkx(Graph, pos=pos, with_labels=True, edge_color=edge_color, arrowstyle="->",
-                         arrowsize=10, arrows=True)
+        nx.draw_networkx(Graph, pos=pos, with_labels=False, edge_color=edge_color, arrowstyle="->",
+                         arrowsize=10, arrows=True, width=1.2, node_size=400)
 
         if weight:
             labels = nx.get_edge_attributes(Graph, "weight")
@@ -529,4 +532,5 @@ class Genome:
             labels = {e: "" for e in Graph.edges}
         nx.draw_networkx_edge_labels(Graph, pos=pos, edge_labels=labels)
 
+        plt.style.use("ggplot")
         plt.show()

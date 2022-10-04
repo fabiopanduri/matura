@@ -4,6 +4,9 @@
 # maturaarbeit_code is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 # You should have received a copy of the GNU General Public License along with maturaarbeit_code. If not, see <https://www.gnu.org/licenses/>.
 # Pong game to be played by ML algorithms
+"""
+The game pong
+"""
 import math
 import random
 import time
@@ -135,7 +138,8 @@ class Ball:
         Side collisions are returned to calculate the score
         '''
         side_collision = self.border_collision()
-        left_paddle_collision, right_paddle_collision = self.paddle_collision(left_paddle, right_paddle)
+        left_paddle_collision, right_paddle_collision = self.paddle_collision(
+            left_paddle, right_paddle)
 
         self.position += self.velocity
         return side_collision, right_paddle_collision
@@ -285,7 +289,8 @@ class PongGame:
 
         self.left_paddle.move(left_movement)
         self.right_paddle.move(right_movement)
-        side_collision, right_paddle_collision = self.ball.update(self.left_paddle, self.right_paddle)
+        side_collision, right_paddle_collision = self.ball.update(
+            self.left_paddle, self.right_paddle)
 
         # Calculate new score
         terminated = True
@@ -325,4 +330,3 @@ class PongGame:
         # Update Scoreboard
         self.scoreboard.render_score(self.screen, self.score)
         pygame.display.flip()
-

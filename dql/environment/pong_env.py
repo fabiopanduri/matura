@@ -4,6 +4,9 @@
 # maturaarbeit_code is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 # You should have received a copy of the GNU General Public License along with maturaarbeit_code. If not, see <https://www.gnu.org/licenses/>.
 # Pong game to be played by ML algorithms
+"""
+Environment for the game pong to be used by DQL
+"""
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -29,20 +32,11 @@ class PongEnvDQL:
         self.alpha = alpha
         self.reward_system = reward_system
 
-    def current_performance(self):
-        '''
-        Return current game performance (score ratio right/left)
-        '''
-        if self.game.score[0] == 0:
-            return 0
-        return self.game.score[1] / self.game.score[0]
-
     def make_observation(self):
         '''
         Return the current game's current internal state (relevant params)
         '''
         return (self.game.right_paddle.relative_y_position(), self.game.ball.relative_position()[1])
-        return (self.game.ball.position[0], self.game.ball.position[1], self.game.left_paddle_position[1], self.game.right_paddle.position[1])
 
     def step(self, action):
         '''
@@ -88,11 +82,11 @@ class PongEnvDQL:
                 reward = 1
 
         elif self.reward_system == "v3":
-            # +1 if paddle height corresponds with ball height, -0.1 else
+            # +1 if paddle height corresponds with ball height, 0 else
             if self.game.right_paddle.position[1] <= self.game.ball.position[1] <= self.game.right_paddle.position[1] + PADDLE_HEIGHT:
                 reward = 1
             else:
-                reward = -0.1
+                reward = 0
 
         return self.make_observation(), reward, terminated
 
@@ -100,7 +94,11 @@ class PongEnvDQL:
         """
         Function to calculate the fitness of an individual based on time and reward he got
         """
-        # weighted reward depending on when the terminal state is reached
+        # v3 uses reward directly as fitness
+        if self.reward_system == 'v3':
+            return reward
+
+        # v0-v2 use weighted reward depending on when the terminal state is reached
         if reward > 0:
             f = 1 + np.exp(-t/self.alpha)
         elif reward < 0:
