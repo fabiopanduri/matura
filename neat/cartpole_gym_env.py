@@ -36,12 +36,6 @@ class CartpoleEnvNEAT:
     def nn_base_dimensions(self):
         return [self.state_size, len(self.possible_actions)]
 
-    def current_performance(self):
-        '''
-        Return the current game performance (time/steps since episode start)
-        '''
-        return self.frames_ellapsed
-
     def fitness(self, t, reward, alpha=1000):
         """
         Function to calculate the fitness of an individual based on time and reward he got

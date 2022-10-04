@@ -30,12 +30,6 @@ class CartpoleEnvDQL:
         self.render = render
         self.alpha = alpha
 
-    def current_performance(self):
-        '''
-        Return the current game performance (time/steps since episode start)
-        '''
-        return self.frames_ellapsed
-
     def fitness(self, t, reward):
         """
         Function to calculate the fitness of an individual based on time and reward he got

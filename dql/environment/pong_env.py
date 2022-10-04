@@ -32,14 +32,6 @@ class PongEnvDQL:
         self.alpha = alpha
         self.reward_system = reward_system
 
-    def current_performance(self):
-        '''
-        Return current game performance (score ratio right/left)
-        '''
-        if self.game.score[0] == 0:
-            return 0
-        return self.game.score[1] / self.game.score[0]
-
     def make_observation(self):
         '''
         Return the current game's current internal state (relevant params)
