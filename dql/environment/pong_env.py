@@ -93,15 +93,13 @@ class PongEnvDQL:
 
         return self.make_observation(), reward, terminated
 
-    def fitness(self, t, reward, clear_hist=True):
+    def fitness(self, t, reward):
         """
         Function to calculate the fitness of an individual based on time and reward he got
         """
         # v3 defines fitness as average over rewards
         if self.reward_system == 'v3':
             f = sum(self.reward_hist) / len(self.reward_hist)
-            if clear_hist:
-                self.reward_hist = []
             return f
 
         # v0-v2 use weighted reward depending on when the terminal state is reached
