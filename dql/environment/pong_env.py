@@ -31,6 +31,8 @@ class PongEnvDQL:
         self.plot = plot
         self.alpha = alpha
         self.reward_system = reward_system
+        # Needed for reward systems which calculate fitness as mean over rewards
+        self.reward_hist = []
 
     def make_observation(self):
         '''
@@ -87,16 +89,20 @@ class PongEnvDQL:
                 reward = 1
             else:
                 reward = 0
+            self.reward_hist.append(reward)
 
         return self.make_observation(), reward, terminated
 
-    def fitness(self, t, reward):
+    def fitness(self, t, reward, clear_hist=True):
         """
         Function to calculate the fitness of an individual based on time and reward he got
         """
-        # v3 uses reward directly as fitness
+        # v3 defines fitness as average over rewards
         if self.reward_system == 'v3':
-            return reward
+            f = sum(self.reward_hist) / len(self.reward_hist)
+            if clear_hist:
+                self.reward_hist = []
+            return f
 
         # v0-v2 use weighted reward depending on when the terminal state is reached
         if reward > 0:
