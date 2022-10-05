@@ -29,6 +29,7 @@ class PongEnvNEAT:
         self.possible_actions = ['up', 'stay', 'down']
         self.state_size = len(self.make_observation())
         self.max_t = max_t
+        self.fitness_list = []
 
         #self.done_fitness = 1
         self.reward_system = reward_system
@@ -93,18 +94,23 @@ class PongEnvNEAT:
                 reward = 1
             else:
                 reward = 0
+            self.fitness_list.append(reward)
             # for this reward system we do not want the simulation to stop if a
             # point is gained
+            """
             if t == self.max_t - 1:
                 terminated = True
             else:
                 terminated = False
+            """
+
+        return self.make_observation(), reward, terminated
 
     @property
     def done_fitness(self):
-        if self.reward_system == 'v4' or self.reward_system == 'v3':
-            return 2**(-abs(self.game.ball.position[1] - (
-                self.game.right_paddle.position[1] + PADDLE_HEIGHT / 2)) / 100)
+        if self.reward_system == 'v3':
+            f = sum(self.fitness_list) / len(self.fitness_list)
+            return f 
         else:
             return 1
 
@@ -114,7 +120,8 @@ class PongEnvNEAT:
         """
         # v3 uses reward directly as fitness
         if self.reward_system == 'v3':
-            return reward
+            f = sum(self.fitness_list) / len(self.fitness_list)
+            return f 
 
         # v0-v2 use weighted reward depending on when the terminal state is reached
         if reward > 0:
