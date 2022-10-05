@@ -116,7 +116,6 @@ class DQLAgent:
         # Initalize target network
         self.update_target_network()
 
-        self.fitness_hist = []
         self.performance_hist = []
         self.time_hist = []
 
@@ -235,11 +234,11 @@ class DQLAgent:
                 episode_step += 1
                 self.total_step += 1
 
-            # Plot performance
+            # Track performance
             t = time.perf_counter() - t_0
             self.time_hist.append(t)
             self.performance_hist.append(
-                self.env.fitness(episode_step, reward))
+                self.env.fitness(episode_step, reward, clear_hist=True))
             if self.live_plot:
                 self.plot_performance()
 
@@ -288,6 +287,3 @@ class DQLAgent:
         plt.plot(x, y)
         plt.show(block=False)
         plt.pause(0.001)
-
-    def play(self):
-        return

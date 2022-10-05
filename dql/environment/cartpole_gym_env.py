@@ -40,6 +40,7 @@ class CartpoleEnvDQL:
         '''
         Return the current game's current internal state (relevant params)
         '''
+        # Reset gives back the gym env state
         return self.gym_env.reset()
 
     def step(self, action):
