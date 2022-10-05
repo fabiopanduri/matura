@@ -115,12 +115,12 @@ class PongEnvNEAT:
         else:
             return 1
 
+    def fitness(self, t, reward, alpha=1000):
         # v3 uses reward directly as fitness
         if self.reward_system == 'v3':
             f = sum(self.reward_hist) / len(self.reward_hist)
             return f 
 
-    def fitness(self, t, reward, alpha=1000):
         # v0-v2 use weighted reward depending on when the terminal state is reached
         if reward > 0:
             f = 1 + np.exp(-t/alpha)
