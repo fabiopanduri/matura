@@ -30,7 +30,9 @@ class PongEnvNEAT:
         self.state_size = len(self.make_observation())
         self.max_t = max_t
 
-        #self.done_fitness = 1
+        # used for reward system v3 which uses the average over rewards
+        self.reward_hist = []
+
         self.reward_system = reward_system
 
     def nn_base_dimensions(self):
@@ -93,28 +95,31 @@ class PongEnvNEAT:
                 reward = 1
             else:
                 reward = 0
+            self.reward_hist.append(reward)
             # for this reward system we do not want the simulation to stop if a
             # point is gained
+            """
             if t == self.max_t - 1:
                 terminated = True
             else:
                 terminated = False
+            """
+
+        return self.make_observation(), reward, terminated
 
     @property
     def done_fitness(self):
-        if self.reward_system == 'v4' or self.reward_system == 'v3':
-            return 2**(-abs(self.game.ball.position[1] - (
-                self.game.right_paddle.position[1] + PADDLE_HEIGHT / 2)) / 100)
+        if self.reward_system == 'v3':
+            f = sum(self.reward_hist) / len(self.reward_hist)
+            return f 
         else:
             return 1
 
     def fitness(self, t, reward, alpha=1000):
-        """
-        Function to calculate the fitness of an individual based on time and reward he got
-        """
         # v3 uses reward directly as fitness
         if self.reward_system == 'v3':
-            return reward
+            f = sum(self.reward_hist) / len(self.reward_hist)
+            return f 
 
         # v0-v2 use weighted reward depending on when the terminal state is reached
         if reward > 0:

@@ -145,11 +145,6 @@ class DQLAgent:
             q_values = self.q_network.feed_forward(state)
             movement = self.possible_actions[np.argmax(q_values)]
 
-        # Print information about current state
-        if self.total_step % self.target_nn_update_freq == 0 and False:
-            print(self.total_step, q_values, "Max: ",
-                  self.possible_actions[np.argmax(q_values)])
-
         # Movement is a list because an action might include multiple values for
         # different envs
         return [movement]
@@ -237,8 +232,13 @@ class DQLAgent:
             # Track performance
             t = time.perf_counter() - t_0
             self.time_hist.append(t)
-            self.performance_hist.append(
-                self.env.fitness(episode_step, reward, clear_hist=True))
+            f = self.env.fitness(episode_step, reward)
+            self.performance_hist.append(f)
+
+            # information about the algorithm
+            print(f'[INFO] Episode {episode} done. Took {t:.2f} s')
+            print(f'[INFO] Fitness: {f}\n')
+
             if self.live_plot:
                 self.plot_performance()
 
