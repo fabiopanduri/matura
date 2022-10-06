@@ -22,11 +22,27 @@ Other versions of modules may not work.
 Python version known to work is 3.9.2. Other versions should
 not cause many issues.
 
+## Usage
+To run the algorithms the ``main.py`` file must be run with python3.
+The first argument must specify the algorithm (dql, neat, sgd).
+After having specified the algorithm optional arguments may be added.
+The optional arguments are most likely different depending on the algorithm
+specified.
+The command will then look something like
+``python3 main.py algorithm --optional-parameters``
+To receive a list of all available optional parameters concerning a specific algorithm type
+``python3 main.py the-algorithm -h``
+So for example
+``python3 main.py neat -h``
+will print a list of all available neat flags.
+
 ## Examples
-``python3 main.py dql -g cartpole -e 100`` 
-runs 100 episodes of dql on cartpole.
-``python3 main.py neat -g pong -i 200 --reward-system v2``
-runs 200 iterations of NEAT on pong using reward system v2.
+``python3 main.py dql -g pong -e 300 --reward-system v3``
+runs 300 iterations of DQL on pong using reward system v3.
+``python3 main.py neat -g cartpole -i 200``
+runs 200 episodes of NEAT on cartpole.
+``python3 main.py sgd -e 1000 -b 1000``
+runs 1000 epochs of sgd with a batch size of 1000.
 
 
 ## Bibliography (BibTeX)

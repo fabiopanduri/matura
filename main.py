@@ -4,7 +4,6 @@
 # maturaarbeit_code is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 # You should have received a copy of the GNU General Public License along with maturaarbeit_code. If not, see <https://www.gnu.org/licenses/>.
 import argparse
-import faulthandler
 import json
 import math
 import os
@@ -33,17 +32,6 @@ from neat.pong_env import PongEnvNEAT
 
 plt.style.use("ggplot")
 
-#sys.stdout = open("traceback.txt", "w")
-
-
-def trace(frame, event, arg):
-    with open("traceback.txt", "a") as f:
-        f.write("%s, %s:%d" % (event, frame.f_code.co_filename, frame.f_lineno))
-    return trace
-
-# sys.settrace(trace)
-
-
 def plot(hist, label):
     x = list(range(0, len(hist)))
     y = hist
@@ -66,7 +54,7 @@ def args() -> 'argparse':
     parser_dql.add_argument(
         '-l', '--live-plot', help="Plot the fitness live", action="store_true")
     parser_dql.add_argument(
-        '-s', '--save-data', help='Save all the information concerning the epoch',
+        '-s', '--save-data', help='Save all the information of the sample',
         dest='save_data', action="store_true")
     parser_dql.add_argument('-g', '--game', help='Specify the game', required=True, dest='game',
                             choices=['pong', 'cartpole'], type=str)
@@ -90,7 +78,7 @@ def args() -> 'argparse':
     parser_neat.add_argument(
         '-lt', '--live-time', help="Plot the time live", action="store_true")
     parser_neat.add_argument(
-        '-s', '--save-data', help='Save all the information concerning the iteration',
+        '-s', '--save-data', help='Save all the information concerning the sample',
         dest='save_data', action="store_true")
     parser_neat.add_argument('-g', '--game', help='Specify the game', required=True, dest='game',
                              choices=['pong', 'cartpole'], type=str)
@@ -108,7 +96,7 @@ def args() -> 'argparse':
         '-ps', '--protect-species', help='Allow each species to have at least one offspring',
         dest='protect_species', action="store_true")
     parser_neat.add_argument(
-        '--reward-system', help='How the (pong) enviroment should give out rewards', choices=['v0', 'v1', 'v2', 'v3', 'v4'], type=str, default='v0')
+        '--reward-system', help='How the (pong) enviroment should give out rewards', choices=['v0', 'v1', 'v2', 'v3'], type=str, default='v0')
 
     # arguments for sgd
     parser_sgd = subparsers.add_parser('sgd', help='Run SGD')
@@ -219,13 +207,6 @@ def main():
             save_data=arguments.save_data,
         )
 
-        N.save_population()
-
-        for c in random.sample(N.population, k=10):
-            c.draw()
-
-        N.simulate_population(10000)
-
         if arguments.plot:
             plot(N.fitness_hist, "average")
             plot(N.best_fitness_hist, "best")
@@ -253,15 +234,5 @@ def main():
             arguments.plot,
         )
 
-
 if __name__ == '__main__':
     main()
-    """
-    with open("traceback.txt", "w") as f:
-        faulthandler.enable(file=f)
-        main()
-
-    if faulthandler.is_enabled():
-        faulthandler.diable()
-    """
-# Example use: python3 main.py dql -g cartpole -e 1000
