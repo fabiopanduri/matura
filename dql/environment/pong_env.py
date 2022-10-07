@@ -42,7 +42,7 @@ class PongEnvDQL:
 
     def step(self, action):
         '''
-        Do one game move with given action and return image, reward and wheter or not the game terminates
+        Do one game move with given action and return image, reward and whether or not the game terminates
         '''
         # Get desired paddle movement from first (and only) entry of action tuple
         right_movement = action[0]

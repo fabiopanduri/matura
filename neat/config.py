@@ -8,7 +8,7 @@
 NEAT config
 """
 
-POPULATION_SIZE = 100
+POPULATION_SIZE = 50
 
 # Constants for speciation, i.e., c_1, c_2, c_3
 SPECIATION_CONSTANTS = (2, 2, 0.4)
