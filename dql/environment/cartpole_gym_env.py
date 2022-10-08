@@ -26,7 +26,6 @@ class CartpoleEnvDQL:
         # Note actions are defined through self.gym_env.action_space == Discrete(2)
         self.possible_actions = [0, 1]
         self.state_size = len(self.make_observation())
-        self.frames_ellapsed = 0
         self.render = render
         self.alpha = alpha
 
@@ -48,7 +47,6 @@ class CartpoleEnvDQL:
         Do one game move with given action and return image, reward and wheter or not the game terminates
         '''
         observation, reward, done, info = self.gym_env.step(action[0])
-        self.frames_ellapsed += 1
         if self.render:
             self.gym_env.render()
         return observation, reward, done
@@ -57,4 +55,5 @@ class CartpoleEnvDQL:
         '''
         Function to be called after an episode (iteration of the game) ends
         '''
-        self.frames_ellapsed = 0
+        pass
+

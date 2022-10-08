@@ -27,7 +27,6 @@ class CartpoleEnvNEAT:
         self.possible_actions = [0, 1]
         self.state_size = len(self.make_observation())
         self.plot = plot
-        self.frames_ellapsed = 0
         self.render = render
 
         # fitness if a player reaches max_t
@@ -58,13 +57,6 @@ class CartpoleEnvNEAT:
 
         observation, reward, done, info = self.gym_env.step(action)
 
-        self.frames_ellapsed += 1
         if self.render:
             self.gym_env.render()
         return observation, reward, done
-
-    def terminate_episode(self):
-        '''
-        Function to be called after an episode (iteration of the game) ends
-        '''
-        self.frames_ellapsed = 0
