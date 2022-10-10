@@ -125,9 +125,9 @@ class NEAT:
             t_0 = time.perf_counter()
 
             if self.old_speciation:
-                self.speciation(i/generations)
+                self.speciation_old(i/generations)
             else:
-                self.speciation_old_free(i/generations)
+                self.speciation(i/generations)
 
             self.adjust_population_fitness()
 
@@ -217,7 +217,7 @@ class NEAT:
         else:
             return self.base_delta_t
 
-    def speciation_old_free(self, i):
+    def speciation(self, i):
         """
         This method will create species for the current generation 
         If an individual does not fit into any species a new species is created
@@ -239,7 +239,7 @@ class NEAT:
         self.species = [s for s in species if s]
         self.species_size_hist.append(len(self.species))
 
-    def speciation(self, i):
+    def speciation_old(self, i):
         """
         This method will create species for the current generation based on the species of the last
         generation
