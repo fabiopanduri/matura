@@ -330,3 +330,21 @@ class PongGame:
         # Update Scoreboard
         self.scoreboard.render_score(self.screen, self.score)
         pygame.display.flip()
+
+
+class Solver:
+    def __init__(self):
+        self.game = PongGame()
+
+    def get_move(self, paddle):
+        if game.ball.position[1] < paddle.position[1]:
+            return "up"
+        elif paddle.position[1] + PADDLE_HEIGHT < game.ball.position[1]:
+            return "down"
+        else:
+            return "stay"
+    
+    def play(self):
+        while True:
+            self.game.tick("stay", self.get_move(self.game.right_paddle))
+
