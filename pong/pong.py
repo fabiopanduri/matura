@@ -29,7 +29,7 @@ PADDLE_HEIGHT = 100
 COLOR_BACKGROUND = (0, 0, 0)
 COLOR_FOREGROUND = (100, 100, 100)
 COLOR_SPRITE = (255, 255, 255)
-FPS_LIMIT = 60
+FPS_LIMIT = 400
 
 
 class Paddle:
@@ -215,36 +215,6 @@ class Scoreboard:
         screen.blit(self.text, (0, 0))
 
 
-def get_pygame_keys():
-    """
-    Get keyboard input from pygame for manual playing. Currently NOT IN USE.
-    """
-    # PyGame event handling
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            return ()
-
-    # Paddle Movement. Use parsed arguments for movement
-    # if there are any. If none, use pygame keyboard input
-    keys = pygame.key.get_pressed()
-    if left_movement == "":
-        if keys[pygame.K_s]:
-            left_paddle.move("down")
-        if keys[pygame.K_w]:
-            left_paddle.move("up")
-    else:
-        left_paddle.move(left_movement)
-
-    if right_movement == "":
-        if keys[pygame.K_k]:
-            right_paddle.move("down")
-        if keys[pygame.K_i]:
-            right_paddle.move("up")
-    else:
-        right_paddle.move(right_movement)
-
-    ball.update(left_paddle, right_paddle, score)
-
 
 class PongGame:
     '''
@@ -333,18 +303,38 @@ class PongGame:
 
 
 class Solver:
-    def __init__(self):
+    def __init__(self, user_input=True):
         self.game = PongGame()
+        self.user_input = user_input
 
     def get_move(self, paddle):
-        if game.ball.position[1] < paddle.position[1]:
+        if self.game.ball.position[1] < paddle.position[1] + 0.25 * PADDLE_HEIGHT:
             return "up"
-        elif paddle.position[1] + PADDLE_HEIGHT < game.ball.position[1]:
+        elif paddle.position[1] + 0.75 * PADDLE_HEIGHT < self.game.ball.position[1]:
             return "down"
         else:
             return "stay"
     
+    def get_user_input(self):
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_s]:
+            return "down"
+        if keys[pygame.K_w]:
+            return "up"
+        if keys[pygame.K_q]:
+            self.game.reset() # skip games taking too long
+
     def play(self):
+        clock = pygame.time.Clock()
+        global BALL_SPEED, PADDLE_SPEED
+        BALL_SPEED = 1
+        PADDLE_SPEED = 1
         while True:
-            self.game.tick("stay", self.get_move(self.game.right_paddle))
+            for event in pygame.event.get(): # Fix "not responding" message by OS
+                if event.type == pygame.QUIT:
+                    return
+            clock.tick(FPS_LIMIT)
+            left_move = "stay" if not self.user_input else self.get_user_input()
+            right_move = self.get_move(self.game.right_paddle)
+            self.game.tick(left_move, right_move)
 
