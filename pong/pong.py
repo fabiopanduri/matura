@@ -34,27 +34,27 @@ FPS_LIMIT = 400
 
 class Paddle:
     def __init__(self, side):
-        self.side = side if side in ["left", "right"] else "left"
+        self.side = side if side in ['left', 'right'] else 'left'
         self.position = [
             0,
             (WINDOW_SIZE[1] - PADDLE_HEIGHT) / 2,
         ]  # Start paddle in the middle (vertically) of according side
-        if self.side == "left":
+        if self.side == 'left':
             self.position[0] = 0
-        elif self.side == "right":
+        elif self.side == 'right':
             self.position[0] = WINDOW_SIZE[0] - PADDLE_WIDTH
 
     def move(self, direction):
         """
         Handle movement and top / bottom Collision
         """
-        if direction == "stay":
+        if direction == 'stay':
             pass
 
-        elif direction == "up":
+        elif direction == 'up':
             self.position[1] = max(self.position[1] - PADDLE_SPEED, 0)
 
-        elif direction == "down":
+        elif direction == 'down':
             self.position[1] = min(
                 self.position[1] + PADDLE_SPEED, WINDOW_SIZE[1] - PADDLE_HEIGHT
             )
@@ -308,11 +308,11 @@ class Solver:
 
     def get_move(self, paddle):
         if self.game.ball.position[1] < paddle.position[1] + 0.25 * PADDLE_HEIGHT:
-            return "up"
+            return 'up'
         elif paddle.position[1] + 0.75 * PADDLE_HEIGHT < self.game.ball.position[1]:
-            return "down"
+            return 'down'
         else:
-            return "stay"
+            return 'stay'
 
     def get_user_ctl(self):
         keys = pygame.key.get_pressed()
@@ -328,9 +328,9 @@ class Solver:
     def get_user_move(self):
         keys = pygame.key.get_pressed()
         if keys[pygame.K_s]:
-            return "down"
+            return 'down'
         if keys[pygame.K_w]:
-            return "up"
+            return 'up'
 
     def play(self):
         clock = pygame.time.Clock()
@@ -340,6 +340,7 @@ class Solver:
 
         ctl = ''
         pause = True
+        self.game.tick('stay', 'stay')  # Render screen
         while ctl != 'exit':
             clock.tick(FPS_LIMIT)
             pygame.event.get()  # Fix OS' 'not responding' message
@@ -352,7 +353,7 @@ class Solver:
             if ctl == 'skip':
                 self.game.reset()
 
-            left_move = "stay" if not self.user_input else self.get_user_move()
+            left_move = 'stay' if not self.user_input else self.get_user_move()
             right_move = self.get_move(self.game.right_paddle)
             self.game.tick(left_move, right_move)
         else:
