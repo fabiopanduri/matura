@@ -215,7 +215,6 @@ class Scoreboard:
         screen.blit(self.text, (0, 0))
 
 
-
 class PongGame:
     '''
     Put everything together to make the game Pong.
@@ -314,27 +313,47 @@ class Solver:
             return "down"
         else:
             return "stay"
-    
-    def get_user_input(self):
+
+    def get_user_ctl(self):
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_x]:
+            return 'exit'
+        if keys[pygame.K_k]:
+            return 'skip'
+        if keys[pygame.K_p]:
+            return 'pause'
+        if keys[pygame.K_r]:
+            return 'resume'
+
+    def get_user_move(self):
         keys = pygame.key.get_pressed()
         if keys[pygame.K_s]:
             return "down"
         if keys[pygame.K_w]:
             return "up"
-        if keys[pygame.K_q]:
-            self.game.reset() # skip games taking too long
 
     def play(self):
         clock = pygame.time.Clock()
         global BALL_SPEED, PADDLE_SPEED
         BALL_SPEED = 1
         PADDLE_SPEED = 1
-        while True:
-            for event in pygame.event.get(): # Fix "not responding" message by OS
-                if event.type == pygame.QUIT:
-                    return
+
+        ctl = ''
+        pause = True
+        while ctl != 'exit':
             clock.tick(FPS_LIMIT)
-            left_move = "stay" if not self.user_input else self.get_user_input()
+            pygame.event.get()  # Fix OS' 'not responding' message
+            ctl = self.get_user_ctl()
+            pause = ctl == 'pause' or pause
+            if pause:
+                pause = ctl != 'resume'
+                continue
+
+            if ctl == 'skip':
+                self.game.reset()
+
+            left_move = "stay" if not self.user_input else self.get_user_move()
             right_move = self.get_move(self.game.right_paddle)
             self.game.tick(left_move, right_move)
-
+        else:
+            pygame.quit()
